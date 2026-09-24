@@ -143,6 +143,120 @@ textarea.sub::placeholder{color:var(--ink3)}
 .tb .f-mark{background:#FFE58A}
 .empty{color:var(--ink3);text-align:center}
 @media (max-width:820px){.bc{opacity:1}}
+:root{--test:#5EC8F2}
+/* floating block panel: always at the bottom of the screen */
+.addbar{position:sticky;bottom:14px;z-index:20;margin:26px auto 0;width:max-content;max-width:100%;background:var(--card);border:3px solid var(--edge);border-radius:14px 18px 12px 16px;
+  box-shadow:5px 5px 0 var(--sh);padding:8px 10px;gap:6px;justify-content:center}
+.addbar>span{padding:0 6px 0 2px;color:var(--ink);font:700 11px/1 "Martian Mono",monospace}
+.addbar button{border:2px solid transparent;padding:7px 10px 6px;font:700 13px/1 Rubik;display:flex;gap:5px;align-items:center}
+.addbar button i{font-style:normal;font-size:14px;width:16px;text-align:center}
+.addbar button:hover{border-style:solid;border-color:var(--edge);background:var(--sun);color:#1B2350;box-shadow:2px 2px 0 var(--sh);transform:rotate(-1deg)}
+.addbar .ready{background:var(--accent);color:#fff;border-color:var(--edge)}
+.pageact{display:flex;flex-wrap:wrap;gap:8px;margin-top:34px;padding-top:16px;border-top:2.5px dashed var(--line)}
+.pageact button{font:700 11px/1 "Martian Mono",monospace;color:var(--ink2);padding:8px 10px;border:2px dashed var(--line);border-radius:8px}
+.pageact button:hover{border-color:var(--edge);color:var(--ink)}
+.pageact .danger{margin:0 0 0 auto;color:var(--redo)}
+/* search + section labels */
+.search{margin:0 4px 6px;padding:8px 10px;border:2.5px solid var(--edge);border-radius:9px 12px 8px 11px;background:var(--bg);outline:none;font:500 14px/1.2 Rubik}
+.search:focus{box-shadow:3px 3px 0 var(--accent)}
+.lbli{flex:1;min-width:0;border:0;background:none;outline:none;font:inherit;letter-spacing:inherit;text-transform:uppercase;color:inherit;padding:0}
+.lbli:focus{color:var(--ink)}
+.none{font-size:13px;color:var(--ink3);padding:4px 10px}
+/* blocks */
+.hblock{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:14px 0 -4px;padding-bottom:6px;border-bottom:3px solid var(--edge)}
+.hblock:hover .bc{opacity:1}
+.ht{flex:1;border:0;background:none;outline:none;font:800 24px/1.2 Rubik,sans-serif;color:var(--ink);padding:0}
+.drag{cursor:grab;color:var(--ink3);padding:4px 3px;font-size:14px;user-select:none}
+.card.dragging{opacity:.45}
+.card.over,.hblock.over{outline:3px dashed var(--accent);outline-offset:3px}
+.tone{font-size:18px;line-height:1;padding:2px}
+.k-note.t-idea{background:#FFF1C9}.k-note.t-info{background:#E3F1FF}.k-note.t-question{background:#EFE4FF}.k-note.t-warn{background:#FFE1DA}.k-note.t-good{background:#DDF5E3}
+.tbh{margin-left:auto;align-self:center;font:700 10px/1 "Martian Mono",monospace;color:var(--ink3)}
+.tw{overflow-x:auto;margin:0 -4px}
+.tw table{border-collapse:collapse;width:100%;min-width:360px}
+.tw th,.tw td{border:2px solid var(--line);padding:0;vertical-align:top;position:relative}
+.tw th{background:var(--sun)}
+.tw th input{width:100%;border:0;background:none;outline:none;padding:7px 22px 6px 9px;font:700 13px/1.3 Rubik;color:#1B2350}
+.tw td textarea{width:100%;border:0;background:none;outline:none;resize:none;padding:7px 9px;font:400 14px/1.45 Rubik;overflow:hidden;display:block;min-height:34px}
+.tw td textarea:focus,.tw th input:focus{background:rgba(255,200,61,.18)}
+.tw .ctl{width:30px;border:0;text-align:center;vertical-align:middle;background:none}
+.tw .ctl button{font:800 15px/1 Rubik;color:var(--ink2);width:24px;height:24px;border-radius:6px}
+.tw .ctl button:hover{background:var(--sun);color:#1B2350}
+.x{position:absolute;right:3px;top:5px;color:var(--ink3);opacity:0;font-size:15px;line-height:1;width:18px;height:18px;border-radius:5px}
+th:hover .x,tr:hover .x,figure:hover .x,.lk:hover .x,.bch:hover .x{opacity:1}
+.x:hover{color:var(--redo);background:var(--bg)}
+.tw .ctl .x{position:static}
+.imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.imgs figure{margin:0;position:relative;background:var(--bg);border:2.5px solid var(--edge);border-radius:8px 11px 7px 10px;overflow:hidden;box-shadow:3px 3px 0 var(--sh)}
+.imgs figure:nth-child(odd){transform:rotate(-1deg)}.imgs figure:nth-child(even){transform:rotate(.8deg)}
+.imgs img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;cursor:zoom-in;background:var(--line)}
+.imgs .x{background:var(--card);top:6px;right:6px}
+.imgs .cap{width:100%;border:0;border-top:2px solid var(--line);background:var(--card);outline:none;padding:5px 8px;font:500 12px/1.3 Rubik}
+.addimg{border:2.5px dashed var(--edge);border-radius:8px 11px 7px 10px;min-height:120px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;padding:10px;text-align:center}
+.addimg button{font:700 13px/1 Rubik;padding:7px 10px;border-radius:7px;border:2px solid var(--edge);background:var(--sun);color:#1B2350}
+.addimg button+button{background:var(--card);color:var(--ink)}
+.addimg span{font-size:11px;color:var(--ink3)}
+.zoom{position:fixed;inset:0;z-index:50;background:rgba(27,35,80,.8);display:grid;place-items:center;padding:24px;cursor:zoom-out}
+.zoom img{max-width:100%;max-height:100%;border:3px solid #fff;border-radius:10px}
+.lks{display:flex;flex-direction:column;gap:6px}
+.lk{display:flex;gap:8px;align-items:center;position:relative}
+.lk a,.lk .nolink{width:26px;height:26px;display:grid;place-items:center;border:2px solid var(--edge);border-radius:6px;background:var(--sun);color:#1B2350;text-decoration:none;font-weight:800;flex:none}
+.lk .nolink{background:var(--bg);color:var(--ink3);border-color:var(--line)}
+.lk input{flex:1;min-width:0;border:0;border-bottom:2px dashed var(--line);background:none;outline:none;padding:4px 2px;font:500 14px/1.3 Rubik}
+.lk input.u{flex:1.4;color:var(--ink2);font-size:13px}
+.lk .x{position:static}
+.board{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 8px;align-items:flex-start}
+.bcol{flex:1 1 0;min-width:150px;background:var(--bg);border:2.5px solid var(--edge);border-radius:10px 13px 9px 12px;padding:8px;display:flex;flex-direction:column;gap:7px;min-height:90px}
+.bcol:nth-child(1) .bch{background:#FFE1E9}.bcol:nth-child(2) .bch{background:#FFF1C9}.bcol:nth-child(3) .bch{background:#FFE1DA}.bcol:nth-child(4) .bch{background:#DDF5E3}
+.bcol.over{outline:3px dashed var(--accent);outline-offset:2px}
+.bch{display:flex;align-items:center;gap:6px;position:relative;border:2px solid var(--edge);border-radius:7px;padding:3px 6px}
+.bch input{flex:1;min-width:0;border:0;background:none;outline:none;font:800 13px/1.3 Rubik;color:#1B2350;padding:2px 0}
+.bch .x{position:static}
+.kc{background:var(--card);border:2px solid var(--edge);border-radius:7px 9px 6px 8px;box-shadow:2px 2px 0 var(--sh);padding:6px 8px 4px;cursor:grab}
+.kc:active{cursor:grabbing}
+.kc.dragging{opacity:.4}
+.kc textarea{width:100%;border:0;background:none;outline:none;resize:none;font:500 14px/1.4 Rubik;overflow:hidden;padding:0;display:block}
+.kctl{display:flex;justify-content:flex-end;gap:2px;opacity:0}
+.kc:hover .kctl{opacity:1}
+.kctl button{font-size:12px;width:22px;height:20px;border-radius:5px;color:var(--ink2)}
+.kctl button:hover{background:var(--sun)}.kctl button:disabled{opacity:.25}
+.bcol .add{align-self:flex-start;padding:4px 2px}
+.addcol{flex:none;width:38px;height:38px;border:2.5px dashed var(--edge);border-radius:9px;font:800 18px/1 Rubik;color:var(--ink2)}
+.addcol:hover{background:var(--sun);color:#1B2350}
+/* game collection */
+.viewsw{display:flex;gap:6px;align-items:center;margin:0 0 22px}
+.viewsw button{font:700 12px/1 "Martian Mono",monospace;padding:8px 12px;border:2.5px solid var(--edge);border-radius:9px 12px 8px 11px;background:var(--card);color:var(--ink2)}
+.viewsw button.on{background:var(--sun);color:#1B2350;box-shadow:3px 3px 0 var(--sh)}
+.viewsw span{margin-left:8px;font:700 11px/1 "Martian Mono",monospace;color:var(--ink3)}
+.gc .cov{margin:-16px -18px 10px;border-bottom:3px solid var(--edge);border-radius:11px 15px 0 0;overflow:hidden;aspect-ratio:16/8;background:var(--line)}
+.gc .cov img{width:100%;height:100%;object-fit:cover;display:block}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.tags span{font:700 10px/1 "Martian Mono",monospace;padding:4px 6px 3px;border:1.5px solid var(--edge);border-radius:5px;background:var(--bg)}
+.bar{position:relative;height:16px;border:2px solid var(--edge);border-radius:5px;background:var(--bg);margin-top:10px;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--done)}
+.bar b{position:relative;display:block;text-align:center;font:700 10px/12px "Martian Mono",monospace;color:#1B2350}
+.sboard{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding-bottom:10px}
+.scol{flex:1 1 0;min-width:150px;display:flex;flex-direction:column;gap:14px;min-height:160px;padding:10px;border:2.5px dashed var(--line);border-radius:12px}
+.scol.over{border-color:var(--accent);background:rgba(255,92,138,.06)}
+.sch{display:flex;align-items:center;gap:7px;font:800 14px/1.2 Rubik}
+.sch .dot{width:12px;height:12px;border-radius:3px;border:2px solid var(--edge)}
+.sch .cnt{margin-left:auto}
+.scol .gc{transform:none!important}
+.hint2{font:700 11px/1.4 "Martian Mono",monospace;color:var(--ink3);text-align:center}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin:-14px 0 26px}
+.tagrow button{font:700 11px/1 "Martian Mono",monospace;padding:6px 9px 5px;border:2px dashed var(--line);border-radius:7px;color:var(--ink3)}
+.tagrow button.on{border:2px solid var(--edge);background:var(--card);color:var(--ink);box-shadow:2px 2px 0 var(--sh)}
+/* menus */
+.bmenu{position:fixed;z-index:45;width:240px;max-height:320px;overflow:auto;background:var(--card);border:3px solid var(--edge);border-radius:12px 15px 11px 14px;box-shadow:5px 5px 0 var(--sh);padding:6px;display:flex;flex-direction:column}
+.bmenu button{display:flex;gap:8px;align-items:center;text-align:left;padding:7px 8px;border-radius:7px;font:500 14px/1.2 Rubik}
+.bmenu button i{font-style:normal;width:20px;text-align:center}
+.bmenu button.sel,.bmenu button:hover{background:var(--sun);color:#1B2350}
+.modal>div.tpl{width:680px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;max-height:60vh;overflow:auto;padding:4px}
+.tgrid button{text-align:left;display:flex;flex-direction:column;gap:3px;padding:12px;border:2.5px solid var(--edge);border-radius:10px 13px 9px 12px;background:var(--bg);transition:transform .08s}
+.tgrid button:hover{background:var(--sun);color:#1B2350;transform:rotate(-1deg) translate(-1px,-2px);box-shadow:3px 3px 0 var(--sh)}
+.tgrid span{font-size:24px}.tgrid b{font:800 15px/1.2 Rubik}.tgrid small{font-size:12px;color:var(--ink2)}
+@media (max-width:820px){.addbar{bottom:8px;padding:6px}.addbar>span{display:none}.addbar button{padding:6px 7px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -154,11 +268,12 @@ textarea.sub::placeholder{color:var(--ink3)}
 const CFG = { repo: "Besquait/catsland-gdd", branch: "main", path: "data/gdd.json" };
 const H = new URLSearchParams(location.hash.slice(1));
 const LS = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-const LSset = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const LSset = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
 if (H.get("k")) { LSset("cl_key", H.get("k")); history.replaceState(null, "", location.pathname); }
 const KEY = H.get("k") || LS("cl_key");
 const REMOTE = !!KEY;
-const api = (p, o = {}) => fetch("https://api.github.com/repos/" + CFG.repo + p, { ...o, cache: "no-store",
+const GH = "https://api.github.com/repos/" + CFG.repo;
+const api = (p, o = {}) => fetch(GH + p, { ...o, cache: "no-store",
   headers: { Authorization: "Bearer " + KEY, Accept: "application/vnd.github+json" } });
 const enc = s => { const b = new TextEncoder().encode(s); let r = ""; for (let i = 0; i < b.length; i += 32768) r += String.fromCharCode(...b.subarray(i, i + 32768)); return btoa(r); };
 const dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, "")), c => c.charCodeAt(0)));
@@ -167,60 +282,118 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 
 let doc, base, sha = null, dirty = false, saving = false, timer = null, what = new Set();
 
-function B(kind, title, extra) {
-  const b = { id: uid(), kind, title, wide: false, text: "", items: [], colors: [] };
-  return Object.assign(b, extra || {});
+/* ===== blocks and templates ===== */
+function B(kind, title, extra) { return Object.assign({ id: uid(), kind, title, wide: false }, extra || {}); }
+const TX = (title, ph, wide) => B("text", title, { ph, wide: !!wide, text: "" });
+const CL = (title, ph, items) => B("list", title, { ph, items: (items || []).map(t => ({ id: uid(), t, done: false })) });
+function TB_(title, heads, rows, extra) {
+  const cols = heads.map(t => ({ id: uid(), t }));
+  return B("table", title, Object.assign({ wide: true, cols, rows: (rows || [heads.map(() => "")]).map(r => ({ id: uid(), c: Object.fromEntries(r.map((v, i) => [cols[i].id, v])) })) }, extra || {}));
 }
-function introBlocks() {
-  return [B("text", "Идея в двух предложениях", { wide: true, ph: "Cats Land — это…" }), B("text", "Для кого", { ph: "Кто играет и почему" }),
-    B("text", "Платформа и формат", { ph: "Где играют, сколько игроков" }), B("text", "Как устроена сессия", { wide: true, ph: "Зашёл → выбрал мини-игру → …" }),
-    B("text", "Общие правила для всех мини-игр", { wide: true, ph: "Очки, награды, раунды" })];
-}
-function styleBlocks() {
-  return [B("palette", "Палитра", { wide: true, colors: [{ id: uid(), c: "#F08A4B", n: "Акцент" }, { id: uid(), c: "#FFF6EC", n: "Фон" }, { id: uid(), c: "#2A2622", n: "Текст" }] }),
-    B("text", "Визуальный стиль", { ph: "Мультяшно, мягкие формы, …" }), B("text", "Интерфейс", { ph: "Кнопки, окна, иконки" }),
-    B("text", "Шрифты и текст"), B("text", "Звук и музыка"), B("list", "Референсы", { ph: "Ссылка или описание" })];
-}
-function gameBlocks() {
-  return [B("text", "Суть", { wide: true, ph: "Игроки … и побеждает тот, кто …" }), B("text", "Как работает", { wide: true, ph: "1. …" }),
-    B("text", "Управление", { ph: "Какие кнопки и что делают" }), B("text", "Победа и поражение", { ph: "Когда раунд заканчивается" }),
-    B("list", "Доделать", { ph: "Что нужно сделать" }), B("list", "Переделать", { ph: "Сейчас … → должно быть …" })];
-}
-function seed() { return { intro: { blocks: introBlocks() }, style: { blocks: styleBlocks() }, games: [] }; }
-function newGame() { return { id: uid(), emoji: "🐱", name: "Новая мини-игра", status: "idea", blocks: gameBlocks() }; }
+const IM = (title, extra) => B("images", title, Object.assign({ wide: true, imgs: [] }, extra || {}));
+const NT = (tone, title, ph) => B("note", title, { tone, ph, text: "", wide: true });
+const LK = title => B("links", title, { links: [{ id: uid(), t: "", u: "" }] });
+const HD = title => B("heading", title, { wide: true });
+const PL = (title, cs) => B("palette", title, { wide: true, colors: cs.map(([c, n]) => ({ id: uid(), c, n })) });
+const KB = (title, cols) => B("board", title, { wide: true, cols: cols.map(([t, cards]) => ({ id: uid(), t, cards: (cards || []).map(x => ({ id: uid(), t: x })) })) });
 
-/* older documents had fixed fields: turn them into blocks once */
+const KINDS = {
+  text: ["¶", "Текст", () => TX("Новый раздел", "Пишите здесь…")],
+  list: ["☑", "Чеклист", () => CL("Список", "Пункт")],
+  table: ["▦", "Таблица", () => TB_("Таблица", ["Колонка", "Колонка"])],
+  images: ["🖼", "Картинки", () => IM("Картинки")],
+  note: ["💡", "Заметка", () => NT("idea", "Заметка", "Идея, вопрос или что-то важное")],
+  links: ["🔗", "Ссылки", () => LK("Ссылки")],
+  board: ["🗂", "Доска задач", () => KB("Задачи", [["Надо сделать"], ["В работе"], ["Переделать"], ["Готово"]])],
+  palette: ["🎨", "Палитра", () => PL("Цвета", [["#FF5C8A", "Цвет"]])],
+  heading: ["H", "Заголовок раздела", () => HD("Новый раздел")],
+};
+const READY = [
+  ["🎮", "Управление", () => TB_("Управление", ["Кнопка", "Действие"], [["WASD", "Бег"], ["Пробел", "Прыжок"], ["", ""]])],
+  ["📏", "Параметры игры", () => TB_("Параметры", ["Параметр", "Значение"], [["Игроков", "2–12"], ["Длительность раунда", ""], ["Раундов в матче", ""]], { wide: false })],
+  ["🏆", "Награды", () => TB_("Награды", ["Место", "Награда"], [["1", ""], ["2", ""], ["3", ""]], { wide: false })],
+  ["🧮", "Очки", () => TB_("Очки", ["Действие", "Очки"], [["", ""]], { wide: false })],
+  ["📈", "Уровни сложности", () => TB_("Уровни сложности", ["Уровень", "Что меняется", "Время / скорость"], [["1", "", ""], ["2", "", ""], ["3", "", ""]])],
+  ["🔊", "Звуки", () => TB_("Звуки", ["Событие", "Звук", "Заметка"], [["Старт раунда", "", ""], ["Победа", "", ""]])],
+  ["✨", "Эффекты (сочность)", () => CL("Эффекты", "Что должно ощущаться", ["Тряска камеры при падении", "Конфетти на победе"])],
+  ["❓", "Открытые вопросы", () => NT("question", "Открытые вопросы", "Что ещё не решили")],
+  ["⚠️", "Важно", () => NT("warn", "Важно", "О чём нельзя забыть")],
+  ["🧩", "Крайние случаи", () => CL("Крайние случаи", "Что если…", ["Что если игрок вышел посреди раунда?", "Что если все выбыли одновременно?"])],
+  ["🖼", "Референсы", () => IM("Референсы")],
+  ["🗂", "Доска задач", () => KB("Задачи", [["Надо сделать"], ["В работе"], ["Переделать"], ["Готово"]])],
+];
+const PAGE_TPL = [
+  ["📄", "Пустая страница", "Чистый лист", () => [TX("Текст", "Пишите здесь…", true)]],
+  ["⚙️", "Механика", "Как работает одна система", () => [TX("Суть", "В двух словах…", true), TX("Как работает", "1. …", true), TB_("Параметры", ["Параметр", "Значение", "Комментарий"]), NT("question", "Открытые вопросы"), CL("Доделать", "Что нужно сделать")]],
+  ["🐱", "Персонаж", "Внешность, характер, способности", () => [IM("Как выглядит"), TX("Характер", "Какой он, как двигается…"), CL("Анимации", "Анимация", ["Бег", "Прыжок", "Победа"]), TB_("Способности", ["Способность", "Что делает", "Перезарядка"]), TB_("Звуки", ["Когда", "Какой звук"])]],
+  ["🗺️", "Локация / карта", "Мудборд, зоны, опасности", () => [IM("Мудборд"), TX("Описание", "Где мы и что вокруг", true), TB_("Зоны", ["Зона", "Что тут происходит", "Опасности"]), CL("Читаемость", "Проверка", ["Видно, куда бежать", "Опасности заметны заранее"])]],
+  ["🎁", "Предметы и награды", "Таблица предметов", () => [TB_("Предметы", ["Предмет", "Редкость", "Как получить", "Что даёт"]), NT("info", "Правила выдачи")]],
+  ["🖥️", "Интерфейс", "Экраны, HUD, тексты", () => [IM("Макеты"), CL("Элементы HUD", "Элемент", ["Таймер", "Уровень", "Сколько осталось игроков"]), TB_("Экраны", ["Экран", "Что показывает", "Когда появляется"]), TB_("Тексты", ["Где", "Текст"])]],
+  ["🎨", "Арт-стиль", "Мудборд, палитра, можно/нельзя", () => [IM("Мудборд"), PL("Палитра", [["#FFF4E2", "Фон"], ["#1B2350", "Контур"], ["#FF5C8A", "Акцент"]]), CL("Можно", "Делаем так"), CL("Нельзя", "Так не делаем")]],
+  ["🎵", "Звук и музыка", "События и настроение", () => [TX("Настроение", "Какая музыка, темп", true), TB_("Звуки", ["Событие", "Звук", "Заметка"]), LK("Референсы")]],
+  ["🗓️", "План работ", "Доска задач и этапы", () => [KB("Задачи", [["Надо сделать"], ["В работе"], ["Переделать"], ["Готово"]]), TB_("Этапы", ["Этап", "Что входит", "Срок"])]],
+  ["🧪", "Плейтест", "Что заметили игроки", () => [TB_("Кто играл", ["Дата", "Игроки", "Оценка веселья (1–5)"]), CL("Понравилось", "Что зашло"), CL("Мешало", "Что не зашло"), NT("warn", "Баги", "Что сломалось"), TX("Выводы", "Что меняем", true)]],
+  ["💰", "Магазин", "Товары и цены", () => [TB_("Товары", ["Товар", "Цена", "Что даёт", "Где продаётся"]), NT("info", "Принципы", "Что продаём и что никогда не продаём")]],
+  ["✨", "Мудборд", "Картинки и ссылки", () => [IM("Картинки"), LK("Ссылки"), TX("Что берём", "Что нравится в этих примерах", true)]],
+];
+const GAME_TPL = [
+  ["🎮", "Мини-игра", "Стандартный шаблон", () => [TX("Суть", "Игроки … и побеждает тот, кто …", true), IM("Как выглядит"), TX("Как работает", "1. …", true),
+    READY[1][2](), READY[0][2](), TX("Победа и поражение", "Когда раунд заканчивается"), KB("Задачи", [["Надо сделать"], ["В работе"], ["Переделать"], ["Готово"]])]],
+  ["🟨", "На выбывание", "Как Block Party: остаётся последний", () => [TX("Суть", "Кто не успел — выбывает", true), TX("Как работает", "Лобби\n1. …", true), READY[1][2](), READY[4][2](),
+    NT("question", "Что происходит с выбывшими", "Смотровая площадка, наблюдение, …"), READY[9][2](), KB("Задачи", [["Надо сделать"], ["В работе"], ["Переделать"], ["Готово"]])]],
+  ["🏁", "Гонка / паркур", "Кто первый добежит", () => [TX("Суть", "", true), IM("Трасса"), TB_("Чекпоинты", ["№", "Где", "Что сложного"]), READY[0][2](), READY[2][2](), CL("Доделать", "Что нужно сделать")]],
+  ["⚔️", "Командная", "Команда против команды", () => [TX("Суть", "", true), TB_("Команды", ["Команда", "Цвет", "Сколько игроков"], [["Красные", "#F2553D", ""], ["Синие", "#3D7BF2", ""]]), TX("Цель", "Что нужно сделать команде", true),
+    READY[3][2](), NT("warn", "Баланс", "Как не дать одной команде разгромить другую"), CL("Доделать", "Что нужно сделать")]],
+  ["🎯", "На очки", "Кто больше наберёт за время", () => [TX("Суть", "", true), READY[3][2](), READY[1][2](), READY[2][2](), CL("Доделать", "Что нужно сделать")]],
+  ["📄", "Пустая", "Только суть", () => [TX("Суть", "", true)]],
+];
+const STATUS = { idea: ["Идея", "var(--idea)"], work: ["В работе", "var(--work)"], test: ["Плейтест", "var(--test)"], done: ["Готово", "var(--done)"], redo: ["Переделать", "var(--redo)"] };
+const TONES = { idea: ["💡", "Идея"], info: ["📌", "Заметка"], question: ["❓", "Вопрос"], warn: ["⚠️", "Важно"], good: ["✅", "Решено"] };
+const TAGS = ["Все против всех", "Команды", "На выбывание", "На очки", "Гонка", "Паркур", "Кооператив"];
+
+function page(tpl, title) { return { id: uid(), emoji: tpl[0], title: title || tpl[1], sub: "", blocks: tpl[3]() }; }
+function seed() {
+  const intro = { id: "intro", emoji: "📖", title: "Введение", sub: "Что за игра — коротко, чтобы новый человек понял за минуту", blocks: [TX("Идея в двух предложениях", "Cats Land — это…", true),
+    TX("Для кого", "Кто играет и почему"), TX("Платформа и формат", "Где играют, сколько игроков"), TX("Как устроена сессия", "Зашёл → выбрал мини-игру → …", true), TX("Общие правила для всех мини-игр", "Очки, награды, раунды", true)] };
+  const style = { id: "style", emoji: "🎨", title: "Общие стили", sub: "Как всё выглядит и звучит во всех мини-играх", blocks: [PL("Палитра", [["#FFF4E2", "Фон"], ["#1B2350", "Текст"], ["#FF5C8A", "Акцент"]]),
+    TX("Визуальный стиль", "Мультяшно, мягкие формы, …"), TX("Интерфейс", "Кнопки, окна, иконки"), TX("Шрифты и текст"), TX("Звук и музыка"), IM("Референсы")] };
+  return { v: 3, pagesLabel: "Диз-док", gamesLabel: "Мини-игры", pages: [intro, style], games: [] };
+}
+
+/* older documents: fixed fields (v1) -> blocks (v2) -> free pages (v3); every step is deterministic */
 function migrate(d) {
   if (!d || typeof d !== "object") return seed();
+  const s = seed();
   const t = (b, v) => Object.assign(b, { text: v || "" });
   const lst = (b, v) => Object.assign(b, { items: (v || []).map(x => ({ id: x.id || uid(), t: x.t || "", done: !!x.done })) });
-  if (d.intro && !d.intro.blocks) {
-    const o = d.intro, bl = introBlocks();
-    [o.pitch, o.audience, o.platform, o.loop, o.session].forEach((v, i) => t(bl[i], v));
-    d.intro = { blocks: bl };
+  if (d.intro && !d.intro.blocks) { const o = d.intro, bl = s.pages[0].blocks; [o.pitch, o.audience, o.platform, o.loop, o.session].forEach((v, i) => t(bl[i], v)); d.intro = { blocks: bl }; }
+  if (d.style && !d.style.blocks) { const o = d.style, bl = s.pages[1].blocks; if (o.palette) bl[0].colors = o.palette; [o.visual, o.ui, o.fonts, o.sound].forEach((v, i) => t(bl[i + 1], v)); d.style = { blocks: bl }; }
+  if (!d.pages) {
+    d.pages = [];
+    ["intro", "style"].forEach((k, i) => { if (d[k]) { const o = d[k], sp = s.pages[i]; d.pages.push({ id: k, emoji: o.emoji ?? sp.emoji, title: o.title ?? sp.title, sub: o.sub ?? sp.sub, blocks: o.blocks || sp.blocks }); } });
+    delete d.intro; delete d.style;
   }
-  if (d.style && !d.style.blocks) {
-    const o = d.style, bl = styleBlocks();
-    if (o.palette) bl[0].colors = o.palette;
-    [o.visual, o.ui, o.fonts, o.sound].forEach((v, i) => t(bl[i + 1], v));
-    lst(bl[5], o.refs);
-    d.style = { blocks: bl };
-  }
-  d.intro = d.intro || { blocks: introBlocks() };
-  d.style = d.style || { blocks: styleBlocks() };
-  const head = (o, emoji, title, sub) => { if (o.emoji == null) o.emoji = emoji; if (o.title == null) o.title = title; if (o.sub == null) o.sub = sub; };
-  head(d.intro, "📖", "Введение", "Что за игра — коротко, чтобы новый человек понял за минуту");
-  head(d.style, "🎨", "Общие стили", "Как всё выглядит и звучит во всех мини-играх");
-  (d.games || []).forEach(g => { if (g.blocks && g.sub == null) g.sub = ""; });
+  d.pagesLabel = d.pagesLabel ?? "Диз-док"; d.gamesLabel = d.gamesLabel ?? "Мини-игры"; d.v = 3;
   d.games = (d.games || []).map(g => {
-    if (g.blocks) return g;
-    const bl = gameBlocks();
-    [g.summary, g.rules, g.controls, g.win].forEach((v, i) => t(bl[i], v));
-    lst(bl[4], g.todo); lst(bl[5], g.redo);
-    (g.extra || []).forEach(x => bl.push(B("text", x.h || "", { text: x.t || "", wide: true })));
-    return { id: g.id, emoji: g.emoji || "🐱", name: g.name || "Мини-игра", status: g.status || "idea", blocks: bl };
+    if (!g.blocks) {
+      const bl = GAME_TPL[0][3]().filter(b => ["text", "list"].includes(b.kind));
+      [g.summary, g.rules, g.controls, g.win].forEach((v, i) => bl[i] && t(bl[i], v));
+      (g.extra || []).forEach(x => bl.push(TX(x.h || "", "", true)));
+      g = { id: g.id, emoji: g.emoji, name: g.name, status: g.status, blocks: bl };
+    }
+    if (g.title == null) g.title = g.name || "Мини-игра";
+    delete g.name;
+    g.emoji = g.emoji || "🐱"; g.status = STATUS[g.status] ? g.status : "idea"; g.sub = g.sub ?? ""; g.tags = g.tags || [];
+    return g;
   });
+  d.pages.concat(d.games).forEach(p => { p.blocks = (p.blocks || []).map(norm); p.sub = p.sub ?? ""; });
   return d;
+}
+function norm(b) {
+  const def = { text: { text: "" }, note: { text: "", tone: "idea" }, list: { items: [] }, palette: { colors: [] }, table: { cols: [], rows: [] }, images: { imgs: [] }, links: { links: [] }, board: { cols: [] }, heading: {} }[b.kind];
+  if (!def) return Object.assign(b, { kind: "text", text: b.text || "" });
+  for (const k in def) if (b[k] == null) b[k] = def[k];
+  return b;
 }
 
 /* three-way merge: arrays of {id} merge per item, other values: local wins if it changed */
@@ -236,7 +409,7 @@ function merge(b, l, r) {
   }
   if (l && r && typeof l === "object" && typeof r === "object" && !Array.isArray(l)) {
     const o = {};
-    for (const k of new Set([...Object.keys(l), ...Object.keys(r)])) o[k] = merge(b && b[k], l[k], r[k]);
+    for (const k of new Set([...Object.keys(l), ...Object.keys(r)])) { const v = merge(b && b[k], l[k], r[k]); if (v !== undefined) o[k] = v; }
     return o;
   }
   return JSON.stringify(l) !== JSON.stringify(b) ? l : r;
@@ -247,12 +420,11 @@ async function load() {
   const r = await api("/contents/" + CFG.path + "?ref=" + CFG.branch);
   if (r.status === 404) { doc = seed(); base = seed(); save("старт"); return; }
   if (!r.ok) throw new Error(r.status === 401 ? "ключ не подходит" : "GitHub " + r.status);
-  const j = await r.json(); sha = j.sha; doc = JSON.parse(dec(j.content)); base = clone(doc);
-  if (!doc.games) { doc = seed(); save("новая структура"); }
+  const j = await r.json(); sha = j.sha; doc = JSON.parse(dec(j.content)); base = migrate(clone(doc));
 }
 function save(msg) {
   if (msg) what.add(msg);
-  if (!REMOTE) { LSset("cl_doc2", JSON.stringify(doc)); sync("", "Сохранено в этом браузере"); return; }
+  if (!REMOTE) { sync(LSset("cl_doc2", JSON.stringify(doc)) ? "" : "err", LSset("cl_doc2", JSON.stringify(doc)) ? "Сохранено в этом браузере" : "Не влезло в память браузера"); return; }
   dirty = true; sync("busy", "Сохраняю…"); clearTimeout(timer); timer = setTimeout(push, 1200);
 }
 async function push() {
@@ -267,7 +439,7 @@ async function push() {
       if (r.ok) { sha = (await r.json()).content.sha; base = snap; what.clear(); dirty = JSON.stringify(doc) !== JSON.stringify(snap); sync("", "Сохранено"); if (dirty) timer = setTimeout(push, 500); return; }
       if (r.status !== 409 && r.status !== 422) throw new Error("GitHub " + r.status);
       const g = await api("/contents/" + CFG.path + "?ref=" + CFG.branch); const j = await g.json();
-      const remote = JSON.parse(dec(j.content)); doc = merge(base, doc, remote); base = remote; sha = j.sha;
+      const remote = migrate(JSON.parse(dec(j.content))); doc = merge(base, doc, remote); base = remote; sha = j.sha;
       if (!typing()) render();
     }
   } catch (e) { sync("err", "Не сохранено: " + e.message); timer = setTimeout(push, 8000); }
@@ -277,9 +449,43 @@ async function pull() {
   if (!REMOTE || dirty || saving || typing()) return;
   const r = await api("/contents/" + CFG.path + "?ref=" + CFG.branch); if (!r.ok) return;
   const j = await r.json(); if (j.sha === sha) return;
-  sha = j.sha; doc = JSON.parse(dec(j.content)); base = clone(doc); doc = migrate(doc); render();
+  sha = j.sha; doc = migrate(JSON.parse(dec(j.content))); base = clone(doc); render();
 }
 const typing = () => { const a = document.activeElement; return a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT" || a.isContentEditable); };
+
+/* ===== images: private repo files (gh:path) fetched with the key, or data: URLs in local mode ===== */
+const IMGC = new Map();
+async function imgURL(src) {
+  if (!src.startsWith("gh:")) return src;
+  if (IMGC.has(src)) return IMGC.get(src);
+  const p = fetch(GH + "/contents/" + src.slice(3) + "?ref=" + CFG.branch, { headers: { Authorization: "Bearer " + KEY, Accept: "application/vnd.github.raw" } })
+    .then(r => r.ok ? r.blob() : Promise.reject(r.status)).then(b => URL.createObjectURL(b));
+  IMGC.set(src, p); return p;
+}
+function showImages(root) { (root || document).querySelectorAll("img[data-src]").forEach(async im => { try { im.src = await imgURL(im.dataset.src); } catch (e) { im.alt = "не загрузилось"; } }); }
+async function shrink(file, max) {
+  const bmp = await createImageBitmap(file); const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise(res => c.toBlob(res, "image/webp", 0.86));
+}
+async function addImages(p, files) {
+  const list = [...files].filter(f => f.type.startsWith("image/")); if (!list.length) return;
+  toast("Загружаю картинки: " + list.length);
+  for (const f of list) {
+    try {
+      const blob = await shrink(f, REMOTE ? 1800 : 900); const id = uid(); let src;
+      const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); });
+      if (REMOTE) {
+        const path = "data/img/" + id + ".webp";
+        const r = await api("/contents/" + path, { method: "PUT", body: JSON.stringify({ message: me() + ": картинка", content: b64.split(",")[1], branch: CFG.branch }) });
+        if (!r.ok) throw new Error("GitHub " + r.status);
+        src = "gh:" + path; IMGC.set(src, Promise.resolve(URL.createObjectURL(blob)));
+      } else src = b64;
+      get(p).push({ id, src, cap: "" }); save(label() + ": картинка"); render();
+    } catch (e) { toast("Не загрузилось: " + e.message); }
+  }
+}
 
 /* ===== rich text: small tag whitelist, everything else is unwrapped ===== */
 const KEEP = new Set(["B", "STRONG", "I", "EM", "U", "S", "STRIKE", "MARK", "BR", "DIV", "P", "UL", "OL", "LI", "H4"]);
@@ -292,7 +498,7 @@ function clean(html) {
       let tag = n.tagName;
       if (tag === "SPAN" || tag === "FONT") {
         const st = n.getAttribute("style") || "";
-        tag = /background/.test(st) ? "MARK" : /font-weight:\s*(bold|[6-9]00)/.test(st) ? "B" : /italic/.test(st) ? "I" : null;
+        tag = /background-color:\s*rgb\(255, 229, 138\)/.test(st) ? "MARK" : /font-weight:\s*(bold|[6-9]00)/.test(st) ? "B" : /italic/.test(st) ? "I" : null;
       }
       if (tag && KEEP.has(tag)) walk(n, out.appendChild(document.createElement(tag)));
       else walk(n, out);
@@ -302,20 +508,18 @@ function clean(html) {
   return walk(src, document.createElement("div")).innerHTML.replace(/^(<br>)+$/, "");
 }
 const richHTML = b => b.html ? clean(b.text) : esc(b.text).replace(/\n/g, "<br>");
-const plain = b => b.html ? new DOMParser().parseFromString(b.text, "text/html").body.textContent : b.text;
-const TB = [["b", "bold", "Жирный (Ctrl+B)"], ["i", "italic", "Курсив (Ctrl+I)"], ["u", "underline", "Подчеркнуть (Ctrl+U)"], ["s", "strikeThrough", "Зачеркнуть"],
+const plainOf = h => new DOMParser().parseFromString(h, "text/html").body.textContent;
+const plain = b => b.html ? plainOf(b.text) : (b.text || "");
+const TBAR = [["b", "bold", "Жирный (Ctrl+B)"], ["i", "italic", "Курсив (Ctrl+I)"], ["u", "underline", "Подчеркнуть (Ctrl+U)"], ["s", "strikeThrough", "Зачеркнуть"],
   ["🖍", "mark", "Маркер"], ["H", "h4", "Подзаголовок"], ["•", "insertUnorderedList", "Список"], ["1.", "insertOrderedList", "Нумерованный список"], ["⌫", "removeFormat", "Убрать оформление"]];
-const toolbar = () => `<div class="tb">${TB.map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}</div>`;
+const toolbar = () => `<div class="tb">${TBAR.map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}<span class="tbh">«/» — вставить блок</span></div>`;
 function fmt(cmd) {
-  if (cmd === "mark") {
-    const inMark = (getSelection().anchorNode || {}).parentElement?.closest("mark,span[style*=background]");
-    document.execCommand("hiliteColor", false, inMark ? "transparent" : "#FFE58A");
-  } else if (cmd === "h4") {
-    const inH = (getSelection().anchorNode || {}).parentElement?.closest("h4");
-    document.execCommand("formatBlock", false, inH ? "div" : "h4");
-  } else document.execCommand(cmd, false, null);
+  const at = (getSelection().anchorNode || {}).parentElement;
+  if (cmd === "mark") document.execCommand("hiliteColor", false, at?.closest("mark,span[style*=background]") ? "transparent" : "#FFE58A");
+  else if (cmd === "h4") document.execCommand("formatBlock", false, at?.closest("h4") ? "div" : "h4");
+  else document.execCommand(cmd, false, null);
 }
-/* Enter after "1. …" starts "2. ", after "- …" / "• …" starts the same bullet; Enter on an empty item ends the list */
+/* Enter after "1. …" starts "2. ", after "- …" / "• …" the same bullet; Enter on an empty item ends the list */
 function autoList(e) {
   const sel = getSelection();
   if (!sel.rangeCount || !sel.isCollapsed || sel.anchorNode.parentElement?.closest("li")) return;
@@ -333,97 +537,176 @@ function autoList(e) {
 
 /* ===== ui helpers ===== */
 const $ = s => document.querySelector(s);
-const esc = s => (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const me = () => LS("cl_name") || "Гость";
 function sync(cls, t) { const el = $("#syncT"); if (!el) return; el.textContent = t; $("#syncI").className = cls; }
-function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("on"); setTimeout(() => e.classList.remove("on"), 1800); }
-const STATUS = { idea: ["Идея", "var(--idea)"], work: ["В работе", "var(--work)"], done: ["Готово", "var(--done)"], redo: ["Переделать", "var(--redo)"] };
-let view = "intro";
+function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 2200); }
+let view = LS("cl_view") || "intro", q = "", gview = LS("cl_gview") || "gallery";
 
-function get(path) { return path.split(".").reduce((o, k) => o == null ? o : (Array.isArray(o) ? o.find(x => x.id === k) : o[k]), doc); }
-function setv(path, v) { const ks = path.split("."); const last = ks.pop(); get(ks.join("."))[last] = v; }
-const curGame = () => doc.games.find(x => x.id === view);
-const blocksPath = () => view === "intro" ? "intro.blocks" : view === "style" ? "style.blocks" : "games." + view + ".blocks";
-const label = () => view === "intro" ? "введение" : view === "style" ? "стили" : (curGame() ? "«" + curGame().name + "»" : "мини-игры");
-const openCount = g => (g.blocks || []).filter(b => b.kind === "list").reduce((n, b) => n + b.items.filter(i => !i.done).length, 0);
+function get(path) { if (!path) return doc; return path.split(".").reduce((o, k) => o == null ? o : (Array.isArray(o) ? o.find(x => x.id === k) : o[k]), doc); }
+function setv(path, v) { const ks = path.split("."); const last = ks.pop(); const o = get(ks.join(".")); if (o) o[last] = v; }
+const where = id => doc.pages.some(p => p.id === id) ? "pages" : doc.games.some(g => g.id === id) ? "games" : null;
+const curPage = () => { const s = where(view); return s ? get(s + "." + view) : null; };
+const pagePath = () => where(view) + "." + view;
+const blocksPath = () => pagePath() + ".blocks";
+const label = () => view === "games" ? "мини-игры" : (curPage() ? "«" + curPage().title + "»" : "диз-док");
+const lists = g => (g.blocks || []).filter(b => b.kind === "list").flatMap(b => b.items)
+  .concat((g.blocks || []).filter(b => b.kind === "board").flatMap(b => b.cols.flatMap(c => c.cards.map(k => ({ t: k.t, done: /готов|сделано|done/i.test(c.t) })))));
+const openCount = g => lists(g).filter(i => !i.done && (i.t || "").trim()).length;
+const progress = g => { const it = lists(g).filter(i => (i.t || "").trim()); return it.length ? Math.round(100 * it.filter(i => i.done).length / it.length) : null; };
+const cover = g => { for (const b of g.blocks || []) if (b.kind === "images" && b.imgs.length) return b.imgs[0].src; return null; };
+const safeURL = u => /^https?:\/\//i.test(u || "") ? u : null;
 
+/* ===== blocks ===== */
+function bodyHTML(p, b) {
+  switch (b.kind) {
+    case "text": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Пишите здесь…")}">${richHTML(b)}</div>`;
+    case "note": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Текст заметки")}">${richHTML(b)}</div>`;
+    case "list": return `<div class="cl">${b.items.map(x => `<div class="it${x.done ? " done" : ""}"><input type="checkbox" data-chk="${p}.items|${x.id}" ${x.done ? "checked" : ""}>
+      <textarea rows="1" data-item="${p}.items|${x.id}" placeholder="${esc(b.ph || "Пункт")}">${esc(x.t)}</textarea><button class="del" data-del="${p}.items|${x.id}" title="Удалить">×</button></div>`).join("")}</div>
+      <button class="add" data-addi="${p}.items">+ пункт</button>`;
+    case "palette": return `<div class="sw">${b.colors.map(c => `<div class="s"><label style="background:${esc(c.c)}"><input type="color" value="${esc(c.c)}" data-col="${p}.colors|${c.id}"></label>
+      <input class="n" value="${esc(c.n)}" data-p="${p}.colors.${c.id}.n"><button class="rm" data-del="${p}.colors|${c.id}">убрать</button></div>`).join("")}
+      <button class="addc" data-push="${p}.colors|color" title="Добавить цвет">+</button></div>`;
+    case "table": return `<div class="tw"><table><thead><tr>${b.cols.map(c => `<th><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></th>`).join("")}
+      <th class="ctl"><button data-push="${p}.cols|col" title="Добавить колонку">+</button></th></tr></thead><tbody>${b.rows.map(r => `<tr>${b.cols.map(c => `<td><textarea rows="1" data-p="${p}.rows.${r.id}.c.${c.id}">${esc((r.c || {})[c.id])}</textarea></td>`).join("")}
+      <td class="ctl"><button class="x" data-del="${p}.rows|${r.id}" title="Удалить строку">×</button></td></tr>`).join("")}</tbody></table></div><button class="add" data-push="${p}.rows|row">+ строка</button>`;
+    case "images": return `<div class="imgs">${b.imgs.map(im => `<figure><img data-src="${esc(im.src)}" data-zoom alt=""><button class="x" data-del="${p}.imgs|${im.id}" title="Убрать">×</button>
+      <input class="cap" data-p="${p}.imgs.${im.id}.cap" value="${esc(im.cap)}" placeholder="Подпись"></figure>`).join("")}
+      <div class="addimg" data-drop="${p}.imgs"><button data-imgfile="${p}.imgs">+ Загрузить</button><button data-imgurl="${p}.imgs">по ссылке</button><span>или перетащите файлы сюда</span></div></div>`;
+    case "links": return `<div class="lks">${b.links.map(l => `<div class="lk">${safeURL(l.u) ? `<a href="${esc(l.u)}" target="_blank" rel="noopener" title="Открыть">↗</a>` : `<span class="nolink">↗</span>`}
+      <input data-p="${p}.links.${l.id}.t" value="${esc(l.t)}" placeholder="Название"><input class="u" data-p="${p}.links.${l.id}.u" value="${esc(l.u)}" placeholder="https://…">
+      <button class="x" data-del="${p}.links|${l.id}">×</button></div>`).join("")}</div><button class="add" data-push="${p}.links|link">+ ссылка</button>`;
+    case "board": return `<div class="board">${b.cols.map((c, ci) => `<div class="bcol" data-kcol="${p}.cols.${c.id}.cards"><div class="bch"><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><span class="cnt">${c.cards.length}</span>
+      <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${c.cards.map(k => `<div class="kc" draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(k.t)}</textarea>
+      <div class="kctl"><button data-kmove="${p}|${c.id}|${k.id}|-1" ${ci ? "" : "disabled"}>←</button><button data-kmove="${p}|${c.id}|${k.id}|1" ${ci < b.cols.length - 1 ? "" : "disabled"}>→</button><button data-del="${p}.cols.${c.id}.cards|${k.id}">×</button></div></div>`).join("")}
+      <button class="add" data-push="${p}.cols.${c.id}.cards|card">+ карточка</button></div>`).join("")}<button class="addcol" data-push="${p}.cols|kcol" title="Добавить колонку">+</button></div>`;
+  }
+  return "";
+}
 function blockHTML(bp, b, i, n) {
   const p = bp + "." + b.id;
-  let body = "";
-  if (b.kind === "text") body = toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Пишите здесь…")}">${richHTML(b)}</div>`;
-  if (b.kind === "list") body = `<div class="cl">${b.items.map(x => `<div class="it${x.done ? " done" : ""}"><input type="checkbox" data-chk="${p}.items|${x.id}" ${x.done ? "checked" : ""}>
-      <textarea rows="1" data-item="${p}.items|${x.id}" placeholder="${esc(b.ph || "Пункт")}">${esc(x.t)}</textarea><button class="del" data-del="${p}.items|${x.id}">×</button></div>`).join("")}</div>
-    <button class="add" data-addi="${p}.items">+ пункт</button>`;
-  if (b.kind === "palette") body = `<div class="sw">${b.colors.map(c => `<div class="s"><label style="background:${c.c}"><input type="color" value="${c.c}" data-col="${p}.colors|${c.id}"></label>
-      <input class="n" value="${esc(c.n)}" data-coln="${p}.colors|${c.id}"><button class="rm" data-colrm="${p}.colors|${c.id}">убрать</button></div>`).join("")}
-      <button class="addc" data-coladd="${p}.colors">+</button></div>`;
+  const ctl = `<div class="bc"><span class="drag" draggable="true" data-bdrag="${b.id}" title="Перетащить">⠿</span><button data-mv="${b.id}|-1" title="Выше" ${i ? "" : "disabled"}>↑</button><button data-mv="${b.id}|1" title="Ниже" ${i < n - 1 ? "" : "disabled"}>↓</button>
+    ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}<button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
+  if (b.kind === "heading") return `<div class="hblock" data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${ctl}</div>`;
   const cnt = b.kind === "list" && b.items.length ? `<span class="cnt">${b.items.filter(x => x.done).length}/${b.items.length}</span>` : "";
-  return `<div class="card${b.wide ? " wide" : ""}" data-block="${b.id}">
-    <div class="bh"><input class="bt" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок">${cnt}
-      <div class="bc"><button data-mv="${b.id}|-1" title="Выше" ${i ? "" : "disabled"}>↑</button><button data-mv="${b.id}|1" title="Ниже" ${i < n - 1 ? "" : "disabled"}>↓</button>
-      <button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div></div>
-    ${body}</div>`;
+  const tone = b.kind === "note" ? `<button class="tone" data-tone="${p}" title="Сменить тип заметки">${TONES[b.tone]?.[0] || "💡"}</button>` : "";
+  return `<div class="card k-${b.kind}${b.kind === "note" ? " t-" + b.tone : ""}${b.wide ? " wide" : ""}" data-block="${b.id}">
+    <div class="bh">${tone}<input class="bt" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок">${cnt}${ctl}</div>${bodyHTML(p, b)}</div>`;
 }
 function blocksHTML() {
   const bp = blocksPath(), list = get(bp);
   return `<div class="grid">${list.map((b, i) => blockHTML(bp, b, i, list.length)).join("") || `<div class="card wide empty">Блоков нет — добавьте первый ниже</div>`}</div>
-    <div class="addbar"><span>Добавить блок:</span><button data-addb="text">＋ Текст</button><button data-addb="list">＋ Чеклист</button><button data-addb="palette">＋ Палитра</button></div>`;
+    <div class="addbar"><span>＋ Блок</span>${Object.entries(KINDS).map(([k, [e, n]]) => `<button data-addb="${k}"><i>${e}</i>${n}</button>`).join("")}
+    <button class="ready" data-readymenu>★ Готовые блоки</button></div>`;
 }
 
+/* ===== nav + pages ===== */
+const hit = pg => !q || JSON.stringify(pg).toLowerCase().includes(q);
+function navItem(x, dot) {
+  const oc = openCount(x);
+  return `<div class="nl ${view === x.id ? "on" : ""}" data-go="${x.id}">${dot ? `<span class="dot" style="background:${STATUS[x.status][1]}"></span>` : ""}<span class="t">${esc(x.emoji)} ${esc(x.title) || "Без названия"}</span>${oc ? `<span class="c" title="Открытых пунктов">${oc}</span>` : ""}</div>`;
+}
 function renderNav() {
-  const g = doc.games;
+  const f = document.activeElement && document.activeElement.id === "search";
   $("#nav").innerHTML = `<div class="logo">Cats <span>Land</span></div>
-    ${["intro", "style"].map(k => `<div class="nl ${view === k ? "on" : ""}" data-go="${k}">${esc(doc[k].emoji)} <span class="t">${esc(doc[k].title) || "Без названия"}</span></div>`).join("")}
-    <div class="lbl">Мини-игры <button data-newgame title="Добавить">+</button></div>
-    <div class="nl ${view === "games" ? "on" : ""}" data-go="games">🗂️ <span class="t">Все мини-игры</span><span class="c">${g.length}</span></div>
-    ${g.map(x => `<div class="nl ${view === x.id ? "on" : ""}" data-go="${x.id}"><span class="dot" style="background:${STATUS[x.status][1]}"></span><span class="t">${esc(x.emoji)} ${esc(x.name)}</span>${openCount(x) ? `<span class="c">${openCount(x)}</span>` : ""}</div>`).join("")}
+    <input id="search" class="search" placeholder="Поиск по диз-доку" value="${esc(q)}">
+    <div class="lbl"><input class="lbli" data-p="pagesLabel" value="${esc(doc.pagesLabel)}"><button data-newpage="pages" title="Новая страница">+</button></div>
+    ${doc.pages.filter(hit).map(x => navItem(x)).join("") || (q ? `<div class="none">ничего</div>` : "")}
+    <div class="lbl"><input class="lbli" data-p="gamesLabel" value="${esc(doc.gamesLabel)}"><button data-newpage="games" title="Новая мини-игра">+</button></div>
+    ${q ? "" : `<div class="nl ${view === "games" ? "on" : ""}" data-go="games">🗂️ <span class="t">Все: ${esc(doc.gamesLabel.toLowerCase())}</span><span class="c">${doc.games.length}</span></div>`}
+    ${doc.games.filter(hit).map(x => navItem(x, true)).join("")}
     <div class="foot"><div class="sync"><i id="syncI"></i><span id="syncT">${REMOTE ? "Сохранено" : "Только этот браузер"}</span></div>
       <div>Вы: <a onclick="askName(true)">${esc(me())}</a></div>
+      <a onclick="exportMD()">Скачать весь диз-док (.md)</a>
       ${REMOTE ? `<a onclick="share()">Скопировать ссылку для своих</a>` : `<a onclick="askKey()">Подключить общий диз-док</a>`}</div>`;
+  if (f) { const s = $("#search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
 }
-
+function gameCard(g) {
+  const pr = progress(g), cv = cover(g), first = g.sub || (g.blocks.find(b => (b.kind === "text" || b.kind === "note") && plain(b).trim()) || {}).text;
+  const desc = g.sub ? g.sub : first ? plainOf(g.blocks.find(b => b.text === first).html ? first : esc(first)) : "";
+  return `<button class="gc" data-go="${g.id}" draggable="true" data-gdrag="${g.id}">${cv ? `<div class="cov"><img data-src="${esc(cv)}" alt=""></div>` : ""}
+    <span class="pill" style="background:${STATUS[g.status][1]}">${STATUS[g.status][0]}</span><div class="n">${esc(g.emoji)} ${esc(g.title)}</div>
+    <div class="d">${desc ? esc(desc) : "<span style='color:var(--ink3)'>Пока пусто</span>"}</div>
+    ${g.tags.length ? `<div class="tags">${g.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+    ${pr != null ? `<div class="bar" title="Выполнено пунктов"><i style="width:${pr}%"></i><b>${pr}%</b></div>` : ""}</button>`;
+}
 function render() {
-  if (!["intro", "style", "games"].includes(view) && !curGame()) view = "games";
+  closeMenu();
+  if (view !== "games" && !curPage()) view = doc.pages[0] ? doc.pages[0].id : "games";
+  LSset("cl_view", view);
   renderNav();
   const P = $("#page");
   const banner = REMOTE ? "" : `<div class="banner">Сейчас правки сохраняются только в этом браузере. <a onclick="askKey()">Подключить общий диз-док</a></div>`;
-  const head = (path, o, name) => `<div class="head"><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(o.emoji)}</span><input class="title" data-p="${path}.${name}" value="${esc(o[name])}" placeholder="Название"></div>
-    <textarea class="sub" rows="1" data-p="${path}.sub" placeholder="Подзаголовок — пара слов о странице">${esc(o.sub)}</textarea>`;
-  if (view === "intro" || view === "style") {
-    P.innerHTML = banner + head(view, doc[view], "title") + blocksHTML();
-  } else if (view === "games") {
-    P.innerHTML = banner + `<div class="head"><span class="emoji">🗂️</span><div class="title">Мини-игры</div></div><p class="sub">${doc.games.length} шт.</p>
-      <div class="games">${doc.games.map(g => { const first = g.sub ? { text: g.sub } : g.blocks.find(b => b.kind === "text" && plain(b).trim());
-        return `<button class="gc" data-go="${g.id}"><span class="pill" style="background:${STATUS[g.status][1]}">${STATUS[g.status][0]}</span><div class="n">${esc(g.emoji)} ${esc(g.name)}</div>
-        <div class="d">${first ? esc(first.html ? plain(first) : first.text) : "<span style='color:var(--ink3)'>Пока пусто</span>"}</div><div class="m"><span>открытых пунктов: ${openCount(g)}</span></div></button>`; }).join("")}
-      <button class="gc newg" data-newgame>+ Мини-игра</button></div>`;
+  if (view === "games") {
+    const gs = doc.games;
+    P.innerHTML = banner + `<div class="head"><span class="emoji">🗂️</span><input class="title" data-p="gamesLabel" value="${esc(doc.gamesLabel)}"></div>
+      <div class="viewsw"><button class="${gview === "gallery" ? "on" : ""}" data-gview="gallery">Карточки</button><button class="${gview === "status" ? "on" : ""}" data-gview="status">По статусам</button><span>${gs.length} шт.</span></div>` +
+      (gview === "gallery" ? `<div class="games">${gs.map(gameCard).join("")}<button class="gc newg" data-newpage="games">+ ${esc(doc.gamesLabel)}: новая</button></div>`
+        : `<div class="sboard">${Object.entries(STATUS).map(([k, [t, c]]) => `<div class="scol" data-scol="${k}"><div class="sch"><span class="dot" style="background:${c}"></span>${t}<span class="cnt">${gs.filter(g => g.status === k).length}</span></div>
+          ${gs.filter(g => g.status === k).map(gameCard).join("")}</div>`).join("")}</div><p class="hint2">Перетащите карточку в другую колонку, чтобы сменить статус</p>`);
   } else {
-    const g = curGame();
-    P.innerHTML = banner + head("games." + g.id, g, "name") + `
-      <div class="status">${Object.entries(STATUS).map(([k, [t, c]]) => `<button class="${g.status === k ? "on" : ""}" style="${g.status === k ? "background:" + c : ""}" data-status="${k}">${t}</button>`).join("")}</div>`
-      + blocksHTML() + `<button class="danger" data-delgame>Удалить мини-игру</button>`;
+    const pg = curPage(), isGame = where(view) === "games", path = pagePath();
+    P.innerHTML = banner + `<div class="head"><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"></div>
+      <textarea class="sub" rows="1" data-p="${path}.sub" placeholder="Подзаголовок — пара слов о странице">${esc(pg.sub)}</textarea>` +
+      (isGame ? `<div class="status">${Object.entries(STATUS).map(([k, [t, c]]) => `<button class="${pg.status === k ? "on" : ""}" style="${pg.status === k ? "background:" + c : ""}" data-status="${k}">${t}</button>`).join("")}</div>
+      <div class="tagrow">${TAGS.concat(pg.tags.filter(t => !TAGS.includes(t))).map(t => `<button class="${pg.tags.includes(t) ? "on" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}<button data-newtag>+ тег</button></div>` : "")
+      + blocksHTML() + `<div class="pageact"><button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button><button data-duppage>⧉ Дублировать страницу</button>
+      <button onclick="exportMD(true)">⬇ Скачать страницу (.md)</button><button class="danger" data-delpage>Удалить страницу</button></div>`;
   }
   P.querySelectorAll("textarea").forEach(grow);
+  showImages(P);
 }
 function grow(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
 
+/* ===== markdown export ===== */
+function mdOf(pg) {
+  const md = h => { const d = new DOMParser().parseFromString("<body>" + h + "</body>", "text/html").body; let o = "";
+    const w = (n, pre) => n.childNodes.forEach(c => { if (c.nodeType === 3) { o += c.nodeValue; return; } const t = c.tagName;
+      if (["DIV", "P", "H4"].includes(t)) { o += "\n" + (t === "H4" ? "#### " : ""); w(c); return; } if (t === "BR") { o += "\n"; return; }
+      if (t === "LI") { o += "\n" + (c.parentElement.tagName === "OL" ? [...c.parentElement.children].indexOf(c) + 1 + ". " : "- "); w(c); return; }
+      const m = { B: "**", STRONG: "**", I: "_", EM: "_", S: "~~", STRIKE: "~~", MARK: "==" }[t] || ""; o += m; w(c); o += m; });
+    w(d); return o.trim(); };
+  let o = `# ${pg.emoji} ${pg.title}\n\n${pg.sub ? "_" + pg.sub + "_\n\n" : ""}${pg.status ? "Статус: " + STATUS[pg.status][0] + (pg.tags.length ? " · " + pg.tags.join(", ") : "") + "\n\n" : ""}`;
+  for (const b of pg.blocks) {
+    o += (b.kind === "heading" ? "## " : "### ") + (b.kind === "note" ? TONES[b.tone][0] + " " : "") + (b.title || "") + "\n\n";
+    if (b.kind === "text" || b.kind === "note") o += (b.html ? md(b.text) : b.text) + "\n\n";
+    if (b.kind === "list") o += b.items.map(i => `- [${i.done ? "x" : " "}] ${i.t}`).join("\n") + "\n\n";
+    if (b.kind === "palette") o += b.colors.map(c => `- ${c.n}: ${c.c}`).join("\n") + "\n\n";
+    if (b.kind === "table" && b.cols.length) o += "| " + b.cols.map(c => c.t).join(" | ") + " |\n|" + b.cols.map(() => " --- |").join("") + "\n" + b.rows.map(r => "| " + b.cols.map(c => ((r.c || {})[c.id] || "").replace(/\n/g, " ")).join(" | ") + " |").join("\n") + "\n\n";
+    if (b.kind === "links") o += b.links.map(l => `- [${l.t || l.u}](${l.u})`).join("\n") + "\n\n";
+    if (b.kind === "images") o += b.imgs.map(i => `- картинка${i.cap ? ": " + i.cap : ""}`).join("\n") + "\n\n";
+    if (b.kind === "board") o += b.cols.map(c => `**${c.t}**\n` + c.cards.map(k => `- ${k.t}`).join("\n")).join("\n\n") + "\n\n";
+  }
+  return o;
+}
+function exportMD(one) {
+  const pgs = one ? [curPage()] : doc.pages.concat(doc.games);
+  const text = (one ? "" : "# Cats Land — диз-док\n\n") + pgs.map(mdOf).join("\n---\n\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/markdown" }));
+  a.download = (one ? curPage().title : "Cats Land диз-док") + ".md"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
 /* ===== events ===== */
 const pair = s => { const [p, id] = s.split("|"); return [get(p), id, p]; };
+const NEWITEM = { color: () => ({ id: uid(), c: "#CCCCCC", n: "Цвет" }), row: () => ({ id: uid(), c: {} }), col: () => ({ id: uid(), t: "" }), link: () => ({ id: uid(), t: "", u: "" }),
+  card: () => ({ id: uid(), t: "" }), kcol: () => ({ id: uid(), t: "Колонка", cards: [] }) };
 document.addEventListener("input", e => {
-  const t = e.target, d = t.dataset;
+  const t = e.target, d = t.dataset || {};
+  if (t.id === "search") { q = t.value.trim().toLowerCase(); renderNav(); return; }
   if (t.tagName === "TEXTAREA") grow(t);
-  if (d.rich) { setv(d.rich + ".text", clean(t.innerHTML)); setv(d.rich + ".html", true); }
-  else if (d.p) { setv(d.p, t.value); if (/\.(name|title)$/.test(d.p)) renderNav(); }
+  if (d.rich) { setv(d.rich + ".text", clean(t.innerHTML)); setv(d.rich + ".html", true); slash(t); }
+  else if (d.p) { setv(d.p, t.value); if (/\.(title)$/.test(d.p) && !d.p.includes(".blocks.") || /Label$/.test(d.p)) renderNav(); }
   else if (d.item) { const [l, id] = pair(d.item); l.find(x => x.id === id).t = t.value; }
   else if (d.col) { const [l, id] = pair(d.col); l.find(x => x.id === id).c = t.value; t.parentElement.style.background = t.value; }
-  else if (d.coln) { const [l, id] = pair(d.coln); l.find(x => x.id === id).n = t.value; }
   else return;
   save(label());
 });
 document.addEventListener("keydown", e => {
   const d = e.target.dataset || {};
+  if (menuEl && ["ArrowDown", "ArrowUp", "Enter", "Escape"].includes(e.key)) { menuKey(e); return; }
   if (d.rich && e.key === "Enter" && !e.shiftKey) autoList(e);
-  if (d.p && e.target.tagName === "INPUT" && e.key === "Enter") e.target.blur();
+  if (e.target.tagName === "INPUT" && d.p && e.key === "Enter") e.target.blur();
   if (d.item && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); const [, id, p] = pair(d.item); addItem(p, id); }
   if (d.item && e.key === "Backspace" && !e.target.value) {
     e.preventDefault(); const [l, id, p] = pair(d.item); const i = l.findIndex(x => x.id === id);
@@ -432,40 +715,139 @@ document.addEventListener("keydown", e => {
 });
 function addItem(p, after) { const l = get(p); const it = { id: uid(), t: "", done: false }; const i = after ? l.findIndex(x => x.id === after) + 1 : l.length; l.splice(i, 0, it); save(label()); render(); focusItem(p, it.id); }
 function focusItem(p, id) { const el = document.querySelector(`[data-item="${p}|${id}"]`); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
-const NEWB = { text: ["Новый раздел", {}], list: ["Список", {}], palette: ["Цвета", { colors: [{ id: uid(), c: "#F08A4B", n: "Цвет" }] }] };
-document.addEventListener("mousedown", e => { const f = e.target.closest("[data-fmt]"); if (f) { e.preventDefault(); fmt(f.dataset.fmt); f.closest(".card").querySelector(".rich").dispatchEvent(new Event("input", { bubbles: true })); } });
-document.addEventListener("paste", e => { if (!e.target.closest || !e.target.closest(".rich")) return; e.preventDefault(); document.execCommand("insertText", false, e.clipboardData.getData("text/plain")); });
+function insertBlock(b, afterId) {
+  const bl = get(blocksPath()); const i = afterId ? bl.findIndex(x => x.id === afterId) + 1 : bl.length;
+  bl.splice(i, 0, norm(b)); save(label() + ": новый блок"); render();
+  const el = document.querySelector(`[data-block="${b.id}"] .rich, [data-block="${b.id}"] .bt, [data-block="${b.id}"] .ht`);
+  if (el) { el.focus(); if (el.select) el.select(); el.scrollIntoView({ block: "center", behavior: "smooth" }); }
+}
+document.addEventListener("mousedown", e => {
+  const f = e.target.closest && e.target.closest("[data-fmt]");
+  if (f) { e.preventDefault(); fmt(f.dataset.fmt); const r = f.closest(".card").querySelector(".rich"); r.dispatchEvent(new Event("input", { bubbles: true })); }
+});
+document.addEventListener("paste", e => {
+  const r = e.target.closest && e.target.closest(".rich");
+  if (r) { e.preventDefault(); document.execCommand("insertText", false, e.clipboardData.getData("text/plain")); return; }
+  const card = document.querySelector(".k-images:hover");
+  if (card && e.clipboardData.files.length) { e.preventDefault(); addImages(card.querySelector("[data-drop]").dataset.drop, e.clipboardData.files); }
+});
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-newgame],[data-status],[data-chk],[data-del],[data-addi],[data-coladd],[data-colrm],[data-addb],[data-rmb],[data-mv],[data-wide],[data-delgame],[data-emoji]");
+  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview]");
   if (!t || t.disabled) return; const d = t.dataset;
   if (d.go) { view = d.go; $("nav").classList.remove("open"); render(); scrollTo(0, 0); return; }
-  if ("newgame" in d) { const g = newGame(); doc.games.push(g); view = g.id; save("новая мини-игра"); render(); const n = $(".title"); n.focus(); n.select(); return; }
-  if (d.status) { curGame().status = d.status; save(label() + ": статус"); render(); return; }
+  if (d.gview) { gview = d.gview; LSset("cl_gview", gview); render(); return; }
+  if (d.newpage) { pickTemplate(d.newpage); return; }
+  if (d.status) { curPage().status = d.status; save(label() + ": статус"); render(); return; }
+  if (d.tag) { const g = curPage(), i = g.tags.indexOf(d.tag); i < 0 ? g.tags.push(d.tag) : g.tags.splice(i, 1); save(label() + ": теги"); render(); return; }
+  if ("newtag" in d) { modal(`<h3>Новый тег</h3><input placeholder="Например: Зимний ивент"><button class="btn">Добавить</button>`, v => { if (!v) return false; if (!curPage().tags.includes(v)) curPage().tags.push(v); save(label() + ": теги"); render(); }); return; }
   if (d.chk) { const [l, id] = pair(d.chk); l.find(i => i.id === id).done = t.checked; save(label()); render(); return; }
-  if (d.del) { const [l, id] = pair(d.del); l.splice(l.findIndex(x => x.id === id), 1); save(label()); render(); return; }
-  if (d.addi) { addItem(d.addi); return; }
-  if (d.coladd) { get(d.coladd).push({ id: uid(), c: "#CCCCCC", n: "Цвет" }); save(label()); render(); return; }
-  if (d.colrm) { const [l, id] = pair(d.colrm); l.splice(l.findIndex(x => x.id === id), 1); save(label()); render(); return; }
-  const bl = get(blocksPath());
-  if (d.addb) {
-    const [title, extra] = NEWB[d.addb]; const b = B(d.addb, title, JSON.parse(JSON.stringify(extra)));
-    if (d.addb === "palette") b.colors.forEach(c => c.id = uid());
-    bl.push(b); save(label() + ": новый блок"); render();
-    const el = document.querySelector(`[data-block="${b.id}"] .bt`); if (el) { el.focus(); el.select(); el.scrollIntoView({ block: "center" }); }
-    return;
+  if (d.del) {
+    const [l, id] = pair(d.del); const i = l.findIndex(x => x.id === id); if (i < 0) return;
+    const it = l[i]; if ((it.cards && it.cards.length) && !confirm("Удалить колонку вместе с карточками?")) return;
+    l.splice(i, 1); save(label()); render(); return;
   }
+  if (d.addi) { addItem(d.addi); return; }
+  if (d.push) { const [p, kind] = d.push.split("|"); const it = NEWITEM[kind](); get(p).push(it); save(label()); render();
+    const el = document.querySelector(`[data-p$="${it.id}.t"],[data-p$=".${it.id}.n"]`); if (el && kind !== "row") el.focus(); return; }
+  if (d.kmove) { const [p, cid, kid, dir] = d.kmove.split("|"); const cols = get(p + ".cols"); const ci = cols.findIndex(c => c.id === cid), to = cols[ci + +dir]; if (!to) return;
+    const from = cols[ci].cards; to.cards.push(from.splice(from.findIndex(k => k.id === kid), 1)[0]); save(label()); render(); return; }
+  if (d.imgfile) { const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.multiple = true; inp.onchange = () => addImages(d.imgfile, inp.files); inp.click(); return; }
+  if (d.imgurl) { modal(`<h3>Картинка по ссылке</h3><p>Прямая ссылка на картинку (https://…)</p><input placeholder="https://"><button class="btn">Добавить</button>`,
+    v => { if (!safeURL(v)) return false; get(d.imgurl).push({ id: uid(), src: v, cap: "" }); save(label() + ": картинка"); render(); }); return; }
+  if ("zoom" in d) { const w = document.createElement("div"); w.className = "zoom"; w.innerHTML = `<img src="${t.src}" alt="">`; w.onclick = () => w.remove(); document.body.appendChild(w); return; }
+  if (d.tone) { const b = get(d.tone), ks = Object.keys(TONES); b.tone = ks[(ks.indexOf(b.tone) + 1) % ks.length]; save(label()); render(); return; }
+  if (d.emoji) { pickEmoji(t, d.emoji); return; }
+  if (d.addb) { insertBlock(KINDS[d.addb][2]()); return; }
+  if ("readymenu" in d) { openMenu(t, READY.map(([e, n, f]) => ({ e, n, run: () => insertBlock(f()) }))); return; }
+  if ("delpage" in d) { const pg = curPage(); if (!confirm("Удалить страницу «" + pg.title + "»?")) return; const s = where(view); doc[s] = doc[s].filter(x => x !== pg);
+    view = s === "games" ? "games" : (doc.pages[0] || {}).id || "games"; save("удалена " + pg.title); render(); return; }
+  if ("duppage" in d) { const s = where(view), pg = curPage(), c = clone(pg); c.id = uid(); c.title = pg.title + " (копия)"; doc[s].splice(doc[s].indexOf(pg) + 1, 0, c); view = c.id; save("копия " + pg.title); render(); toast("Страница скопирована"); return; }
+  if (d.pmv) { const s = where(view), arr = doc[s], i = arr.indexOf(curPage()), j = i + +d.pmv; if (j < 0 || j >= arr.length) return; arr.splice(j, 0, arr.splice(i, 1)[0]); save(label()); render(); return; }
+  const bl = get(blocksPath());
   if (d.rmb) {
     const i = bl.findIndex(x => x.id === d.rmb), b = bl[i];
-    const has = (b.html ? plain(b).trim() : b.text) || b.items.length || (b.kind === "palette" && b.colors.length);
+    const has = plain(b).trim() || (b.items || b.colors || b.rows || b.imgs || b.links || b.cols || []).length;
     if (has && !confirm("Удалить блок «" + (b.title || "без названия") + "» вместе с содержимым?")) return;
     bl.splice(i, 1); save(label() + ": блок удалён"); render(); return;
   }
+  if (d.dupb) { const b = clone(bl.find(x => x.id === d.dupb)); b.id = uid(); b.title = (b.title || "") + " (копия)"; insertBlock(b, d.dupb); return; }
   if (d.mv) { const [id, dir] = d.mv.split("|"); const i = bl.findIndex(x => x.id === id), j = i + +dir; if (j < 0 || j >= bl.length) return; bl.splice(j, 0, bl.splice(i, 1)[0]); save(label()); render(); return; }
   if (d.wide) { const b = bl.find(x => x.id === d.wide); b.wide = !b.wide; save(label()); render(); return; }
-  if ("delgame" in d) { const g = curGame(); if (!confirm("Удалить «" + g.name + "»?")) return; doc.games = doc.games.filter(x => x !== g); view = "games"; save("удалена " + g.name); render(); return; }
-  if (d.emoji) pickEmoji(t, d.emoji);
 });
-const EM = [..."📖🎨🗂️📝💡🎮🕹️👾🐱🐈😺😸😼🙀🐾🧶🐟🥛🐭🦴🏃🧩🎯🎲🏆⚽🎈🎁🍰🌈⭐🔥💧🌙🌳🍄🪁🎵🚀🧊"];
+
+/* drag & drop: blocks, board cards, game cards between status columns, image files */
+let drag = null;
+document.addEventListener("dragstart", e => {
+  const t = e.target.closest && e.target.closest("[data-bdrag],[data-kdrag],[data-gdrag]"); if (!t) return;
+  drag = t.dataset; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", "x");
+  (t.closest(".card") || t).classList.add("dragging");
+});
+document.addEventListener("dragend", () => { drag = null; document.querySelectorAll(".dragging,.over").forEach(x => x.classList.remove("dragging", "over")); });
+const dropTarget = e => {
+  if (e.dataTransfer.types.includes("Files")) return e.target.closest(".k-images");
+  if (!drag) return null;
+  if (drag.bdrag) return e.target.closest("[data-block]");
+  if (drag.kdrag) return e.target.closest("[data-kcol]");
+  if (drag.gdrag) return e.target.closest("[data-scol]");
+};
+document.addEventListener("dragover", e => { const t = dropTarget(e); if (!t) return; e.preventDefault(); document.querySelectorAll(".over").forEach(x => x !== t && x.classList.remove("over")); t.classList.add("over"); });
+document.addEventListener("drop", e => {
+  const t = dropTarget(e); if (!t) return; e.preventDefault();
+  if (e.dataTransfer.files.length) { addImages(t.querySelector("[data-drop]").dataset.drop, e.dataTransfer.files); return; }
+  if (drag.bdrag) { const bl = get(blocksPath()), i = bl.findIndex(x => x.id === drag.bdrag), b = bl.splice(i, 1)[0]; bl.splice(bl.findIndex(x => x.id === t.dataset.block) + (i <= bl.findIndex(x => x.id === t.dataset.block) ? 1 : 0), 0, b); }
+  else if (drag.kdrag) { const [from, id] = pair(drag.kdrag); const k = from.splice(from.findIndex(x => x.id === id), 1)[0]; const to = get(t.dataset.kcol);
+    const before = e.target.closest("[data-kdrag]"); const bi = before ? to.findIndex(x => x.id === before.dataset.kdrag.split("|")[1]) : -1; to.splice(bi < 0 ? to.length : bi, 0, k); }
+  else if (drag.gdrag) { const g = doc.games.find(x => x.id === drag.gdrag); g.status = t.dataset.scol; }
+  drag = null; save(label()); render();
+});
+
+/* "/" at the start of an empty line in a text block opens the block menu */
+function slash(r) {
+  const sel = getSelection(); if (!sel.rangeCount) return;
+  const n = sel.anchorNode, txt = n && n.nodeType === 3 ? n.nodeValue.slice(0, sel.anchorOffset) : "";
+  if (txt !== "/") return;
+  const bid = r.closest("[data-block]").dataset.block;
+  const all = Object.entries(KINDS).map(([k, [e, nm, f]]) => ({ e, n: nm, run: f })).concat(READY.map(([e, nm, f]) => ({ e, n: nm, run: f })));
+  openMenu(r, all.map(x => ({ e: x.e, n: x.n, run: () => { r.focus(); document.execCommand("delete"); insertBlock(x.run(), bid); } })), sel.getRangeAt(0).getBoundingClientRect());
+}
+let menuEl = null, menuSel = 0, menuItems = [];
+function openMenu(anchor, items, rect) {
+  closeMenu(); menuItems = items; menuSel = 0;
+  const m = menuEl = document.createElement("div"); m.className = "bmenu";
+  m.innerHTML = items.map((x, i) => `<button data-mi="${i}" class="${i ? "" : "sel"}"><i>${x.e}</i>${esc(x.n)}</button>`).join("");
+  const r = rect && rect.width + rect.height ? rect : anchor.getBoundingClientRect();
+  m.style.left = Math.min(r.left, innerWidth - 250) + "px"; m.style.top = Math.min(r.bottom + 6, innerHeight - 330) + "px";
+  m.onmousedown = e => { e.preventDefault(); const b = e.target.closest("[data-mi]"); if (b) { const it = menuItems[+b.dataset.mi]; closeMenu(); it.run(); } };
+  document.body.appendChild(m);
+  setTimeout(() => document.addEventListener("mousedown", closeOut), 0);
+}
+function closeOut(e) { if (menuEl && !menuEl.contains(e.target)) closeMenu(); }
+function closeMenu() { if (menuEl) menuEl.remove(); menuEl = null; document.removeEventListener("mousedown", closeOut); }
+function menuKey(e) {
+  e.preventDefault();
+  if (e.key === "Escape") return closeMenu();
+  if (e.key === "Enter") { const it = menuItems[menuSel]; closeMenu(); return it.run(); }
+  menuSel = (menuSel + (e.key === "ArrowDown" ? 1 : -1) + menuItems.length) % menuItems.length;
+  menuEl.querySelectorAll("button").forEach((b, i) => b.classList.toggle("sel", i === menuSel));
+  menuEl.querySelector(".sel").scrollIntoView({ block: "nearest" });
+}
+
+function pickTemplate(section) {
+  const T = section === "games" ? GAME_TPL : PAGE_TPL;
+  const w = document.createElement("div"); w.className = "modal";
+  w.innerHTML = `<div class="tpl"><h3>${section === "games" ? "Новая мини-игра" : "Новая страница"}</h3><p>Выберите шаблон — всё внутри потом можно менять, удалять и дополнять.</p>
+    <div class="tgrid">${T.map((t, i) => `<button data-t="${i}"><span>${t[0]}</span><b>${esc(t[1])}</b><small>${esc(t[2])}</small></button>`).join("")}</div></div>`;
+  w.onclick = e => {
+    if (e.target === w) return w.remove();
+    const b = e.target.closest("[data-t]"); if (!b) return;
+    const tpl = T[+b.dataset.t], pg = page(tpl, section === "games" ? (tpl[1] === "Пустая" ? "Новая мини-игра" : tpl[1]) : tpl[1]);
+    if (section === "games") Object.assign(pg, { status: "idea", tags: [] });
+    pg.blocks.forEach(norm); doc[section].push(pg); view = pg.id; w.remove(); save("новая страница " + pg.title); render();
+    const n = $(".title"); n.focus(); n.select();
+  };
+  document.body.appendChild(w);
+}
+const EM = [..."🐱🐈😺😸😼🙀🐾🧶🐟🥛🐭🦴🏃🧩🎯🎲🏆⚽🎈🎁🍰🌈⭐🔥💧🌙🌳🍄🪁🎵🚀🧊📖🎨🗂️📝💡🎮🕹️👾⚙️🗺️🖥️🧪💰✨🗓️🏁⚔️🟨📄"];
 function pickEmoji(el, path) {
   const m = document.createElement("div"); m.className = "menu";
   m.innerHTML = EM.map(x => `<button>${x}</button>`).join("");
@@ -498,7 +880,7 @@ addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.retur
   try { await load(); } catch (e) { doc = seed(); base = clone(doc); setTimeout(() => sync("err", "Нет доступа: " + e.message), 0); }
   const before = JSON.stringify(doc);
   doc = migrate(doc);
-  if (JSON.stringify(doc) !== before) save("переход на блоки");
+  if (JSON.stringify(doc) !== before) save("обновление структуры");
   render(); askName(false);
   if (REMOTE) setInterval(pull, 20000);
 })();

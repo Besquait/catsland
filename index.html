@@ -535,18 +535,32 @@ function fmt(cmd) {
   else if (cmd === "h4") document.execCommand("formatBlock", false, at?.closest("h4") ? "div" : "h4");
   else document.execCommand(cmd, false, null);
 }
-/* Enter after "1. …" starts "2. ", after "- …" / "• …" the same bullet; Enter on an empty item ends the list */
+/* numbered / bulleted lines: Enter after "1. …" starts "2. ", after "- …" / "• …" the same bullet;
+   Enter on an empty "3. " ends the list; Shift+Enter breaks the line inside the same item.
+   The current line is read from the DOM (text before the caret up to the last <br> or block start), so it works in every browser. */
+function lineBefore(root) {
+  const r = getSelection().getRangeAt(0).cloneRange(); r.setStart(root, 0);
+  const d = document.createElement("div"); d.appendChild(r.cloneContents());
+  let t = "";
+  const walk = n => { for (const c of n.childNodes) {
+    if (c.nodeType === 3) t += c.nodeValue;
+    else if (c.tagName === "BR") t += "\n";
+    else { if (/^(DIV|P|LI|H4|UL|OL)$/.test(c.tagName) && t && !t.endsWith("\n")) t += "\n"; walk(c); }
+  } };
+  walk(d);
+  return t.replace(/\u00a0/g, " ").split("\n");
+}
 function autoList(e) {
-  const sel = getSelection();
+  const sel = getSelection(), root = e.target;
   if (!sel.rangeCount || !sel.isCollapsed || sel.anchorNode.parentElement?.closest("li")) return;
-  const saved = sel.getRangeAt(0).cloneRange();
-  try { sel.modify("extend", "backward", "paragraphboundary"); } catch (x) { sel.modify("extend", "backward", "lineboundary"); }
-  const line = sel.toString();
-  const m = line.match(/^(\s*)(?:(\d+)([.)])|([-•*–]))\s(.*)$/s);
-  if (!m) { sel.removeAllRanges(); sel.addRange(saved); return; }
+  const lines = lineBefore(root), line = lines[lines.length - 1];
+  const RX = /^(\s*)(?:(\d+)([.)])|([-•*–]))\s(.*)$/s;
+  let m = line.match(RX);
+  if (m && !m[5].trim()) { e.preventDefault(); for (let k = 0; k < line.length; k++) document.execCommand("delete"); document.execCommand("insertParagraph"); return; }   // empty item: leave the list, an empty line separates it from the text below
+  // a line without its own number still belongs to the list above it (until an empty line)
+  for (let k = lines.length - 2; !m && k >= 0 && line.trim(); k--) { if (!lines[k].trim()) break; m = lines[k].match(RX); }
+  if (!m) return;
   e.preventDefault();
-  if (!m[5].trim()) { document.execCommand("delete"); return; }
-  sel.removeAllRanges(); sel.addRange(saved);
   document.execCommand("insertParagraph");
   document.execCommand("insertText", false, m[1] + (m[2] ? (+m[2] + 1) + m[3] : m[4]) + " ");
 }

@@ -36,7 +36,7 @@ nav{margin:16px 0 16px 16px;padding:20px 14px;position:sticky;top:16px;height:ca
 .sync{display:flex;gap:7px;align-items:center;font:700 11px/1.3 "Martian Mono",monospace}
 .sync i{width:9px;height:9px;border-radius:2px;border:2px solid var(--edge);background:var(--done)}
 .sync i.busy{background:var(--work)} .sync i.err{background:var(--redo)}
-main{padding:44px 40px 120px}
+main{padding:44px 40px 120px;container-type:inline-size;min-width:0}
 .page{max-width:880px;margin:0 auto}
 .head{display:flex;align-items:center;gap:14px;margin-bottom:8px}
 .emoji{font-size:40px;cursor:pointer;border-radius:12px;padding:2px 6px;border:3px solid transparent;transform:rotate(-4deg)}
@@ -203,24 +203,29 @@ th:hover .x,tr:hover .x,figure:hover .x,.lk:hover .x,.bch:hover .x{opacity:1}
 .lk input{flex:1;min-width:0;border:0;border-bottom:2px dashed var(--line);background:none;outline:none;padding:4px 2px;font:500 14px/1.3 Rubik}
 .lk input.u{flex:1.4;color:var(--ink2);font-size:13px}
 .lk .x{position:static}
-.board{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 8px;align-items:flex-start}
-.bcol{flex:1 1 0;min-width:150px;background:var(--bg);border:2.5px solid var(--edge);border-radius:10px 13px 9px 12px;padding:8px;display:flex;flex-direction:column;gap:7px;min-height:90px}
+.grid>.card{min-width:0}
+@media (min-width:1400px){.card.k-board.wide{margin-inline:calc((100% - min(100cqw, 1240px)) / 2)}}
+.board{display:flex;gap:12px;overflow-x:auto;padding:4px 4px 10px;align-items:flex-start;scroll-snap-type:x proximity}
+.bcol{flex:1 1 240px;min-width:180px;background:var(--bg);border:2.5px solid var(--edge);border-radius:10px 13px 9px 12px;padding:10px;display:flex;flex-direction:column;gap:10px;scroll-snap-align:start}
 .bcol:nth-child(1) .bch{background:#FFE1E9}.bcol:nth-child(2) .bch{background:#FFF1C9}.bcol:nth-child(3) .bch{background:#FFE1DA}.bcol:nth-child(4) .bch{background:#DDF5E3}
 .bcol.over{outline:3px dashed var(--accent);outline-offset:2px}
-.bch{display:flex;align-items:center;gap:6px;position:relative;border:2px solid var(--edge);border-radius:7px;padding:3px 6px}
-.bch input{flex:1;min-width:0;border:0;background:none;outline:none;font:800 13px/1.3 Rubik;color:#1B2350;padding:2px 0}
+.bch{display:flex;align-items:center;gap:8px;position:relative;border:2px solid var(--edge);border-radius:7px;padding:6px 8px 6px 10px}
+.bch input{flex:1;min-width:0;border:0;background:none;outline:none;font:800 15px/1.3 Rubik;color:#1B2350;padding:1px 0}
+.bch .cnt{font-size:12px;color:#1B2350;opacity:.6}
 .bch .x{position:static}
-.kc{background:var(--card);border:2px solid var(--edge);border-radius:7px 9px 6px 8px;box-shadow:2px 2px 0 var(--sh);padding:6px 8px 4px;cursor:grab}
+.kc{position:relative;background:var(--card);border:2px solid var(--edge);border-radius:7px 9px 6px 8px;box-shadow:2px 2px 0 var(--sh);padding:12px 14px;cursor:grab}
 .kc:active{cursor:grabbing}
 .kc.dragging{opacity:.4}
-.kc textarea{width:100%;border:0;background:none;outline:none;resize:none;font:500 14px/1.4 Rubik;overflow:hidden;padding:0;display:block}
-.kctl{display:flex;justify-content:flex-end;gap:2px;opacity:0}
-.kc:hover .kctl{opacity:1}
-.kctl button{font-size:12px;width:22px;height:20px;border-radius:5px;color:var(--ink2)}
+.kc textarea{width:100%;border:0;background:none;outline:none;resize:none;font:500 15px/1.4 Rubik;overflow:hidden;padding:0;display:block;color:var(--ink)}
+.kctl{position:absolute;top:-11px;right:6px;display:flex;gap:2px;opacity:0;pointer-events:none;background:var(--card);border:2px solid var(--edge);border-radius:6px;padding:1px;box-shadow:2px 2px 0 var(--sh)}
+.kc:hover .kctl,.kc:focus-within .kctl{opacity:1;pointer-events:auto}
+.kctl button{font-size:13px;width:24px;height:22px;border-radius:4px;color:var(--ink2)}
 .kctl button:hover{background:var(--sun)}.kctl button:disabled{opacity:.25}
-.bcol .add{align-self:flex-start;padding:4px 2px}
-.addcol{flex:none;width:38px;height:38px;border:2.5px dashed var(--edge);border-radius:9px;font:800 18px/1 Rubik;color:var(--ink2)}
+.bcol .add{align-self:stretch;padding:6px 4px 2px;font:700 14px/1.2 Rubik;color:var(--ink);opacity:.6;border-radius:6px}
+.bcol .add:hover{opacity:1;color:var(--accent)}
+.addcol{flex:none;align-self:stretch;width:34px;min-height:48px;border:2.5px dashed var(--edge);border-radius:9px;font:800 20px/1 Rubik;color:var(--ink2)}
 .addcol:hover{background:var(--sun);color:#1B2350}
+@media (max-width:600px){.bcol{flex:0 0 260px;min-width:260px}}
 /* game collection */
 .viewsw{display:flex;gap:6px;align-items:center;margin:0 0 22px}
 .viewsw button{font:700 12px/1 "Martian Mono",monospace;padding:8px 12px;border:2.5px solid var(--edge);border-radius:9px 12px 8px 11px;background:var(--card);color:var(--ink2)}

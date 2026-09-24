@@ -6,25 +6,22 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cats Land — диз-док</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Martian+Mono:wght@700&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@700&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 /* riso sticker style: cream paper, 3px ink outline, uneven corners, hard offset shadow, small tilts */
-:root{--bg:#EFE6D6;--card:#FFF4E2;--ink:#1B2350;--ink2:#4A5180;--ink3:#8C8FA8;--line:#D9CDB8;--edge:#1B2350;--sh:#1B2350;
+:root{--bg:#EFE6D6;--card:#FFF4E2;--ink:#1B2350;--ink2:#565C82;--ink3:#9A9AAE;--line:#D9CDB8;--edge:#1B2350;--sh:#1B2350;
   --accent:#FF5C8A;--accent2:#FFE1E9;--teal:#12B5A6;--sun:#FFC83D;
-  --idea:#B38BFF;--work:#FFC83D;--done:#3CC46A;--redo:#F2553D;--shadow:5px 5px 0 var(--sh)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#222B5E;--card:#2F3A7C;--ink:#FFF4E2;--ink2:#C9C3D8;--ink3:#8990B5;--line:#46519A;
-  --edge:#05081A;--sh:#05081A;--accent2:#3A2340}}
-:root[data-theme="dark"]{--bg:#222B5E;--card:#2F3A7C;--ink:#FFF4E2;--ink2:#C9C3D8;--ink3:#8990B5;--line:#46519A;--edge:#05081A;--sh:#05081A;--accent2:#3A2340}
+  --idea:#B38BFF;--work:#FFC83D;--done:#3CC46A;--redo:#F2553D;--shadow:4px 4px 0 var(--sh)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Rubik,system-ui,sans-serif;
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 Rubik,system-ui,sans-serif;
   background-image:radial-gradient(circle at 1px 1px,rgba(27,35,80,.09) 1px,transparent 1.3px);background-size:7px 7px}
 button,input,textarea,select{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer}
 .app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
 nav{margin:16px 0 16px 16px;padding:20px 14px;position:sticky;top:16px;height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:4px;
   background:var(--card);border:3px solid var(--edge);border-radius:14px 20px 12px 18px;box-shadow:var(--shadow)}
-.logo{font:900 24px/1.05 Unbounded,sans-serif;padding:4px 10px 18px;transform:rotate(-2deg);letter-spacing:.3px}
-.logo span{color:var(--accent);text-shadow:2px 2px 0 var(--edge)}
+.logo{font:800 24px/1.05 Rubik,sans-serif;padding:4px 10px 18px;transform:rotate(-2deg);letter-spacing:.3px}
+.logo span{color:var(--accent)}
 .nl{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px 12px 8px 11px;color:var(--ink2);cursor:pointer;font-weight:700;border:2.5px solid transparent;transition:transform .08s}
 .nl:hover{border-color:var(--edge);color:var(--ink);transform:rotate(-.6deg)}
 .nl.on{background:var(--sun);color:#1B2350;border-color:var(--edge);box-shadow:3px 3px 0 var(--sh);transform:rotate(-1deg)}
@@ -32,7 +29,7 @@ nav{margin:16px 0 16px 16px;padding:20px 14px;position:sticky;top:16px;height:ca
 .nl .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nl .c{font:700 11px/1 "Martian Mono",monospace;color:inherit;opacity:.7}
 .lbl{font:700 11px/1 "Martian Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);padding:20px 10px 8px;display:flex;justify-content:space-between;align-items:center}
-.lbl button{width:26px;height:26px;border-radius:7px 9px 6px 8px;background:var(--accent);color:#fff;border:2.5px solid var(--edge);box-shadow:2px 2px 0 var(--sh);font:900 16px/1 Unbounded;display:grid;place-items:center;padding:0}
+.lbl button{width:26px;height:26px;border-radius:7px 9px 6px 8px;background:var(--accent);color:#fff;border:2.5px solid var(--edge);box-shadow:2px 2px 0 var(--sh);font:800 16px/1 Rubik;display:grid;place-items:center;padding:0}
 .lbl button:active{transform:translate(2px,2px);box-shadow:none}
 .foot{margin-top:auto;padding:14px 10px 0;font-size:13px;color:var(--ink3);display:flex;flex-direction:column;gap:6px;border-top:2.5px dashed var(--line)}
 .foot a{color:var(--ink2);cursor:pointer;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
@@ -44,8 +41,7 @@ main{padding:44px 40px 120px}
 .head{display:flex;align-items:center;gap:14px;margin-bottom:8px}
 .emoji{font-size:40px;cursor:pointer;border-radius:12px;padding:2px 6px;border:3px solid transparent;transform:rotate(-4deg)}
 .emoji:hover{border-color:var(--edge);background:var(--card);box-shadow:3px 3px 0 var(--sh)}
-.title{flex:1;font:900 36px/1.1 Unbounded,sans-serif;border:0;background:none;outline:none;padding:0;min-width:0;letter-spacing:.3px;
-  text-shadow:2px 1px 0 var(--accent),-1px -1px 0 var(--teal)}
+.title{flex:1;font:800 36px/1.1 Rubik,sans-serif;border:0;background:none;outline:none;padding:0;min-width:0;letter-spacing:-.2px}
 .sub{color:var(--ink2);margin:0 0 26px}
 .status{display:flex;gap:8px;margin:0 0 28px;flex-wrap:wrap}
 .status button{padding:6px 12px 5px;border-radius:9px 12px 8px 11px;font:700 12px/1.2 "Martian Mono",monospace;color:var(--ink2);border:2.5px solid var(--edge);background:var(--card)}
@@ -82,18 +78,18 @@ textarea.f::placeholder,.it textarea::placeholder{color:var(--ink3)}
 .s input[type=color]{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer}
 .s input.n{width:100%;border:0;background:none;text-align:center;outline:none;font:700 11px/1 "Martian Mono",monospace;margin-top:8px;color:var(--ink2)}
 .s .rm{font-size:11px;color:var(--ink3)}
-.addc{width:92px;height:64px;border-radius:10px 14px 9px 12px;border:3px dashed var(--edge);color:var(--ink2);font:900 22px/1 Unbounded}
+.addc{width:92px;height:64px;border-radius:10px 14px 9px 12px;border:3px dashed var(--edge);color:var(--ink2);font:800 22px/1 Rubik}
 .addc:hover{background:var(--card);color:var(--accent)}
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px}
 .gc{background:var(--card);border:3px solid var(--edge);border-radius:14px 18px 12px 20px;padding:16px 18px;box-shadow:var(--shadow);cursor:pointer;text-align:left;transition:transform .1s,box-shadow .1s}
 .gc:nth-child(3n+1){transform:rotate(-1deg)} .gc:nth-child(3n+2){transform:rotate(.8deg)} .gc:nth-child(3n){transform:rotate(-.4deg)}
 .gc:hover{transform:translate(-2px,-3px) rotate(-1.5deg);box-shadow:8px 8px 0 var(--sh)}
 .gc:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--sh)}
-.gc .n{font:900 17px/1.2 Unbounded,sans-serif;margin:8px 0 4px}
+.gc .n{font:800 17px/1.2 Rubik,sans-serif;margin:8px 0 4px}
 .gc .d{color:var(--ink2);font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:44px}
 .gc .m{display:flex;gap:10px;margin-top:10px;font:700 11px/1.3 "Martian Mono",monospace;color:var(--ink3)}
 .pill{padding:3px 9px 2px;border-radius:6px 8px 5px 7px;color:#1B2350;font:700 11px/1.4 "Martian Mono",monospace;border:2px solid var(--edge);display:inline-block;transform:rotate(-2deg)}
-.newg{border:3px dashed var(--edge);box-shadow:none;background:transparent;display:grid;place-items:center;color:var(--ink2);font:900 15px/1.3 Unbounded;min-height:130px;text-align:center}
+.newg{border:3px dashed var(--edge);box-shadow:none;background:transparent;display:grid;place-items:center;color:var(--ink2);font:800 15px/1.3 Rubik;min-height:130px;text-align:center}
 .newg:hover{background:var(--card);box-shadow:var(--shadow)}
 .danger{color:var(--redo);font:700 12px/1 "Martian Mono",monospace;margin-top:30px}
 .banner{background:var(--accent2);border:3px solid var(--edge);border-radius:12px 16px 11px 14px;box-shadow:4px 4px 0 var(--sh);padding:10px 14px;font-size:14px;margin-bottom:24px;transform:rotate(-.4deg)}
@@ -103,11 +99,11 @@ textarea.f::placeholder,.it textarea::placeholder{color:var(--ink3)}
 .menu button:hover{background:var(--sun)}
 .modal{position:fixed;inset:0;background:rgba(27,35,80,.35);display:grid;place-items:center;z-index:40;padding:16px}
 .modal>div{background:var(--card);border:3px solid var(--edge);border-radius:16px 22px 14px 20px;padding:28px;width:430px;max-width:100%;box-shadow:7px 7px 0 var(--sh);transform:rotate(-1deg)}
-.modal h3{margin:0 0 8px;font:900 22px/1.15 Unbounded,sans-serif}
+.modal h3{margin:0 0 8px;font:800 22px/1.15 Rubik,sans-serif}
 .modal p{color:var(--ink2);margin:0 0 14px;font-size:14px}
 .modal input{width:100%;border:2.5px solid var(--edge);border-radius:9px 12px 8px 11px;padding:10px 12px;background:var(--bg);outline:none;font:700 13px/1.3 "Martian Mono",monospace}
 .modal input:focus{box-shadow:3px 3px 0 var(--accent)}
-.btn{background:var(--sun);color:#1B2350;font:900 15px/1 Unbounded,sans-serif;padding:12px 20px 10px;border:3px solid var(--edge);border-radius:11px 15px 10px 13px;box-shadow:4px 4px 0 var(--sh);margin-top:16px;transition:transform .08s,box-shadow .08s}
+.btn{background:var(--sun);color:#1B2350;font:800 15px/1 Rubik,sans-serif;padding:12px 20px 10px;border:3px solid var(--edge);border-radius:11px 15px 10px 13px;box-shadow:4px 4px 0 var(--sh);margin-top:16px;transition:transform .08s,box-shadow .08s}
 .btn:hover{transform:translate(-1px,-2px) rotate(-1deg);box-shadow:6px 6px 0 var(--sh)}
 .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--sh)}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) rotate(-1deg);background:var(--sun);color:#1B2350;border:3px solid var(--edge);box-shadow:4px 4px 0 var(--sh);padding:9px 16px;border-radius:10px 13px 9px 12px;font:700 12px/1.3 "Martian Mono",monospace;opacity:0;transition:.2s;pointer-events:none}
@@ -118,7 +114,7 @@ textarea.f::placeholder,.it textarea::placeholder{color:var(--ink3)}
   .burger{display:block;position:fixed;top:12px;left:12px;z-index:34;width:44px;height:44px;border-radius:10px 13px 9px 12px;background:var(--sun);color:#1B2350;border:3px solid var(--edge);box-shadow:3px 3px 0 var(--sh);font-weight:900}
   main{padding:72px 16px 100px}.grid{grid-template-columns:1fr}.grid>.card{transform:none!important}.title{font-size:26px}}
 .bh{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:2.5px dashed var(--line)}
-.bt{flex:1;min-width:0;border:0;background:none;outline:none;font:700 15px/1.3 Unbounded,sans-serif;padding:0;color:var(--ink)}
+.bt{flex:1;min-width:0;border:0;background:none;outline:none;font:700 15px/1.3 Rubik,sans-serif;padding:0;color:var(--ink)}
 .bt::placeholder{color:var(--ink3)}
 .cnt{font:700 11px/1 "Martian Mono",monospace;color:var(--ink3)}
 .bc{display:flex;gap:3px;opacity:0;transition:opacity .12s}

@@ -163,6 +163,7 @@ mark{background:var(--accent-soft);color:inherit;border-radius:3px}
     <div class="side-foot">
       <div class="sync"><span class="dot" id="dot"></span><span id="syncTxt">Сохранено</span></div>
       <div>Вы: <span class="linkish" id="me" onclick="askName(true)"></span></div>
+      <div id="shareRow"></div>
     </div>
   </aside>
   <main class="main"><div class="page" id="page"></div></main>
@@ -341,6 +342,11 @@ function renderNav() {
     return `<a class="${view.kind === "sec" && view.id === s.id ? "on" : ""}" onclick="go({kind:'sec',id:'${s.id}'})"><span class="em">${esc(s.emoji || "📄")}</span><span class="t">${esc(s.title || "Без названия")}</span>${n ? `<span class="badge">${n}</span>` : ""}</a>`;
   }).join("");
   $("#me").textContent = me();
+  $("#shareRow").innerHTML = REMOTE ? `<span class="linkish" onclick="copyShare()">Скопировать ссылку для своих</span>` : `<span class="linkish" onclick="askKey()">Подключить общий диз-док</span>`;
+}
+function copyShare() {
+  const url = location.origin + location.pathname + "#k=" + KEY;
+  navigator.clipboard.writeText(url).then(() => toast("Ссылка скопирована — отправьте её своим"), () => prompt("Ссылка для своих", url));
 }
 
 function render() {
@@ -569,8 +575,9 @@ function askName(force) {
     v => { if (!v) return false; LSset("cl_name", v); renderNav(); });
 }
 function askKey() {
-  modal(`<h3>Общий диз-док</h3><p>Откройте ссылку доступа, которую вам прислали, или вставьте ключ.</p><input placeholder="Ключ доступа"><div class="row" style="margin-top:18px"><button class="btn">Подключить</button><button class="btn ghost">Отмена</button></div>`,
-    v => { if (!v) return false; LSset("cl_key", v); location.reload(); });
+  const tokenUrl = "https://github.com/settings/personal-access-tokens/new?name=catsland-gdd&description=Cats%20Land&target_name=" + REPO.split("/")[0] + "&expires_in=none&contents=write";
+  modal(`<h3>Общий диз-док</h3><p>Если вам прислали ссылку — просто откройте её.<br><br>Владелец подключает один раз: <a href="${tokenUrl}" target="_blank">создать ключ на GitHub</a> → Only select repositories: <b>${esc(REPO.split("/")[1])}</b> → Generate → скопировать и вставить сюда.</p><input placeholder="Ключ доступа"><div class="row" style="margin-top:18px"><button class="btn">Подключить</button><button class="btn ghost">Отмена</button></div>`,
+    v => { if (!v) return false; LSset("cl_key", v.trim()); location.reload(); });
 }
 
 /* ---------- boot ---------- */

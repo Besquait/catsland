@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cats Land — диз-док</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFAF7; --panel:#F4F1EB; --card:#FFFFFF; --ink:#23201C; --ink2:#6B645B; --ink3:#A39B90;
+  --line:#E9E4DB; --accent:#E07A3F; --accent-soft:#FBEBDF; --ok:#4F9D6B; --ok-soft:#E3F2E8;
+  --hover:#F1EDE6; --shadow:0 12px 40px rgba(60,40,20,.10);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1B1A18; --panel:#211F1C; --card:#262420; --ink:#EEE9E1; --ink2:#AFA79B; --ink3:#77705F;
+  --line:#34312C; --accent:#F0935A; --accent-soft:#3A2A20; --ok:#6FBF8A; --ok-soft:#1F3326; --hover:#2B2824; --shadow:0 12px 40px rgba(0,0,0,.4);
+}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:272px 1fr;min-height:100vh}
+/* sidebar */
+.side{background:var(--panel);border-right:1px solid var(--line);padding:28px 16px 20px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:0 10px 18px;font:600 20px/1.2 Fraunces,serif}
+.brand .paw{font-size:22px}
+.search{margin:0 4px 14px;position:relative}
+.search input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px 9px 34px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.search span{position:absolute;left:12px;top:9px;color:var(--ink3)}
+.nav-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:14px 12px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:9px;color:var(--ink2);text-decoration:none;cursor:pointer;font-size:15px}
+.nav a:hover{background:var(--hover);color:var(--ink)}
+.nav a.on{background:var(--card);color:var(--ink);box-shadow:0 1px 0 var(--line)}
+.nav a .em{width:22px;text-align:center}
+.nav a .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-size:12px;min-width:20px;text-align:center;padding:0 6px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.add-sec{margin:6px 4px;padding:8px 12px;border-radius:9px;color:var(--ink3);text-align:left}
+.add-sec:hover{background:var(--hover);color:var(--ink)}
+.side-foot{margin-top:auto;padding:14px 10px 0;border-top:1px solid var(--line);font-size:13px;color:var(--ink3);display:flex;flex-direction:column;gap:6px}
+.sync{display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.dot.busy{background:var(--accent);animation:pulse 1s infinite}
+.dot.err{background:#D9534F}
+@keyframes pulse{50%{opacity:.35}}
+.linkish{color:var(--ink2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* main */
+.main{padding:96px 48px 200px;overflow-x:hidden}
+.page{max-width:760px;margin:0 auto}
+.crumb{color:var(--ink3);font-size:14px;margin-bottom:18px;display:flex;gap:10px;align-items:center}
+.page-emoji{font-size:52px;line-height:1;margin-bottom:14px;cursor:pointer;display:inline-block;border-radius:12px;padding:4px}
+.page-emoji:hover{background:var(--hover)}
+h1.title{font:600 44px/1.15 Fraunces,serif;margin:0 0 10px;outline:none;letter-spacing:-.01em}
+.subtitle{color:var(--ink2);margin:0 0 48px;outline:none;font-size:18px}
+[contenteditable]:empty:before{content:attr(data-ph);color:var(--ink3)}
+.blocks{display:flex;flex-direction:column;gap:2px}
+.blk{position:relative;display:flex;align-items:flex-start;border-radius:10px;padding:3px 0}
+.blk:hover{background:linear-gradient(90deg,transparent,var(--hover) 8%,var(--hover) 92%,transparent)}
+.blk .gut{position:absolute;left:-58px;top:4px;display:flex;gap:2px;opacity:0;transition:opacity .12s}
+.blk:hover .gut,.blk.focus .gut{opacity:1}
+.gut button{width:26px;height:26px;border-radius:7px;color:var(--ink3);font-size:15px;line-height:26px}
+.gut button:hover{background:var(--line);color:var(--ink)}
+.blk .body{flex:1;min-width:0;outline:none;padding:2px 6px;white-space:pre-wrap;word-wrap:break-word}
+.blk .nt{margin-left:10px;margin-top:3px;flex:none;display:flex;align-items:center;gap:5px;font-size:13px;padding:2px 9px;border-radius:14px;color:var(--ink3);opacity:0;transition:opacity .12s}
+.blk:hover .nt{opacity:1}
+.blk .nt.has{opacity:1;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.blk .nt.done{opacity:1;background:var(--ok-soft);color:var(--ok)}
+.blk .nt:hover{background:var(--accent-soft);color:var(--accent)}
+.blk.h2 .body{font:600 28px/1.3 Fraunces,serif;margin-top:36px}
+.blk.h3 .body{font-weight:600;font-size:19px;margin-top:22px}
+.blk.li .body{padding-left:28px;position:relative}
+.blk.li .body:before{content:"";position:absolute;left:12px;top:.78em;width:6px;height:6px;border-radius:50%;background:var(--ink3)}
+.blk.todo .chk{margin:7px 0 0 8px;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink3);flex:none;display:grid;place-items:center;font-size:12px;color:#fff}
+.blk.todo.checked .chk{background:var(--ok);border-color:var(--ok)}
+.blk.todo.checked .body{color:var(--ink3);text-decoration:line-through}
+.blk.rule{margin:14px 0}
+.blk.rule .body{background:var(--accent-soft);border-radius:12px;padding:16px 18px 16px 50px;position:relative}
+.blk.rule .body:before{content:"🐾";position:absolute;left:18px;top:15px}
+.blk.q .body{border-left:3px solid var(--line);padding-left:18px;color:var(--ink2);font-style:italic}
+.blk.hr .body{height:1px;background:var(--line);margin:22px 6px;padding:0}
+.add-line{margin-top:18px;color:var(--ink3);padding:8px 6px;border-radius:9px;text-align:left;width:100%}
+.add-line:hover{background:var(--hover);color:var(--ink)}
+/* menus */
+.menu{position:fixed;z-index:50;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;min-width:220px}
+.menu button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-size:14px}
+.menu button:hover,.menu button.act{background:var(--hover)}
+.menu .ic{width:22px;text-align:center;color:var(--ink2)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
+.menu .danger{color:#C0463F}
+/* drawer */
+.drawer{position:fixed;right:0;top:0;bottom:0;width:400px;max-width:100vw;background:var(--card);border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(105%);transition:transform .22s ease;z-index:40;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.dr-head{padding:26px 28px 14px;display:flex;align-items:flex-start;gap:12px}
+.dr-head h3{margin:0;font:600 20px/1.3 Fraunces,serif;flex:1}
+.dr-quote{margin:0 28px 10px;padding:12px 14px;border-radius:10px;background:var(--panel);color:var(--ink2);font-size:14px;max-height:120px;overflow:auto;white-space:pre-wrap}
+.dr-list{flex:1;overflow:auto;padding:8px 28px 20px;display:flex;flex-direction:column;gap:14px}
+.note{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.note.resolved{opacity:.6}
+.note .meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink3);margin-bottom:6px}
+.note .who{color:var(--ink);font-weight:600}
+.note .txt{white-space:pre-wrap}
+.note .acts{display:flex;gap:12px;margin-top:8px;font-size:13px}
+.note .acts button{color:var(--ink3)}
+.note .acts button:hover{color:var(--ink)}
+.dr-new{padding:16px 28px 26px;border-top:1px solid var(--line)}
+.dr-new textarea{width:100%;min-height:92px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg);outline:none;resize:vertical}
+.dr-new textarea:focus{border-color:var(--accent)}
+.row{display:flex;gap:10px;align-items:center;margin-top:10px}
+.btn{padding:9px 16px;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
+.btn:hover{filter:brightness(1.05)}
+.btn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line);font-weight:500}
+.x{width:32px;height:32px;border-radius:9px;color:var(--ink3);font-size:20px}
+.x:hover{background:var(--hover);color:var(--ink)}
+/* lists pages */
+.card-list{display:flex;flex-direction:column;gap:14px}
+.ncard{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--card);cursor:pointer}
+.ncard:hover{border-color:var(--ink3)}
+.ncard .where{font-size:13px;color:var(--ink3);margin-bottom:4px}
+.tabs{display:flex;gap:6px;margin:-24px 0 30px}
+.tabs button{padding:6px 14px;border-radius:20px;color:var(--ink2);font-size:14px}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.empty{color:var(--ink3);padding:40px 0;text-align:center}
+.banner{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:12px 16px;margin-bottom:40px;font-size:14px;display:flex;gap:12px;align-items:center}
+.banner b{color:var(--accent)}
+mark{background:var(--accent-soft);color:inherit;border-radius:3px}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.modal-bg{position:fixed;inset:0;background:rgba(30,20,10,.28);z-index:70;display:grid;place-items:center;padding:16px}
+.modal{background:var(--card);border-radius:18px;padding:34px 34px 28px;width:440px;max-width:100%;box-shadow:var(--shadow)}
+.modal h3{margin:0 0 8px;font:600 24px/1.3 Fraunces,serif}
+.modal p{color:var(--ink2);margin:0 0 18px;font-size:15px}
+.modal input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 14px;background:var(--bg);outline:none}
+.modal input:focus{border-color:var(--accent)}
+.hist{display:flex;flex-direction:column}
+.hist .h{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.hist .d{color:var(--ink3);font-size:14px;width:130px;flex:none}
+.burger{display:none}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;z-index:45;left:0;top:0;width:280px;transform:translateX(-102%);transition:transform .2s}
+  .side.open{transform:none;box-shadow:var(--shadow)}
+  .burger{display:block;position:fixed;top:14px;left:14px;z-index:44;width:40px;height:40px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+  .main{padding:72px 16px 160px}
+  .blk .gut{left:-4px;top:-26px}
+  h1.title{font-size:34px}
+  .blk .nt{opacity:1}
+}
+</style>
+</head>
+<body>
+<button class="burger" onclick="document.querySelector('.side').classList.toggle('open')">☰</button>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="paw">🐾</span> Cats Land</div>
+    <div class="search"><span>⌕</span><input id="q" placeholder="Поиск по диз-доку" autocomplete="off"></div>
+    <div class="nav" id="navTop"></div>
+    <div class="nav-label">Разделы</div>
+    <div class="nav" id="nav"></div>
+    <button class="add-sec" onclick="addSection()">+ Новый раздел</button>
+    <div class="side-foot">
+      <div class="sync"><span class="dot" id="dot"></span><span id="syncTxt">Сохранено</span></div>
+      <div>Вы: <span class="linkish" id="me" onclick="askName(true)"></span></div>
+    </div>
+  </aside>
+  <main class="main"><div class="page" id="page"></div></main>
+</div>
+<aside class="drawer" id="drawer"></aside>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- storage ---------- */
+const CFG = { repo: "OWNER/catsland-gdd", branch: "main", path: "data/gdd.json" };
+const hash = new URLSearchParams(location.hash.slice(1));
+if (hash.get("k")) { try { localStorage.setItem("cl_key", hash.get("k")); } catch (e) {} }
+if (hash.get("r")) { try { localStorage.setItem("cl_repo", hash.get("r")); } catch (e) {} }
+const LS = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const LSset = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const KEY = hash.get("k") || LS("cl_key");
+const REPO = hash.get("r") || LS("cl_repo") || CFG.repo;
+const REMOTE = !!KEY && !REPO.startsWith("OWNER/");
+if (hash.get("k")) history.replaceState(null, "", location.pathname + location.search);
+
+const api = (p, o = {}) => fetch("https://api.github.com/repos/" + REPO + p, {
+  ...o, cache: "no-store",
+  headers: { Authorization: "Bearer " + KEY, Accept: "application/vnd.github+json", ...(o.headers || {}) }
+});
+const b64enc = s => { const b = new TextEncoder().encode(s); let r = ""; for (let i = 0; i < b.length; i += 0x8000) r += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(r); };
+const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, "")), c => c.charCodeAt(0)));
+
+let doc, base, sha = null, dirty = false, saving = false, saveTimer = null, lastMsg = new Set();
+
+async function load() {
+  if (!REMOTE) {
+    const s = LS("cl_doc");
+    doc = s ? JSON.parse(s) : seed();
+    base = clone(doc);
+    return;
+  }
+  const r = await api("/contents/" + CFG.path + "?ref=" + CFG.branch);
+  if (r.status === 404) { doc = seed(); base = { sections: [] }; sha = null; dirty = true; scheduleSave("Создан диз-док"); return; }
+  if (!r.ok) throw new Error("GitHub " + r.status);
+  const j = await r.json();
+  sha = j.sha; doc = JSON.parse(b64dec(j.content)); base = clone(doc);
+}
+
+async function pull() {
+  if (!REMOTE || dirty || saving) return;
+  const r = await api("/contents/" + CFG.path + "?ref=" + CFG.branch);
+  if (!r.ok) return;
+  const j = await r.json();
+  if (j.sha === sha) return;
+  sha = j.sha; const remote = JSON.parse(b64dec(j.content));
+  doc = remote; base = clone(remote);
+  if (!document.activeElement || !document.activeElement.isContentEditable) render(); else pendingRender = true;
+}
+let pendingRender = false;
+
+function scheduleSave(msg) {
+  dirty = true; if (msg) lastMsg.add(msg);
+  setSync("busy", "Сохраняю…");
+  if (!REMOTE) { LSset("cl_doc", JSON.stringify(doc)); dirty = false; base = clone(doc); lastMsg.clear(); setTimeout(() => setSync("ok", "Сохранено в браузере"), 250); return; }
+  clearTimeout(saveTimer); saveTimer = setTimeout(save, 1400);
+}
+
+async function save() {
+  if (saving) { saveTimer = setTimeout(save, 800); return; }
+  saving = true;
+  try {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const snapshot = clone(doc);
+      const msg = me() + ": " + ([...lastMsg].slice(0, 3).join(", ") || "правки");
+      const body = { message: msg, content: b64enc(JSON.stringify(snapshot, null, 1)), branch: CFG.branch };
+      if (sha) body.sha = sha;
+      const r = await api("/contents/" + CFG.path, { method: "PUT", body: JSON.stringify(body) });
+      if (r.ok) {
+        sha = (await r.json()).content.sha; base = snapshot; lastMsg.clear();
+        dirty = JSON.stringify(doc) !== JSON.stringify(snapshot);
+        setSync("ok", "Сохранено"); if (dirty) saveTimer = setTimeout(save, 600);
+        return;
+      }
+      if (r.status === 409 || r.status === 422) {
+        const g = await api("/contents/" + CFG.path + "?ref=" + CFG.branch);
+        if (!g.ok) throw new Error("GitHub " + g.status);
+        const j = await g.json(); const remote = JSON.parse(b64dec(j.content));
+        doc = mergeDoc(base, doc, remote); base = remote; sha = j.sha;
+        const act = document.activeElement; if (!act || !act.isContentEditable) render();
+        continue;
+      }
+      throw new Error("GitHub " + r.status);
+    }
+  } catch (e) { setSync("err", "Не сохранено — " + e.message); saveTimer = setTimeout(save, 8000); }
+  finally { saving = false; }
+}
+
+/* three-way merge by id: local changes win where they differ from base */
+function mergeList(b = [], l = [], r = [], mergeItem) {
+  const B = new Map(b.map(x => [x.id, x])), L = new Map(l.map(x => [x.id, x])), R = new Map(r.map(x => [x.id, x]));
+  const localOrderChanged = JSON.stringify(l.map(x => x.id).filter(id => B.has(id))) !== JSON.stringify(b.map(x => x.id).filter(id => L.has(id)));
+  let out = (localOrderChanged ? l : r).filter(x => R.has(x.id) || !B.has(x.id)).filter(x => L.has(x.id) || !B.has(x.id));
+  out = out.map(x => (B.has(x.id) && L.has(x.id) && R.has(x.id)) ? mergeItem(B.get(x.id), L.get(x.id), R.get(x.id)) : (L.get(x.id) || R.get(x.id)));
+  const ids = new Set(out.map(x => x.id));
+  const pools = [[l, L], [r, R]];
+  for (const [arr] of pools) arr.forEach((x, i) => {
+    if (ids.has(x.id) || B.has(x.id)) return;
+    const prev = arr[i - 1]; const at = prev ? out.findIndex(y => y.id === prev.id) + 1 : 0;
+    out.splice(at, 0, x); ids.add(x.id);
+  });
+  return out;
+}
+function mergeFields(b, l, r, skip) {
+  const o = { ...r };
+  for (const k of new Set([...Object.keys(l), ...Object.keys(r)])) {
+    if (skip.includes(k)) continue;
+    if (JSON.stringify(l[k]) !== JSON.stringify(b[k])) o[k] = l[k];
+  }
+  return o;
+}
+const mergeNote = (b, l, r) => mergeFields(b, l, r, []);
+const mergeBlock = (b, l, r) => ({ ...mergeFields(b, l, r, ["notes"]), notes: mergeList(b.notes, l.notes, r.notes, mergeNote) });
+const mergeSection = (b, l, r) => ({ ...mergeFields(b, l, r, ["blocks"]), blocks: mergeList(b.blocks, l.blocks, r.blocks, mergeBlock) });
+const mergeDoc = (b, l, r) => ({ ...mergeFields(b, l, r, ["sections"]), sections: mergeList(b.sections, l.sections, r.sections, mergeSection) });
+
+/* ---------- helpers ---------- */
+const clone = o => JSON.parse(JSON.stringify(o));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const me = () => LS("cl_name") || "Гость";
+const $ = s => document.querySelector(s);
+const fmt = ts => { const d = new Date(ts); return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }) + ", " + d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); };
+function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("show"); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 1800); }
+function setSync(state, txt) { $("#dot").className = "dot" + (state === "busy" ? " busy" : state === "err" ? " err" : ""); $("#syncTxt").textContent = txt; }
+const sec = id => doc.sections.find(s => s.id === id);
+const openNotes = b => (b.notes || []).filter(n => !n.resolved).length;
+
+/* ---------- seed ---------- */
+function B(type, text, extra) { return { id: uid(), type, text, notes: [], ...(extra || {}) }; }
+function seed() {
+  const S = (emoji, title, subtitle, blocks) => ({ id: uid(), emoji, title, subtitle, blocks });
+  return { title: "Cats Land", sections: [
+    S("🐱", "Концепция", "О чём игра в одном абзаце", [
+      B("p", ""), B("h3", "Жанр и платформа"), B("p", ""), B("h3", "Для кого"), B("p", ""),
+      B("h3", "Чем цепляет"), B("li", ""), B("li", ""), B("li", ""),
+      B("rule", "Главная эмоция, которую игрок должен унести из сессии: …")]),
+    S("🔁", "Игровой цикл", "Что игрок делает минуту за минутой и день за днём", [
+      B("h3", "Минута"), B("p", ""), B("h3", "Сессия"), B("p", ""), B("h3", "Долгая цель"), B("p", "")]),
+    S("🐾", "Коты", "Персонажи, породы, характеры, анимации", [
+      B("h3", "Как выглядит кот игрока"), B("p", ""), B("h3", "Кастомизация"), B("li", ""),
+      B("h3", "Способности и движения"), B("todo", "Бег"), B("todo", "Прыжок"), B("todo", "Лазанье"), B("todo", "Мяу / эмоции")]),
+    S("🏡", "Мир и локации", "Где живут коты и что там происходит", [
+      B("h3", "Хаб"), B("p", ""), B("h3", "Локации"), B("li", ""), B("li", ""), B("h3", "Настроение и свет"), B("p", "")]),
+    S("⚙️", "Механики", "Как именно всё работает — с цифрами", [
+      B("q", "Каждая механика: что делает игрок → что происходит → как это видно и слышно."),
+      B("h3", "Механика 1"), B("p", ""), B("h3", "Механика 2"), B("p", "")]),
+    S("👥", "Мультиплеер", "Сколько игроков, как взаимодействуют", [
+      B("h3", "Размер сессии"), B("p", ""), B("h3", "Кооп и соревнование"), B("p", ""), B("h3", "Социальные штуки"), B("li", "")]),
+    S("📈", "Прогрессия и экономика", "Валюты, награды, открытия", [
+      B("h3", "Валюты"), B("li", ""), B("h3", "Что открывается"), B("li", ""), B("h3", "Баланс"), B("p", "")]),
+    S("🎨", "Арт и звук", "Стиль, палитра, референсы, музыка", [
+      B("h3", "Стиль"), B("p", ""), B("h3", "Палитра"), B("p", ""), B("h3", "Референсы"), B("li", ""), B("h3", "Звук и музыка"), B("p", "")]),
+    S("🖥️", "Интерфейс", "Экраны, HUD, меню", [
+      B("h3", "HUD"), B("p", ""), B("h3", "Меню"), B("li", ""), B("h3", "Онбординг"), B("p", "")]),
+    S("🗓️", "План", "Этапы и что входит в первую версию", [
+      B("h3", "Первая играбельная версия"), B("todo", ""), B("h3", "Потом"), B("todo", ""), B("h3", "Открытые вопросы"), B("li", "")])
+  ]};
+}
+
+/* ---------- routing & render ---------- */
+let view = { kind: "sec", id: null }, tab = "open", drawerBlock = null, menuEl = null;
+function go(v) { view = v; closeMenu(); $(".side").classList.remove("open"); render(); window.scrollTo(0, 0); }
+
+function renderNav() {
+  const allOpen = doc.sections.reduce((a, s) => a + s.blocks.reduce((x, b) => x + openNotes(b), 0), 0);
+  $("#navTop").innerHTML =
+    `<a class="${view.kind === "notes" ? "on" : ""}" onclick="go({kind:'notes'})"><span class="em">💬</span><span class="t">Заметки</span>${allOpen ? `<span class="badge">${allOpen}</span>` : ""}</a>` +
+    (REMOTE ? `<a class="${view.kind === "hist" ? "on" : ""}" onclick="go({kind:'hist'})"><span class="em">🕘</span><span class="t">История правок</span></a>` : "");
+  $("#nav").innerHTML = doc.sections.map(s => {
+    const n = s.blocks.reduce((x, b) => x + openNotes(b), 0);
+    return `<a class="${view.kind === "sec" && view.id === s.id ? "on" : ""}" onclick="go({kind:'sec',id:'${s.id}'})"><span class="em">${esc(s.emoji || "📄")}</span><span class="t">${esc(s.title || "Без названия")}</span>${n ? `<span class="badge">${n}</span>` : ""}</a>`;
+  }).join("");
+  $("#me").textContent = me();
+}
+
+function render() {
+  pendingRender = false;
+  if (view.kind === "sec" && !sec(view.id)) view = { kind: "sec", id: doc.sections[0] && doc.sections[0].id };
+  renderNav();
+  const q = $("#q").value.trim();
+  if (q) return renderSearch(q);
+  if (view.kind === "notes") return renderNotes();
+  if (view.kind === "hist") return renderHist();
+  const s = sec(view.id); const P = $("#page");
+  if (!s) { P.innerHTML = `<div class="empty">Разделов нет. Создайте первый слева.</div>`; return; }
+  P.innerHTML = (REMOTE ? "" : `<div class="banner">Локальный режим: правки сохраняются только в этом браузере. <span class="linkish" onclick="askKey()">Подключить общий диз-док</span></div>`) +
+    `<div class="page-emoji" onclick="pickEmoji(event)">${esc(s.emoji || "📄")}</div>
+     <h1 class="title" contenteditable="true" data-ph="Название раздела" id="secTitle">${esc(s.title)}</h1>
+     <p class="subtitle" contenteditable="true" data-ph="Короткое описание" id="secSub">${esc(s.subtitle || "")}</p>
+     <div class="blocks" id="blocks">${s.blocks.map(blockHTML).join("")}</div>
+     <button class="add-line" onclick="addBlock(null,'p')">+ Добавить строку</button>`;
+  bindPage(s);
+  if (drawerBlock) renderDrawer();
+}
+
+const PH = { p: "Пишите здесь, «/» — выбрать тип", h2: "Заголовок", h3: "Подзаголовок", li: "Пункт списка", todo: "Задача", rule: "Правило: как это должно работать", q: "Цитата или референс" };
+function blockHTML(b) {
+  const n = openNotes(b), all = (b.notes || []).length;
+  const nt = n ? `<button class="nt has" data-notes="${b.id}">💬 ${n}</button>` : all ? `<button class="nt done" data-notes="${b.id}">✓ ${all}</button>` : `<button class="nt" data-notes="${b.id}">＋ заметка</button>`;
+  return `<div class="blk ${b.type}${b.checked ? " checked" : ""}" data-id="${b.id}">
+    <div class="gut"><button data-add="${b.id}" title="Добавить ниже">＋</button><button data-menu="${b.id}" title="Действия">⋮⋮</button></div>
+    ${b.type === "todo" ? `<button class="chk" data-chk="${b.id}">${b.checked ? "✓" : ""}</button>` : ""}
+    <div class="body" ${b.type === "hr" ? "" : `contenteditable="true"`} data-ph="${PH[b.type] || ""}">${esc(b.text)}</div>
+    ${b.type === "hr" ? "" : nt}
+  </div>`;
+}
+
+function bindPage(s) {
+  const t = $("#secTitle"), sub = $("#secSub");
+  t.oninput = () => { s.title = t.textContent; renderNav(); scheduleSave("раздел «" + s.title + "»"); };
+  sub.oninput = () => { s.subtitle = sub.textContent; scheduleSave("раздел «" + s.title + "»"); };
+  t.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); sub.focus(); } };
+  sub.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); if (s.blocks[0]) focusBlock(s.blocks[0].id); else addBlock(null, "p"); } };
+  $("#blocks").querySelectorAll(".blk").forEach(el => {
+    const id = el.dataset.id, b = s.blocks.find(x => x.id === id), body = el.querySelector(".body");
+    body.onfocus = () => el.classList.add("focus");
+    body.onblur = () => { el.classList.remove("focus"); if (pendingRender) setTimeout(() => { if (!document.activeElement.isContentEditable) render(); }, 50); };
+    body.oninput = () => {
+      b.text = body.innerText.replace(/\n$/, "");
+      if (b.text === "/" ) openSlash(el, b);
+      scheduleSave("«" + s.title + "»");
+    };
+    body.onkeydown = e => keyInBlock(e, s, b, body);
+    body.onpaste = e => { e.preventDefault(); document.execCommand("insertText", false, e.clipboardData.getData("text/plain")); };
+  });
+  $("#blocks").onclick = e => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.notes) openDrawer(t.dataset.notes);
+    else if (t.dataset.add) addBlock(t.dataset.add, "p");
+    else if (t.dataset.menu) openBlockMenu(t, s, s.blocks.find(x => x.id === t.dataset.menu));
+    else if (t.dataset.chk) { const b = s.blocks.find(x => x.id === t.dataset.chk); b.checked = !b.checked; scheduleSave("«" + s.title + "»"); render(); }
+  };
+}
+
+function caretAtStart(el) { const s = getSelection(); if (!s.rangeCount) return false; const r = s.getRangeAt(0).cloneRange(); r.selectNodeContents(el); r.setEnd(s.getRangeAt(0).startContainer, s.getRangeAt(0).startOffset); return r.toString().length === 0; }
+function keyInBlock(e, s, b, body) {
+  if (menuEl && menuEl.dataset.slash) {
+    const items = [...menuEl.querySelectorAll("button")]; let i = items.findIndex(x => x.classList.contains("act"));
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); items.forEach(x => x.classList.remove("act")); i = (i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length; items[i].classList.add("act"); return; }
+    if (e.key === "Enter") { e.preventDefault(); items[Math.max(i, 0)].click(); return; }
+    if (e.key === "Escape") { closeMenu(); return; }
+  }
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    const next = (b.type === "li" || b.type === "todo") && b.text ? b.type : "p";
+    if ((b.type === "li" || b.type === "todo") && !b.text) { b.type = "p"; scheduleSave(); render(); focusBlock(b.id); return; }
+    addBlock(b.id, next);
+  } else if (e.key === "Backspace" && caretAtStart(body) && !body.innerText.replace(/\n/g, "")) {
+    e.preventDefault();
+    if (b.type !== "p") { b.type = "p"; scheduleSave(); render(); focusBlock(b.id); return; }
+    const i = s.blocks.indexOf(b); if (s.blocks.length < 2) return;
+    s.blocks.splice(i, 1); scheduleSave("«" + s.title + "»"); render();
+    const prev = s.blocks[Math.max(i - 1, 0)]; if (prev) focusBlock(prev.id, true);
+  } else if (e.key === "ArrowUp" && caretAtStart(body)) {
+    const i = s.blocks.indexOf(b); if (i > 0) { e.preventDefault(); focusBlock(s.blocks[i - 1].id, true); }
+  } else if (e.key === "ArrowDown") {
+    const sel = getSelection(); const r = document.createRange(); r.selectNodeContents(body); r.setStart(sel.getRangeAt(0).endContainer, sel.getRangeAt(0).endOffset);
+    if (!r.toString().length) { const i = s.blocks.indexOf(b); if (i < s.blocks.length - 1) { e.preventDefault(); focusBlock(s.blocks[i + 1].id); } }
+  }
+}
+function focusBlock(id, end) {
+  const el = document.querySelector(`.blk[data-id="${id}"] .body`); if (!el || !el.isContentEditable) return;
+  el.focus(); const r = document.createRange(); r.selectNodeContents(el); r.collapse(!end); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function addBlock(afterId, type) {
+  const s = sec(view.id); const b = B(type, "");
+  const i = afterId ? s.blocks.findIndex(x => x.id === afterId) + 1 : s.blocks.length;
+  s.blocks.splice(i, 0, b); scheduleSave("«" + s.title + "»"); render(); focusBlock(b.id);
+}
+
+/* ---------- menus ---------- */
+const TYPES = [["p", "¶", "Текст"], ["h2", "H", "Большой заголовок"], ["h3", "h", "Подзаголовок"], ["li", "•", "Список"], ["todo", "☐", "Задача"], ["rule", "🐾", "Правило"], ["q", "❝", "Цитата / референс"], ["hr", "—", "Разделитель"]];
+function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; } }
+function placeMenu(m, x, y) { document.body.appendChild(m); const r = m.getBoundingClientRect(); m.style.left = Math.min(x, innerWidth - r.width - 12) + "px"; m.style.top = Math.min(y, innerHeight - r.height - 12) + "px"; menuEl = m; }
+function openSlash(el, b) {
+  closeMenu(); const m = document.createElement("div"); m.className = "menu"; m.dataset.slash = 1;
+  m.innerHTML = TYPES.map(([t, ic, name], i) => `<button class="${i ? "" : "act"}" data-t="${t}"><span class="ic">${ic}</span>${name}</button>`).join("");
+  m.onclick = e => { const t = e.target.closest("button"); if (!t) return; b.type = t.dataset.t; b.text = ""; closeMenu(); scheduleSave(); render(); if (b.type === "hr") addBlock(b.id, "p"); else focusBlock(b.id); };
+  const r = el.getBoundingClientRect(); placeMenu(m, r.left + 20, r.bottom + 4);
+}
+function openBlockMenu(btn, s, b) {
+  closeMenu(); const m = document.createElement("div"); m.className = "menu";
+  m.innerHTML = `<button data-a="note"><span class="ic">💬</span>Заметки к этому месту</button><hr>` +
+    TYPES.map(([t, ic, name]) => `<button data-t="${t}"><span class="ic">${ic}</span>${name}${b.type === t ? " ✓" : ""}</button>`).join("") +
+    `<hr><button data-a="up"><span class="ic">↑</span>Выше</button><button data-a="down"><span class="ic">↓</span>Ниже</button><button data-a="dup"><span class="ic">⧉</span>Дублировать</button><button data-a="link"><span class="ic">🔗</span>Ссылка на место</button><hr><button data-a="del" class="danger"><span class="ic">✕</span>Удалить</button>`;
+  m.onclick = e => {
+    const t = e.target.closest("button"); if (!t) return; const i = s.blocks.indexOf(b); closeMenu();
+    if (t.dataset.t) { b.type = t.dataset.t; }
+    else if (t.dataset.a === "note") return openDrawer(b.id);
+    else if (t.dataset.a === "up" && i > 0) s.blocks.splice(i - 1, 0, s.blocks.splice(i, 1)[0]);
+    else if (t.dataset.a === "down" && i < s.blocks.length - 1) s.blocks.splice(i + 1, 0, s.blocks.splice(i, 1)[0]);
+    else if (t.dataset.a === "dup") s.blocks.splice(i + 1, 0, { ...clone(b), id: uid(), notes: [] });
+    else if (t.dataset.a === "link") { navigator.clipboard.writeText(location.origin + location.pathname + "#s=" + s.id + "&b=" + b.id).then(() => toast("Ссылка скопирована")); return; }
+    else if (t.dataset.a === "del") { if ((b.notes || []).length && !confirm("У блока есть заметки. Удалить вместе с ними?")) return; s.blocks.splice(i, 1); if (!s.blocks.length) s.blocks.push(B("p", "")); }
+    scheduleSave("«" + s.title + "»"); render();
+  };
+  const r = btn.getBoundingClientRect(); placeMenu(m, r.left, r.bottom + 4);
+}
+const EMOJI = "🐱🐾🐈😺😸🙀🧶🐟🥛🏡🌳🌙⭐🎮⚙️👥📈🎨🖥️🗓️💡🔥🎵🗺️🏆🎁🧩🛠️📦❓".match(/\p{Extended_Pictographic}️?/gu);
+function pickEmoji(e) {
+  closeMenu(); const s = sec(view.id); const m = document.createElement("div"); m.className = "menu";
+  m.style.cssText = "display:grid;grid-template-columns:repeat(8,1fr);gap:2px;min-width:0";
+  m.innerHTML = EMOJI.map(x => `<button style="justify-content:center;font-size:20px;padding:6px">${x}</button>`).join("");
+  m.onclick = ev => { const t = ev.target.closest("button"); if (!t) return; s.emoji = t.textContent; closeMenu(); scheduleSave(); render(); };
+  placeMenu(m, e.clientX, e.clientY + 10);
+}
+document.addEventListener("mousedown", e => { if (menuEl && !menuEl.contains(e.target) && !e.target.closest("[data-menu]")) closeMenu(); });
+
+/* ---------- notes drawer ---------- */
+function findBlock(id) { for (const s of doc.sections) { const b = s.blocks.find(x => x.id === id); if (b) return [s, b]; } return [null, null]; }
+function openDrawer(id) {
+  if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
+  drawerBlock = id; renderDrawer(); $("#drawer").classList.add("open");
+  const f = () => { const t = $("#drawer textarea"); if (t) t.focus({ preventScroll: true }); };
+  f(); setTimeout(f, 240);
+}
+function closeDrawer() { drawerBlock = null; $("#drawer").classList.remove("open"); }
+function renderDrawer() {
+  const [s, b] = findBlock(drawerBlock); if (!b) return closeDrawer();
+  b.notes = b.notes || [];
+  const list = [...b.notes].sort((x, y) => (x.resolved - y.resolved) || (x.ts - y.ts));
+  $("#drawer").innerHTML = `
+    <div class="dr-head"><h3>Заметки</h3><button class="x" onclick="closeDrawer()">×</button></div>
+    <div class="dr-quote">${esc(s.emoji)} ${esc(s.title)}${b.text ? " · " + esc(b.text.slice(0, 220)) : ""}</div>
+    <div class="dr-list">${list.length ? list.map(n => `
+      <div class="note ${n.resolved ? "resolved" : ""}" data-n="${n.id}">
+        <div class="meta"><span class="who">${esc(n.author)}</span><span>${fmt(n.ts)}</span>${n.resolved ? "<span>· решено</span>" : ""}</div>
+        <div class="txt">${esc(n.text)}</div>
+        <div class="acts"><button data-r="${n.id}">${n.resolved ? "Открыть снова" : "✓ Решено"}</button><button data-e="${n.id}">Изменить</button><button data-d="${n.id}">Удалить</button></div>
+      </div>`).join("") : `<div class="empty">Пока нет заметок.<br>Опишите, как это место должно работать.</div>`}</div>
+    <div class="dr-new"><textarea placeholder="Как это должно работать, идея, вопрос…"></textarea>
+      <div class="row"><button class="btn" id="noteAdd">Добавить</button><span style="color:var(--ink3);font-size:13px">Ctrl+Enter</span></div></div>`;
+  const ta = $("#drawer textarea");
+  const add = () => { const t = ta.value.trim(); if (!t) return; b.notes.push({ id: uid(), author: me(), text: t, ts: Date.now(), resolved: false }); scheduleSave("заметка в «" + s.title + "»"); render(); renderDrawer(); };
+  $("#noteAdd").onclick = add;
+  ta.onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) add(); if (e.key === "Escape") closeDrawer(); };
+  $("#drawer .dr-list").onclick = e => {
+    const t = e.target.closest("button"); if (!t) return;
+    const n = b.notes.find(x => x.id === (t.dataset.r || t.dataset.e || t.dataset.d));
+    if (t.dataset.r) n.resolved = !n.resolved;
+    if (t.dataset.d) { if (!confirm("Удалить заметку?")) return; b.notes.splice(b.notes.indexOf(n), 1); }
+    if (t.dataset.e) { const v = prompt("Текст заметки", n.text); if (v === null) return; n.text = v; n.edited = Date.now(); }
+    scheduleSave("заметка в «" + s.title + "»"); render(); renderDrawer();
+  };
+}
+
+/* ---------- other views ---------- */
+function renderNotes() {
+  const rows = [];
+  doc.sections.forEach(s => s.blocks.forEach(b => (b.notes || []).forEach(n => { if (tab === "all" || (tab === "open") !== n.resolved) rows.push({ s, b, n }); })));
+  rows.sort((a, b) => b.n.ts - a.n.ts);
+  $("#page").innerHTML = `<div class="page-emoji">💬</div><h1 class="title">Заметки</h1><p class="subtitle">Все идеи и вопросы по диз-доку в одном месте</p>
+    <div class="tabs">${[["open", "Открытые"], ["done", "Решённые"], ["all", "Все"]].map(([k, t]) => `<button class="${tab === k ? "on" : ""}" onclick="tab='${k}';render()">${t}</button>`).join("")}</div>
+    <div class="card-list">${rows.length ? rows.map(r => `<div class="ncard" onclick="jump('${r.s.id}','${r.b.id}')">
+      <div class="where">${esc(r.s.emoji)} ${esc(r.s.title)}${r.b.text ? " · " + esc(r.b.text.slice(0, 80)) : ""}</div>
+      <div class="txt">${esc(r.n.text)}</div>
+      <div class="where" style="margin:8px 0 0">${esc(r.n.author)} · ${fmt(r.n.ts)}${r.n.resolved ? " · решено" : ""}</div></div>`).join("") : `<div class="empty">Здесь пусто</div>`}</div>`;
+}
+function jump(sid, bid) {
+  go({ kind: "sec", id: sid });
+  const el = document.querySelector(`.blk[data-id="${bid}"]`);
+  if (el) { el.scrollIntoView({ block: "center" }); el.style.transition = "background .8s"; el.style.background = "var(--accent-soft)"; setTimeout(() => el.style.background = "", 1400); }
+  if (bid) openDrawer(bid);
+}
+async function renderHist() {
+  $("#page").innerHTML = `<div class="page-emoji">🕘</div><h1 class="title">История правок</h1><p class="subtitle">Кто и когда менял диз-док</p><div class="hist" id="hist"><div class="empty">Загружаю…</div></div>`;
+  try {
+    const r = await api("/commits?path=" + CFG.path + "&per_page=40"); const j = await r.json();
+    $("#hist").innerHTML = j.map(c => `<div class="h"><div class="d">${fmt(c.commit.author.date)}</div><div>${esc(c.commit.message)}</div></div>`).join("");
+  } catch (e) { $("#hist").innerHTML = `<div class="empty">Не удалось загрузить</div>`; }
+}
+function renderSearch(q) {
+  const ql = q.toLowerCase(), hits = [];
+  const hl = t => esc(t).replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), m => `<mark>${m}</mark>`);
+  doc.sections.forEach(s => {
+    if ((s.title + " " + (s.subtitle || "")).toLowerCase().includes(ql)) hits.push({ s, b: null, t: s.subtitle || "" });
+    s.blocks.forEach(b => { if ((b.text || "").toLowerCase().includes(ql)) hits.push({ s, b, t: b.text }); (b.notes || []).forEach(n => { if (n.text.toLowerCase().includes(ql)) hits.push({ s, b, t: "💬 " + n.text }); }); });
+  });
+  $("#page").innerHTML = `<h1 class="title" style="font-size:32px">Поиск: «${esc(q)}»</h1><p class="subtitle">${hits.length} совпадений</p>
+    <div class="card-list">${hits.map(h => `<div class="ncard" onclick="$('#q').value='';jump('${h.s.id}',${h.b ? `'${h.b.id}'` : "null"});${h.b ? "" : "closeDrawer()"}"><div class="where">${esc(h.s.emoji)} ${esc(h.s.title)}</div><div class="txt">${hl(h.t.slice(0, 260))}</div></div>`).join("") || `<div class="empty">Ничего не нашлось</div>`}</div>`;
+}
+
+function addSection() {
+  const s = { id: uid(), emoji: "📄", title: "", subtitle: "", blocks: [B("p", "")] };
+  doc.sections.push(s); scheduleSave("новый раздел"); go({ kind: "sec", id: s.id }); $("#secTitle").focus();
+}
+function secMenuDelete() {}
+
+function modal(html, onOk) {
+  const bg = document.createElement("div"); bg.className = "modal-bg"; bg.innerHTML = `<div class="modal">${html}</div>`;
+  document.body.appendChild(bg); const inp = bg.querySelector("input"); if (inp) setTimeout(() => inp.focus(), 30);
+  const ok = () => { if (onOk(inp && inp.value.trim()) !== false) bg.remove(); };
+  bg.querySelector(".btn").onclick = ok; if (inp) inp.onkeydown = e => { if (e.key === "Enter") ok(); };
+  const c = bg.querySelector(".btn.ghost"); if (c) c.onclick = () => bg.remove();
+}
+function askName(force) {
+  if (!force && LS("cl_name")) return;
+  modal(`<h3>Как вас подписывать?</h3><p>Имя будет стоять рядом с вашими заметками и правками.</p><input placeholder="Имя" value="${esc(LS("cl_name") || "")}"><div class="row" style="margin-top:18px"><button class="btn">Готово</button></div>`,
+    v => { if (!v) return false; LSset("cl_name", v); renderNav(); });
+}
+function askKey() {
+  modal(`<h3>Общий диз-док</h3><p>Откройте ссылку доступа, которую вам прислали, или вставьте ключ.</p><input placeholder="Ключ доступа"><div class="row" style="margin-top:18px"><button class="btn">Подключить</button><button class="btn ghost">Отмена</button></div>`,
+    v => { if (!v) return false; LSset("cl_key", v); location.reload(); });
+}
+
+/* ---------- boot ---------- */
+$("#q").oninput = () => render();
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); $("#q").focus(); }
+  if (e.key === "Escape") { if (menuEl) closeMenu(); else if (drawerBlock) closeDrawer(); else if ($("#q").value) { $("#q").value = ""; render(); } }
+});
+window.addEventListener("beforeunload", e => { if (dirty && REMOTE) { e.preventDefault(); e.returnValue = ""; } });
+(async () => {
+  setSync("busy", "Загружаю…");
+  try { await load(); setSync("ok", REMOTE ? "Сохранено" : "Локальный режим"); }
+  catch (e) { doc = seed(); base = clone(doc); setSync("err", "Нет доступа к диз-доку (" + e.message + ")"); }
+  const target = new URLSearchParams(location.hash.slice(1));
+  view = { kind: "sec", id: doc.sections[0] && doc.sections[0].id };
+  render();
+  if (target.get("s")) jump(target.get("s"), target.get("b"));
+  askName(false);
+  if (REMOTE) setInterval(pull, 20000);
+})();
+</script>
+</body>
+</html>

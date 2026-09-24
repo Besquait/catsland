@@ -51,7 +51,6 @@ main{padding:44px 40px 120px}
 .card{background:var(--card);border:3px solid var(--edge);border-radius:14px 18px 12px 20px;padding:16px 20px 18px;box-shadow:var(--shadow);position:relative}
 .grid>.card:nth-child(4n+1){transform:rotate(-.35deg)} .grid>.card:nth-child(4n+2){transform:rotate(.4deg)}
 .grid>.card:nth-child(4n+3){transform:rotate(.25deg)} .grid>.card:nth-child(4n){transform:rotate(-.3deg)}
-.grid>.card:focus-within{transform:none}
 .card.wide{grid-column:1/-1}
 .card h3{margin:0 0 4px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
 .card .hint{font-size:13px;color:var(--ink3);margin:0 0 8px}
@@ -136,7 +135,6 @@ textarea.sub::placeholder{color:var(--ink3)}
 .rich li{margin:2px 0}
 .rich li::marker{font-weight:700;color:var(--accent)}
 .tb{display:none;gap:3px;flex-wrap:wrap;margin:-2px 0 8px}
-.card:focus-within .tb{display:flex}
 .tb button{min-width:28px;height:26px;padding:0 6px;border-radius:6px 8px 5px 7px;border:2px solid var(--line);font:700 13px/1 Rubik;color:var(--ink2);background:var(--bg)}
 .tb button:hover{border-color:var(--edge);background:var(--sun);color:#1B2350}
 .tb .f-italic{font-style:italic}.tb .f-underline{text-decoration:underline}.tb .f-strikeThrough{text-decoration:line-through}
@@ -257,6 +255,15 @@ th:hover .x,tr:hover .x,figure:hover .x,.lk:hover .x,.bch:hover .x{opacity:1}
 .tgrid button:hover{background:var(--sun);color:#1B2350;transform:rotate(-1deg) translate(-1px,-2px);box-shadow:3px 3px 0 var(--sh)}
 .tgrid span{font-size:24px}.tgrid b{font:800 15px/1.2 Rubik}.tgrid small{font-size:12px;color:var(--ink2)}
 @media (max-width:820px){.addbar{bottom:8px;padding:6px}.addbar>span{display:none}.addbar button{padding:6px 7px;font-size:12px}}
+.fbar{position:sticky;top:10px;z-index:25;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0 0 20px;padding:7px 10px;background:var(--card);
+  border:3px solid var(--edge);border-radius:12px 16px 11px 14px;box-shadow:4px 4px 0 var(--sh)}
+.fbar button{min-width:32px;height:30px;padding:0 8px;border-radius:7px 9px 6px 8px;border:2px solid var(--line);font:700 14px/1 Rubik;color:var(--ink);background:var(--bg);transition:opacity .15s}
+.fbar button:hover{border-color:var(--edge);background:var(--sun);color:#1B2350}
+.fbar button.act{border-color:var(--edge);background:var(--sun);color:#1B2350;box-shadow:2px 2px 0 var(--sh)}
+.fbar.off button{opacity:.4}
+.fbar .tbh{margin-left:auto}
+.fbar .f-italic{font-style:italic}.fbar .f-underline{text-decoration:underline}.fbar .f-strikeThrough{text-decoration:line-through}.fbar .f-mark{background:#FFE58A}
+@media (max-width:820px){.fbar{top:62px}.fbar .tbh{display:none}}
 </style>
 </head>
 <body>
@@ -512,7 +519,8 @@ const plainOf = h => new DOMParser().parseFromString(h, "text/html").body.textCo
 const plain = b => b.html ? plainOf(b.text) : (b.text || "");
 const TBAR = [["b", "bold", "Жирный (Ctrl+B)"], ["i", "italic", "Курсив (Ctrl+I)"], ["u", "underline", "Подчеркнуть (Ctrl+U)"], ["s", "strikeThrough", "Зачеркнуть"],
   ["🖍", "mark", "Маркер"], ["H", "h4", "Подзаголовок"], ["•", "insertUnorderedList", "Список"], ["1.", "insertOrderedList", "Нумерованный список"], ["⌫", "removeFormat", "Убрать оформление"]];
-const toolbar = () => `<div class="tb">${TBAR.map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}<span class="tbh">«/» — вставить блок</span></div>`;
+const toolbar = () => "";
+const fbar = () => `<div class="fbar off" id="fbar">${TBAR.map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}<span class="tbh">кликните в текст, чтобы оформить · «/» — вставить блок</span></div>`;
 function fmt(cmd) {
   const at = (getSelection().anchorNode || {}).parentElement;
   if (cmd === "mark") document.execCommand("hiliteColor", false, at?.closest("mark,span[style*=background]") ? "transparent" : "#FFE58A");
@@ -651,7 +659,7 @@ function render() {
       <textarea class="sub" rows="1" data-p="${path}.sub" placeholder="Подзаголовок — пара слов о странице">${esc(pg.sub)}</textarea>` +
       (isGame ? `<div class="status">${Object.entries(STATUS).map(([k, [t, c]]) => `<button class="${pg.status === k ? "on" : ""}" style="${pg.status === k ? "background:" + c : ""}" data-status="${k}">${t}</button>`).join("")}</div>
       <div class="tagrow">${TAGS.concat(pg.tags.filter(t => !TAGS.includes(t))).map(t => `<button class="${pg.tags.includes(t) ? "on" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}<button data-newtag>+ тег</button></div>` : "")
-      + blocksHTML() + `<div class="pageact"><button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button><button data-duppage>⧉ Дублировать страницу</button>
+      + fbar() + blocksHTML() + `<div class="pageact"><button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button><button data-duppage>⧉ Дублировать страницу</button>
       <button onclick="exportMD(true)">⬇ Скачать страницу (.md)</button><button class="danger" data-delpage>Удалить страницу</button></div>`;
   }
   P.querySelectorAll("textarea").forEach(grow);
@@ -723,7 +731,7 @@ function insertBlock(b, afterId) {
 }
 document.addEventListener("mousedown", e => {
   const f = e.target.closest && e.target.closest("[data-fmt]");
-  if (f) { e.preventDefault(); fmt(f.dataset.fmt); const r = f.closest(".card").querySelector(".rich"); r.dispatchEvent(new Event("input", { bubbles: true })); }
+  if (f) { e.preventDefault(); const r = document.activeElement; if (!r || !r.classList.contains("rich")) { toast("Сначала кликните в текст"); return; } fmt(f.dataset.fmt); r.dispatchEvent(new Event("input", { bubbles: true })); fstate(); }
 });
 document.addEventListener("paste", e => {
   const r = e.target.closest && e.target.closest(".rich");
@@ -774,6 +782,25 @@ document.addEventListener("click", e => {
   if (d.mv) { const [id, dir] = d.mv.split("|"); const i = bl.findIndex(x => x.id === id), j = i + +dir; if (j < 0 || j >= bl.length) return; bl.splice(j, 0, bl.splice(i, 1)[0]); save(label()); render(); return; }
   if (d.wide) { const b = bl.find(x => x.id === d.wide); b.wide = !b.wide; save(label()); render(); return; }
 });
+
+/* pinned format bar: lights up while a text block is focused, shows which styles are on */
+const FSTATE = { bold: "bold", italic: "italic", underline: "underline", strikeThrough: "strikeThrough", insertUnorderedList: "insertUnorderedList", insertOrderedList: "insertOrderedList" };
+function fstate() {
+  const bar = $("#fbar"); if (!bar) return;
+  const on = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("rich");
+  bar.classList.toggle("off", !on);
+  bar.querySelectorAll("[data-fmt]").forEach(b => {
+    const c = b.dataset.fmt, at = (getSelection().anchorNode || {}).parentElement;
+    let a = false;
+    if (on && FSTATE[c]) try { a = document.queryCommandState(c); } catch (e) {}
+    if (on && c === "mark") a = !!at?.closest("mark,span[style*=background]");
+    if (on && c === "h4") a = !!at?.closest("h4");
+    b.classList.toggle("act", a);
+  });
+}
+document.addEventListener("selectionchange", fstate);
+document.addEventListener("focusin", fstate);
+document.addEventListener("focusout", () => setTimeout(fstate, 0));
 
 /* drag & drop: blocks, board cards, game cards between status columns, image files */
 let drag = null;

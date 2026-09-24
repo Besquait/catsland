@@ -256,7 +256,7 @@ th:hover .x,tr:hover .x,figure:hover .x,.lk:hover .x,.bch:hover .x{opacity:1}
 .tgrid span{font-size:24px}.tgrid b{font:800 15px/1.2 Rubik}.tgrid small{font-size:12px;color:var(--ink2)}
 @media (max-width:820px){.addbar{bottom:8px;padding:6px}.addbar>span{display:none}.addbar button{padding:6px 7px;font-size:12px}}
 .fbar{position:fixed;bottom:16px;left:calc(50% + 143px);transform:translateX(-50%);z-index:30;display:flex;gap:8px;align-items:center;padding:8px 10px;
-  background:#1B2350;border:3px solid #1B2350;border-radius:14px 18px 12px 16px;box-shadow:5px 5px 0 var(--accent);max-width:calc(100vw - 32px)}
+  background:#1B2350;border:3px solid #1B2350;border-radius:14px 18px 12px 16px;box-shadow:0 6px 18px rgba(27,35,80,.25);max-width:calc(100vw - 32px)}
 .fgrp{display:flex;gap:4px;flex-wrap:wrap}
 .fbar button{min-width:34px;height:32px;padding:0 9px;border-radius:7px 9px 6px 8px;border:2px solid transparent;font:700 14px/1 Rubik;color:#FFF4E2;background:rgba(255,244,226,.1);transition:opacity .15s,background .1s}
 .fbar button:hover{background:#FFF4E2;color:#1B2350}
@@ -265,10 +265,11 @@ th:hover .x,tr:hover .x,figure:hover .x,.lk:hover .x,.bch:hover .x{opacity:1}
 .fbar .f-italic{font-style:italic}.fbar .f-underline{text-decoration:underline}.fbar .f-strikeThrough{text-decoration:line-through}
 .fbar .f-mark{color:#FFE58A}
 .fbar .sep{width:2px;align-self:stretch;background:rgba(255,244,226,.25);margin:2px 2px}
-.fbar .dadd{background:var(--sun);color:#1B2350;padding:0 14px;font-weight:800}
-.fbar .dadd:hover{background:#fff}
+.fbar .dadd{padding:0 12px}
 main{padding-bottom:140px}
 @media (max-width:820px){.fbar{left:50%;bottom:10px}.fgrp button{min-width:30px;padding:0 6px}}
+.it .itx{flex:1;min-width:0;min-height:25px;line-height:1.6;outline:none;padding:0}
+.it.done .itx{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--accent);text-decoration-thickness:2px}
 </style>
 </head>
 <body>
@@ -509,12 +510,11 @@ function clean(html) {
       if (n.nodeType === 3) { out.appendChild(document.createTextNode(n.nodeValue)); continue; }
       if (n.nodeType !== 1 || ["SCRIPT", "STYLE", "IFRAME", "OBJECT", "svg", "IMG"].includes(n.tagName)) continue;
       let tag = n.tagName;
-      if (tag === "SPAN" || tag === "FONT") {
-        const st = n.getAttribute("style") || "";
-        tag = /background-color:\s*rgb\(255, 229, 138\)/.test(st) ? "MARK" : /font-weight:\s*(bold|[6-9]00)/.test(st) ? "B" : /italic/.test(st) ? "I" : null;
-      }
-      if (tag && KEEP.has(tag)) walk(n, out.appendChild(document.createElement(tag)));
-      else walk(n, out);
+      const st = n.getAttribute("style") || "", marked = /background-color:\s*rgb\(255, 229, 138\)/.test(st);
+      if (tag === "SPAN" || tag === "FONT") tag = marked ? "MARK" : /font-weight:\s*(bold|[6-9]00)/.test(st) ? "B" : /italic/.test(st) ? "I" : null;
+      let into = tag && KEEP.has(tag) ? out.appendChild(document.createElement(tag)) : out;
+      if (marked && tag !== "MARK") into = into.appendChild(document.createElement("MARK"));   // marker applied on top of <b>, <i>, …
+      walk(n, into);
     }
     return out;
   };
@@ -523,8 +523,11 @@ function clean(html) {
 const richHTML = b => b.html ? clean(b.text) : esc(b.text).replace(/\n/g, "<br>");
 const plainOf = h => new DOMParser().parseFromString(h, "text/html").body.textContent;
 const plain = b => b.html ? plainOf(b.text) : (b.text || "");
-const TBAR = [["b", "bold", "Жирный (Ctrl+B)"], ["i", "italic", "Курсив (Ctrl+I)"], ["u", "underline", "Подчеркнуть (Ctrl+U)"], ["s", "strikeThrough", "Зачеркнуть"],
-  ["🖍", "mark", "Маркер"], ["H", "h4", "Подзаголовок"], ["•", "insertUnorderedList", "Список"], ["1.", "insertOrderedList", "Нумерованный список"], ["⌫", "removeFormat", "Убрать оформление"]];
+const TBAR = [["b", "bold", "Жирный — Ctrl+B"], ["i", "italic", "Курсив — Ctrl+I"], ["u", "underline", "Подчеркнуть — Ctrl+U"], ["s", "strikeThrough", "Зачеркнуть — Ctrl+Shift+S"],
+  ["🖍", "mark", "Маркер — Ctrl+Shift+H"], ["H", "h4", "Подзаголовок — Ctrl+Shift+1"], ["•", "insertUnorderedList", "Список — Ctrl+Shift+8"], ["1.", "insertOrderedList", "Нумерованный список — Ctrl+Shift+7"], ["⌫", "removeFormat", "Убрать оформление — Ctrl+\\"]];
+/* shortcuts by physical key (e.code), so they work on the Russian layout and never reach the browser */
+const KEYS = { KeyB: "bold", KeyI: "italic", KeyU: "underline", Backslash: "removeFormat" };
+const SKEYS = { KeyS: "strikeThrough", KeyX: "strikeThrough", KeyH: "mark", Digit1: "h4", Digit7: "insertOrderedList", Digit8: "insertUnorderedList" };
 const toolbar = () => "";
 const fbar = () => `<div class="fbar off" id="fbar"><div class="fgrp">${TBAR.map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}</div><span class="sep"></span><button class="dadd" data-dockadd title="Вставить блок (или «/» в пустой строке)">＋ Блок</button></div>`;
 function fmt(cmd) {
@@ -566,8 +569,9 @@ const blocksPath = () => pagePath() + ".blocks";
 const label = () => view === "games" ? "мини-игры" : (curPage() ? "«" + curPage().title + "»" : "диз-док");
 const lists = g => (g.blocks || []).filter(b => b.kind === "list").flatMap(b => b.items)
   .concat((g.blocks || []).filter(b => b.kind === "board").flatMap(b => b.cols.flatMap(c => c.cards.map(k => ({ t: k.t, done: /готов|сделано|done/i.test(c.t) })))));
-const openCount = g => lists(g).filter(i => !i.done && (i.t || "").trim()).length;
-const progress = g => { const it = lists(g).filter(i => (i.t || "").trim()); return it.length ? Math.round(100 * it.filter(i => i.done).length / it.length) : null; };
+const itemText = i => i.h ? plainOf(i.t || "") : (i.t || "");
+const openCount = g => lists(g).filter(i => !i.done && itemText(i).trim()).length;
+const progress = g => { const it = lists(g).filter(i => itemText(i).trim()); return it.length ? Math.round(100 * it.filter(i => i.done).length / it.length) : null; };
 const cover = g => { for (const b of g.blocks || []) if (b.kind === "images" && b.imgs.length) return b.imgs[0].src; return null; };
 const safeURL = u => /^https?:\/\//i.test(u || "") ? u : null;
 
@@ -577,7 +581,7 @@ function bodyHTML(p, b) {
     case "text": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Пишите здесь…")}">${richHTML(b)}</div>`;
     case "note": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Текст заметки")}">${richHTML(b)}</div>`;
     case "list": return `<div class="cl">${b.items.map(x => `<div class="it${x.done ? " done" : ""}"><input type="checkbox" data-chk="${p}.items|${x.id}" ${x.done ? "checked" : ""}>
-      <textarea rows="1" data-item="${p}.items|${x.id}" placeholder="${esc(b.ph || "Пункт")}">${esc(x.t)}</textarea><button class="del" data-del="${p}.items|${x.id}" title="Удалить">×</button></div>`).join("")}</div>
+      <div class="rich itx" contenteditable="true" data-item="${p}.items|${x.id}" data-ph="${esc(b.ph || "Пункт")}">${x.h ? clean(x.t) : esc(x.t)}</div><button class="del" data-del="${p}.items|${x.id}" title="Удалить">×</button></div>`).join("")}</div>
       <button class="add" data-addi="${p}.items">+ пункт</button>`;
     case "palette": return `<div class="sw">${b.colors.map(c => `<div class="s"><label style="background:${esc(c.c)}"><input type="color" value="${esc(c.c)}" data-col="${p}.colors|${c.id}"></label>
       <input class="n" value="${esc(c.n)}" data-p="${p}.colors.${c.id}.n"><button class="rm" data-del="${p}.colors|${c.id}">убрать</button></div>`).join("")}
@@ -686,7 +690,7 @@ function mdOf(pg) {
   for (const b of pg.blocks) {
     o += (b.kind === "heading" ? "## " : "### ") + (b.kind === "note" ? TONES[b.tone][0] + " " : "") + (b.title || "") + "\n\n";
     if (b.kind === "text" || b.kind === "note") o += (b.html ? md(b.text) : b.text) + "\n\n";
-    if (b.kind === "list") o += b.items.map(i => `- [${i.done ? "x" : " "}] ${i.t}`).join("\n") + "\n\n";
+    if (b.kind === "list") o += b.items.map(i => `- [${i.done ? "x" : " "}] ${i.h ? md(i.t) : i.t}`).join("\n") + "\n\n";
     if (b.kind === "palette") o += b.colors.map(c => `- ${c.n}: ${c.c}`).join("\n") + "\n\n";
     if (b.kind === "table" && b.cols.length) o += "| " + b.cols.map(c => c.t).join(" | ") + " |\n|" + b.cols.map(() => " --- |").join("") + "\n" + b.rows.map(r => "| " + b.cols.map(c => ((r.c || {})[c.id] || "").replace(/\n/g, " ")).join(" | ") + " |").join("\n") + "\n\n";
     if (b.kind === "links") o += b.links.map(l => `- [${l.t || l.u}](${l.u})`).join("\n") + "\n\n";
@@ -712,24 +716,32 @@ document.addEventListener("input", e => {
   if (t.tagName === "TEXTAREA") grow(t);
   if (d.rich) { setv(d.rich + ".text", clean(t.innerHTML)); setv(d.rich + ".html", true); slash(t); }
   else if (d.p) { setv(d.p, t.value); if (/\.(title)$/.test(d.p) && !d.p.includes(".blocks.") || /Label$/.test(d.p)) renderNav(); }
-  else if (d.item) { const [l, id] = pair(d.item); l.find(x => x.id === id).t = t.value; }
+  else if (d.item) { const [l, id] = pair(d.item); const x = l.find(x => x.id === id); if (t.isContentEditable) { x.t = clean(t.innerHTML); x.h = true; } else x.t = t.value; }
   else if (d.col) { const [l, id] = pair(d.col); l.find(x => x.id === id).c = t.value; t.parentElement.style.background = t.value; }
   else return;
   save(label());
 });
 document.addEventListener("keydown", e => {
   const d = e.target.dataset || {};
+  if (e.target.isContentEditable && (e.ctrlKey || e.metaKey) && !e.altKey) {
+    const cmd = (e.shiftKey ? SKEYS : KEYS)[e.code];
+    if (cmd) { e.preventDefault(); e.stopPropagation(); fmt(cmd); e.target.dispatchEvent(new Event("input", { bubbles: true })); fstate(); return; }
+  }
   if (menuEl && ["ArrowDown", "ArrowUp", "Enter", "Escape"].includes(e.key)) { menuKey(e); return; }
   if (d.rich && e.key === "Enter" && !e.shiftKey) autoList(e);
   if (e.target.tagName === "INPUT" && d.p && e.key === "Enter") e.target.blur();
   if (d.item && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); const [, id, p] = pair(d.item); addItem(p, id); }
-  if (d.item && e.key === "Backspace" && !e.target.value) {
+  if (d.item && e.key === "Backspace" && !(e.target.isContentEditable ? e.target.textContent : e.target.value)) {
     e.preventDefault(); const [l, id, p] = pair(d.item); const i = l.findIndex(x => x.id === id);
     l.splice(i, 1); save(label()); render(); const prev = l[Math.max(0, i - 1)]; if (prev) focusItem(p, prev.id);
   }
 });
 function addItem(p, after) { const l = get(p); const it = { id: uid(), t: "", done: false }; const i = after ? l.findIndex(x => x.id === after) + 1 : l.length; l.splice(i, 0, it); save(label()); render(); focusItem(p, it.id); }
-function focusItem(p, id) { const el = document.querySelector(`[data-item="${p}|${id}"]`); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
+function focusItem(p, id) {
+  const el = document.querySelector(`[data-item="${p}|${id}"]`); if (!el) return; el.focus();
+  if (el.isContentEditable) { const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  else el.setSelectionRange(el.value.length, el.value.length);
+}
 function insertBlock(b, afterId) {
   const bl = get(blocksPath()); const i = afterId ? bl.findIndex(x => x.id === afterId) + 1 : bl.length;
   bl.splice(i, 0, norm(b)); save(label() + ": новый блок"); render();

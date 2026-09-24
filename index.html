@@ -274,6 +274,36 @@ main{padding-bottom:140px}
 @media (max-width:820px){.fbar{left:50%;bottom:10px}.fgrp button{min-width:30px;padding:0 6px}}
 .it .itx{flex:1;min-width:0;min-height:25px;line-height:1.6;outline:none;padding:0}
 .it.done .itx{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--accent);text-decoration-thickness:2px}
+/* people online: avatars, cursors, who is typing where */
+main{position:relative}
+body.rt main{padding-top:70px}
+#who{position:fixed;top:14px;right:18px;z-index:36;display:flex;gap:6px;align-items:center;padding:5px 7px;background:var(--card);border:3px solid var(--edge);border-radius:13px 17px 12px 15px;box-shadow:3px 3px 0 var(--sh);transform:rotate(.6deg)}
+#who:empty{display:none}
+.av{position:relative;width:32px;height:32px;border-radius:50%;border:2.5px solid var(--edge);color:#1B2350;font:800 12px/1 Rubik,sans-serif;display:grid;place-items:center;padding:0;transition:transform .08s}
+.av:hover{transform:translateY(-2px) rotate(-4deg)}
+.av.me{box-shadow:0 0 0 2px var(--card),0 0 0 4.5px var(--edge)}
+.av:hover::after{content:attr(data-tip);position:absolute;top:42px;right:-6px;white-space:pre;text-align:right;background:var(--ink);color:#FFF4E2;font:700 11px/1.45 "Martian Mono",monospace;padding:6px 9px;border-radius:8px 10px 7px 9px;pointer-events:none;z-index:2}
+#rtl{position:absolute;inset:0;pointer-events:none;z-index:25;overflow:hidden}
+.rtc{position:absolute;left:0;top:0;transition:transform 80ms linear,opacity .2s;will-change:transform}
+.rtc svg{display:block;filter:drop-shadow(1.5px 1.5px 0 rgba(27,35,80,.35))}
+.rtc span,.rtt{position:absolute;white-space:nowrap;color:#1B2350;border:2px solid var(--edge);font:700 11px/1 "Martian Mono",monospace;padding:4px 7px 3px;border-radius:6px 8px 5px 7px}
+.rtc span{left:14px;top:19px}
+.rtc.off{opacity:0}
+.rtt{transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--sh)}
+/* changes by others since your last visit: soft wash of the author's colour */
+.unseen{--ut:color-mix(in srgb,var(--uc) 15%,transparent);background-image:linear-gradient(var(--ut),var(--ut))!important}
+.unseen .unseen{background-image:none!important}
+.card.unseen{box-shadow:inset 5px 0 0 var(--uc),var(--shadow)}
+.hblock.unseen,.head.unseen{position:relative;border-radius:8px 8px 0 0;box-shadow:inset 5px 0 0 var(--uc);padding-left:10px}
+.it.unseen,.kc.unseen{position:relative;border-radius:6px}
+.it.unseen{box-shadow:inset 3px 0 0 var(--uc);padding-left:8px}
+.kc.unseen{box-shadow:inset 4px 0 0 var(--uc),2px 2px 0 var(--sh)}
+.unseen[data-mt]::after{content:attr(data-mt);position:absolute;right:12px;bottom:-11px;z-index:3;white-space:nowrap;pointer-events:none;color:#1B2350;
+  background:color-mix(in srgb,var(--uc) 30%,#FFF4E2);border:2px solid var(--edge);border-radius:6px 8px 5px 7px;padding:3px 7px 2px;font:700 10px/1.2 "Martian Mono",monospace;transform:rotate(-1deg);opacity:.85}
+.it.unseen::after,.kc.unseen::after{opacity:0;transition:opacity .12s;bottom:auto;top:-16px}
+.it.unseen:hover::after,.kc.unseen:hover::after{opacity:1}
+.nl .new{width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--edge);flex:none}
+@media (max-width:820px){#who{top:12px;right:12px}body.rt main{padding-top:72px}}
 </style>
 </head>
 <body>
@@ -287,6 +317,8 @@ const CFG = { repo: "Besquait/catsland-gdd", branch: "main", path: "data/gdd.jso
 const H = new URLSearchParams(location.hash.slice(1));
 const LS = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const LSset = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
+const SS = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
+const SSset = (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} };
 if (H.get("k")) { LSset("cl_key", H.get("k")); history.replaceState(null, "", location.pathname); }
 const KEY = H.get("k") || LS("cl_key");
 const REMOTE = !!KEY;
@@ -443,7 +475,9 @@ async function load() {
 function save(msg) {
   if (msg) what.add(msg);
   if (!REMOTE) { sync(LSset("cl_doc2", JSON.stringify(doc)) ? "" : "err", LSset("cl_doc2", JSON.stringify(doc)) ? "Сохранено в этом браузере" : "Не влезло в память браузера"); return; }
+  stamp();
   dirty = true; sync("busy", "Сохраняю…"); clearTimeout(timer); timer = setTimeout(push, 1200);
+  RT.saved();
 }
 async function push() {
   if (saving) { timer = setTimeout(push, 700); return; }
@@ -457,7 +491,7 @@ async function push() {
       if (r.ok) { sha = (await r.json()).content.sha; base = snap; what.clear(); dirty = JSON.stringify(doc) !== JSON.stringify(snap); sync("", "Сохранено"); if (dirty) timer = setTimeout(push, 500); return; }
       if (r.status !== 409 && r.status !== 422) throw new Error("GitHub " + r.status);
       const g = await api("/contents/" + CFG.path + "?ref=" + CFG.branch); const j = await g.json();
-      const remote = migrate(JSON.parse(dec(j.content))); doc = merge(base, doc, remote); base = remote; sha = j.sha;
+      const remote = migrate(JSON.parse(dec(j.content))); doc = merge(base, doc, remote); base = remote; sha = j.sha; sigSync();
       if (!typing()) render();
     }
   } catch (e) { sync("err", "Не сохранено: " + e.message); timer = setTimeout(push, 8000); }
@@ -467,7 +501,7 @@ async function pull() {
   if (!REMOTE || dirty || saving || typing()) return;
   const r = await api("/contents/" + CFG.path + "?ref=" + CFG.branch); if (!r.ok) return;
   const j = await r.json(); if (j.sha === sha) return;
-  sha = j.sha; doc = migrate(JSON.parse(dec(j.content))); base = clone(doc); render();
+  sha = j.sha; doc = migrate(JSON.parse(dec(j.content))); base = clone(doc); sigSync(); render();
 }
 const typing = () => { const a = document.activeElement; return a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT" || a.isContentEditable); };
 
@@ -573,7 +607,7 @@ function autoList(e) {
 /* ===== ui helpers ===== */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const me = () => LS("cl_name") || "Гость";
+const me = () => SS("cl_name") || LS("cl_name") || "Гость";
 function sync(cls, t) { const el = $("#syncT"); if (!el) return; el.textContent = t; $("#syncI").className = cls; }
 function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 2200); }
 let view = LS("cl_view") || "intro", q = "", gview = LS("cl_gview") || "gallery";
@@ -598,7 +632,7 @@ function bodyHTML(p, b) {
   switch (b.kind) {
     case "text": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Пишите здесь…")}">${richHTML(b)}</div>`;
     case "note": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Текст заметки")}">${richHTML(b)}</div>`;
-    case "list": return `<div class="cl">${b.items.map(x => `<div class="it${x.done ? " done" : ""}"><input type="checkbox" data-chk="${p}.items|${x.id}" ${x.done ? "checked" : ""}>
+    case "list": return `<div class="cl">${b.items.map(x => `<div class="it${x.done ? " done" : ""}${unA(x)[0]}"${unA(x)[1]}><input type="checkbox" data-chk="${p}.items|${x.id}" ${x.done ? "checked" : ""}>
       <div class="rich itx" contenteditable="true" data-item="${p}.items|${x.id}" data-ph="${esc(b.ph || "Пункт")}">${x.h ? clean(x.t) : esc(x.t)}</div><button class="del" data-del="${p}.items|${x.id}" title="Удалить">×</button></div>`).join("")}</div>
       <button class="add" data-addi="${p}.items">+ пункт</button>`;
     case "palette": return `<div class="sw">${b.colors.map(c => `<div class="s"><label style="background:${esc(c.c)}"><input type="color" value="${esc(c.c)}" data-col="${p}.colors|${c.id}"></label>
@@ -614,7 +648,7 @@ function bodyHTML(p, b) {
       <input data-p="${p}.links.${l.id}.t" value="${esc(l.t)}" placeholder="Название"><input class="u" data-p="${p}.links.${l.id}.u" value="${esc(l.u)}" placeholder="https://…">
       <button class="x" data-del="${p}.links|${l.id}">×</button></div>`).join("")}</div><button class="add" data-push="${p}.links|link">+ ссылка</button>`;
     case "board": return `<div class="board">${b.cols.map((c, ci) => `<div class="bcol" data-kcol="${p}.cols.${c.id}.cards"><div class="bch"><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><span class="cnt">${c.cards.length}</span>
-      <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${c.cards.map(k => `<div class="kc" draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(k.t)}</textarea>
+      <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${c.cards.map(k => `<div class="kc${unA(k)[0]}"${unA(k)[1]} draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(k.t)}</textarea>
       <div class="kctl"><button data-kmove="${p}|${c.id}|${k.id}|-1" ${ci ? "" : "disabled"}>←</button><button data-kmove="${p}|${c.id}|${k.id}|1" ${ci < b.cols.length - 1 ? "" : "disabled"}>→</button><button data-del="${p}.cols.${c.id}.cards|${k.id}">×</button></div></div>`).join("")}
       <button class="add" data-push="${p}.cols.${c.id}.cards|card">+ карточка</button></div>`).join("")}<button class="addcol" data-push="${p}.cols|kcol" title="Добавить колонку">+</button></div>`;
   }
@@ -624,10 +658,11 @@ function blockHTML(bp, b, i, n) {
   const p = bp + "." + b.id;
   const ctl = `<div class="bc"><span class="drag" draggable="true" data-bdrag="${b.id}" title="Перетащить">⠿</span><button data-mv="${b.id}|-1" title="Выше" ${i ? "" : "disabled"}>↑</button><button data-mv="${b.id}|1" title="Ниже" ${i < n - 1 ? "" : "disabled"}>↓</button>
     ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}<button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
-  if (b.kind === "heading") return `<div class="hblock" data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${ctl}</div>`;
+  const [uc, ua] = unA(b);
+  if (b.kind === "heading") return `<div class="hblock${uc}"${ua} data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${ctl}</div>`;
   const cnt = b.kind === "list" && b.items.length ? `<span class="cnt">${b.items.filter(x => x.done).length}/${b.items.length}</span>` : "";
   const tone = b.kind === "note" ? `<button class="tone" data-tone="${p}" title="Сменить тип заметки">${TONES[b.tone]?.[0] || "💡"}</button>` : "";
-  return `<div class="card k-${b.kind}${b.kind === "note" ? " t-" + b.tone : ""}${b.wide ? " wide" : ""}" data-block="${b.id}">
+  return `<div class="card k-${b.kind}${b.kind === "note" ? " t-" + b.tone : ""}${b.wide ? " wide" : ""}${uc}"${ua} data-block="${b.id}">
     <div class="bh">${tone}<input class="bt" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок">${cnt}${ctl}</div>${bodyHTML(p, b)}</div>`;
 }
 function blocksHTML() {
@@ -641,7 +676,7 @@ function blocksHTML() {
 const hit = pg => !q || JSON.stringify(pg).toLowerCase().includes(q);
 function navItem(x, dot) {
   const oc = openCount(x);
-  return `<div class="nl ${view === x.id ? "on" : ""}" data-go="${x.id}">${dot ? `<span class="dot" style="background:${STATUS[x.status][1]}"></span>` : ""}<span class="t">${esc(x.emoji)} ${esc(x.title) || "Без названия"}</span>${oc ? `<span class="c" title="Открытых пунктов">${oc}</span>` : ""}</div>`;
+  return `<div class="nl ${view === x.id ? "on" : ""}" data-go="${x.id}">${dot ? `<span class="dot" style="background:${STATUS[x.status][1]}"></span>` : ""}<span class="t">${esc(x.emoji)} ${esc(x.title) || "Без названия"}</span>${pageUnseen(x) ? `<span class="new" title="Есть новые правки"></span>` : ""}${oc ? `<span class="c" title="Открытых пунктов">${oc}</span>` : ""}</div>`;
 }
 function renderNav() {
   const f = document.activeElement && document.activeElement.id === "search";
@@ -654,6 +689,7 @@ function renderNav() {
     ${doc.games.filter(hit).map(x => navItem(x, true)).join("")}
     <div class="foot"><div class="sync"><i id="syncI"></i><span id="syncT">${REMOTE ? "Сохранено" : "Только этот браузер"}</span></div>
       <div>Вы: <a onclick="askName(true)">${esc(me())}</a></div>
+      ${anyUnseen() ? `<a onclick="markAllSeen()">Отметить всё прочитанным</a>` : ""}
       <a onclick="exportMD()">Скачать весь диз-док (.md)</a>
       ${REMOTE ? `<a onclick="share()">Скопировать ссылку для своих</a>` : `<a onclick="askKey()">Подключить общий диз-док</a>`}</div>`;
   if (f) { const s = $("#search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
@@ -670,7 +706,7 @@ function gameCard(g) {
 function render() {
   closeMenu();
   if (view !== "games" && !curPage()) view = doc.pages[0] ? doc.pages[0].id : "games";
-  LSset("cl_view", view);
+  LSset("cl_view", view); enterView();
   renderNav();
   const P = $("#page");
   const banner = REMOTE ? "" : `<div class="banner">Сейчас правки сохраняются только в этом браузере. <a onclick="askKey()">Подключить общий диз-док</a></div>`;
@@ -683,7 +719,8 @@ function render() {
           ${gs.filter(g => g.status === k).map(gameCard).join("")}</div>`).join("")}</div><p class="hint2">Перетащите карточку в другую колонку, чтобы сменить статус</p>`);
   } else {
     const pg = curPage(), isGame = where(view) === "games", path = pagePath();
-    P.innerHTML = banner + `<div class="head"><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"></div>
+    const [hc, ha] = unA(pg);
+    P.innerHTML = banner + `<div class="head${hc}"${ha}><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"></div>
       <textarea class="sub" rows="1" data-p="${path}.sub" placeholder="Подзаголовок — пара слов о странице">${esc(pg.sub)}</textarea>` +
       (isGame ? `<div class="status">${Object.entries(STATUS).map(([k, [t, c]]) => `<button class="${pg.status === k ? "on" : ""}" style="${pg.status === k ? "background:" + c : ""}" data-status="${k}">${t}</button>`).join("")}</div>
       <div class="tagrow">${TAGS.concat(pg.tags.filter(t => !TAGS.includes(t))).map(t => `<button class="${pg.tags.includes(t) ? "on" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}<button data-newtag>+ тег</button></div>` : "")
@@ -693,8 +730,13 @@ function render() {
   $("#dock").innerHTML = view === "games" ? "" : fbar(); fstate();
   P.querySelectorAll("textarea").forEach(grow);
   showImages(P);
+  RT.rendered();
 }
-function grow(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+function grow(t) { if (document.hidden) return; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+/* a tab in the background can be re-rendered by live changes: fit the text fields once it is visible again */
+let regrowQ = false;
+const regrow = () => { if (regrowQ || document.hidden) return; regrowQ = true; requestAnimationFrame(() => { regrowQ = false; document.querySelectorAll("#page textarea").forEach(grow); }); };
+document.addEventListener("visibilitychange", regrow); addEventListener("resize", regrow);
 
 /* ===== markdown export ===== */
 function mdOf(pg) {
@@ -932,8 +974,8 @@ function modal(html, ok) {
 }
 function askName(force) {
   if (!force && LS("cl_name")) return;
-  modal(`<h3>Как вас подписывать?</h3><p>Имя попадёт в историю правок.</p><input value="${esc(LS("cl_name") || "")}" placeholder="Имя"><button class="btn">Готово</button>`,
-    v => { if (!v) return false; LSset("cl_name", v); renderNav(); });
+  modal(`<h3>Как тебя зовут?</h3><p>Имя увидят все, кто сейчас в диз-доке, и оно попадёт в историю правок.</p><input value="${esc(LS("cl_name") || "")}" placeholder="Имя"><button class="btn">Готово</button>`,
+    v => { if (!v) return false; LSset("cl_name", v); SSset("cl_name", v); renderNav(); RT.hello(); });
 }
 function askKey() {
   const url = "https://github.com/settings/personal-access-tokens/new?name=catsland&target_name=Besquait&expires_in=none&contents=write";
@@ -943,13 +985,281 @@ function askKey() {
 function share() { const u = location.origin + location.pathname + "#k=" + KEY; navigator.clipboard.writeText(u).then(() => toast("Ссылка скопирована"), () => prompt("Ссылка", u)); }
 addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
 
+/* ===== who changed what: every edited page / block / item / card keeps m = {by, c, at};
+   what others changed since this browser last looked at a page gets a soft wash of the author's colour ===== */
+const PAL = ["#FF5C8A", "#12B5A6", "#FFC83D", "#B38BFF", "#3CC46A", "#F2553D", "#5EC8F2", "#FF9F43"];
+const TAB = SS("cl_tab") || (() => { const t = uid() + uid(); SSset("cl_tab", t); return t; })();
+const MYC = PAL[[...TAB].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % PAL.length];
+let SIG = null;
+function walkSig(fn) {
+  const bsig = b => JSON.stringify(b, (k, v) => k === "m" ? undefined : (k === "items" || k === "cards") && Array.isArray(v) ? v.map(x => x.id) : v);
+  for (const pg of doc.pages.concat(doc.games)) {
+    fn(pg, JSON.stringify([pg.title, pg.sub, pg.emoji, pg.status || "", pg.tags || []]));
+    for (const b of pg.blocks || []) {
+      fn(b, bsig(b));
+      if (b.kind === "list") b.items.forEach(x => fn(x, JSON.stringify([x.t, x.done, !!x.h])));
+      if (b.kind === "board") b.cols.forEach(c => c.cards.forEach(k => fn(k, JSON.stringify(k.t))));
+    }
+  }
+}
+function sigSync() { if (!REMOTE || !doc) return; SIG = new Map(); walkSig((o, s) => SIG.set(o.id, s)); }
+function stamp() {
+  if (!SIG) return sigSync();
+  const next = new Map(), m = { by: me(), c: MYC, at: Date.now() };
+  walkSig((o, s) => { next.set(o.id, s); if (SIG.get(o.id) !== s) o.m = Object.assign({}, m); });
+  SIG = next;
+}
+const SEENK = "cl_seen_" + CFG.repo;
+let SEEN = null; try { SEEN = JSON.parse(LS(SEENK)); } catch (e) {}
+const FIRST = !SEEN || typeof SEEN !== "object"; if (FIRST) SEEN = {};
+let visitView = null, visitSeen = 0;
+function seenNow(id) { if (!id) return; SEEN[id] = Date.now(); LSset(SEENK, JSON.stringify(SEEN)); }
+function enterView() { if (view === visitView) return; if (visitView) seenNow(visitView); visitView = view; visitSeen = SEEN[view] || 0; }
+addEventListener("pagehide", () => seenNow(visitView));
+const isNew = (o, since) => REMOTE && o && o.m && o.m.at > since && o.m.by !== me();
+const pageUnseen = pg => REMOTE && pg.id !== view && pageNewSince(pg, SEEN[pg.id] || 0);
+function pageNewSince(pg, s) {
+  return isNew(pg, s) || (pg.blocks || []).some(b => isNew(b, s) || (b.items || []).some(x => isNew(x, s)) || (b.kind === "board" && b.cols.some(c => c.cards.some(k => isNew(k, s)))));
+}
+function anyUnseen() {
+  if (!REMOTE || !doc) return false;
+  return doc.pages.concat(doc.games).some(pg => pageNewSince(pg, pg.id === view ? visitSeen : SEEN[pg.id] || 0));
+}
+function markAllSeen() { const n = Date.now(); doc.pages.concat(doc.games).forEach(p => SEEN[p.id] = n); LSset(SEENK, JSON.stringify(SEEN)); visitSeen = n; render(); }
+function ago(t) {
+  const s = (Date.now() - t) / 1000;
+  return s < 60 ? "только что" : s < 3600 ? Math.floor(s / 60) + " мин назад" : s < 86400 ? Math.floor(s / 3600) + " ч назад" : s < 7 * 86400 ? Math.floor(s / 86400) + " дн назад" : new Date(t).toLocaleDateString("ru");
+}
+const tagOf = m => m.by + " · изменил(а) " + ago(m.at);
+function unA(o) {
+  if (!isNew(o, visitSeen)) return ["", ""];
+  return [" unseen", ` style="--uc:${esc(o.m.c || "#FF5C8A")}" data-mt="${esc(tagOf(o.m))}"`];
+}
+
+/* ===== live collaboration: everyone with the edit link meets in one P2P room (derived from the key);
+   presence, cursors, who is typing where, live text and structure. Without it the site works as before. ===== */
+const RT = (() => {
+  const peers = new Map();
+  let room = null, A = {}, layer = null, bar = null, myFoc = null, lastHi = "", pendingRender = false, fromInput = false, docT = null, docDue = 0;
+  const nop = () => {};
+  const hi = () => ({ n: me(), c: MYC, v: view, t: view === "games" ? doc.gamesLabel : (curPage() || {}).title || "" });
+  const send = (a, d, to) => { try { const r = A[a] && A[a].send(d, to); if (r && r.catch) r.catch(nop); } catch (e) {} };
+  const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "?";
+  const keyOf = el => { const d = el && el.dataset; if (!d) return null; return d.rich ? "r:" + d.rich : d.item ? "i:" + d.item : d.p ? "p:" + d.p : null; };
+  const split = k => [k.slice(0, 1), k.slice(2)];
+  const elsOf = k => { const [t, p] = split(k), a = { r: "data-rich", i: "data-item", p: "data-p" }[t]; return a ? [...document.querySelectorAll(`[${a}="${CSS.escape(p)}"]`)] : []; };
+  function ownerOf(k) {
+    const [t, p] = split(k);
+    if (t === "i") { const [l, id] = pair(p); return l && l.find(x => x.id === id); }
+    if (t === "r") return get(p);
+    let m = p.match(/^(.*\.cards\.[^.]+)\.t$/); if (m) return get(m[1]);
+    m = p.match(/^(.*\.blocks\.[^.]+)/); if (m) return get(m[1]);
+    m = p.match(/^((?:pages|games)\.[^.]+)\.(title|sub)$/); if (m) return get(m[1]);
+    return null;
+  }
+  function valOf(k) {
+    const [t, p] = split(k);
+    if (t === "r") return (get(p) || {}).text;
+    if (t === "i") { const x = ownerOf(k); return x && x.t; }
+    return get(p);
+  }
+  const mainEl = () => document.querySelector("main");
+
+  /* --- UI: avatars, cursors, outlines --- */
+  function ui() {
+    if (!layer) { layer = document.createElement("div"); layer.id = "rtl"; mainEl().appendChild(layer); }
+    if (!bar) {
+      bar = document.createElement("div"); bar.id = "who"; document.body.appendChild(bar);
+      bar.onclick = e => {
+        const b = e.target.closest(".av"); if (!b) return;
+        if (b.classList.contains("me")) return askName(true);
+        const p = peers.get(b.dataset.peer); if (!p || !p.v) return;
+        if (p.v !== "games" && !where(p.v)) return toast("Эта страница ещё не загрузилась");
+        view = p.v; render();
+        const pg = $("#page"), top = pg.getBoundingClientRect().top + scrollY;
+        scrollTo({ top: p.cur && !p.cur.h ? Math.max(0, top + p.cur.y - innerHeight / 2) : 0 });
+      };
+    }
+    document.body.classList.add("rt");
+  }
+  function drawBar() {
+    if (!bar) return;
+    const self = hi();
+    bar.innerHTML = `<button class="av me" style="background:${esc(MYC)}" data-tip="${esc(self.n)} (ты)\n${esc(self.t)}\nНажми, чтобы сменить имя">${esc(initials(self.n))}</button>` +
+      [...peers].filter(([, p]) => p.n).map(([id, p]) => `<button class="av" style="background:${esc(p.c)}" data-peer="${esc(id)}" data-tip="${esc(p.n)}\n${esc(p.t || "")}">${esc(initials(p.n))}</button>`).join("");
+  }
+  const arrow = c => `<svg width="20" height="22" viewBox="0 0 20 22"><path d="M2 2 L2 18 L7 13.6 L10.4 20.6 L13.6 19.2 L10.2 12.4 L16.6 12.4 Z" fill="${esc(c)}" stroke="#1B2350" stroke-width="2" stroke-linejoin="round"/></svg>`;
+  function drawCursor(id) {
+    const p = peers.get(id); if (!p || !layer) return;
+    const show = p.cur && !p.cur.h && p.cur.v === view && p.n;
+    if (!p.el) {
+      if (!show) return;
+      p.el = document.createElement("div"); p.el.className = "rtc off";
+      p.el.innerHTML = arrow(p.c) + `<span style="background:${esc(p.c)}"></span>`; layer.appendChild(p.el);
+    }
+    p.el.querySelector("span").textContent = p.n;
+    p.el.querySelector("path").setAttribute("fill", p.c); p.el.querySelector("span").style.background = p.c;
+    if (!show) { p.el.classList.add("off"); return; }
+    const pg = $("#page");
+    const x = pg.offsetLeft + p.cur.x * pg.offsetWidth, y = pg.offsetTop + p.cur.y;
+    p.el.style.transform = `translate(${x - 2}px,${y - 2}px)`;
+    p.el.classList.remove("off");
+    clearTimeout(p.idle); p.idle = setTimeout(() => { p.el && p.el.classList.add("off"); }, 10000);
+  }
+  let focQ = false;
+  function drawFoc() {
+    if (focQ) return; focQ = true;
+    requestAnimationFrame(() => {
+      focQ = false;
+      document.querySelectorAll("[data-rtf]").forEach(el => { el.style.outline = ""; el.style.outlineOffset = ""; el.removeAttribute("data-rtf"); });
+      if (!layer) return;
+      layer.querySelectorAll(".rtt").forEach(t => t.remove());
+      const mr = mainEl().getBoundingClientRect();
+      for (const [, p] of peers) {
+        if (!p.foc || p.foc.v !== view || !p.n) continue;
+        const el = elsOf(p.foc.k).find(e => e.offsetParent); if (!el) continue;
+        el.style.outline = `3px solid ${p.c}`; el.style.outlineOffset = "3px"; el.setAttribute("data-rtf", "");
+        const r = el.getBoundingClientRect(), t = document.createElement("div");
+        t.className = "rtt"; t.style.background = p.c; t.textContent = p.n + " печатает…";
+        layer.appendChild(t);
+        t.style.left = Math.max(0, r.right - mr.left - t.offsetWidth + 6) + "px"; t.style.top = Math.max(0, r.top - mr.top - t.offsetHeight - 4) + "px";
+      }
+    });
+  }
+  function later() { if (typing()) pendingRender = true; else render(); }
+  function live(el, m) {
+    if (!m || m.by === me()) return;
+    const h = el.closest(".it,.kc,.head,[data-block]"); if (!h) return;
+    h.classList.add("unseen"); h.style.setProperty("--uc", m.c || "#FF5C8A"); h.dataset.mt = tagOf(m);
+  }
+
+  /* --- incoming --- */
+  function gotHi(d, id) {
+    const p = peers.get(id) || {}; const was = p.v;
+    Object.assign(p, { n: String(d.n || "Гость").slice(0, 40), c: PAL.includes(d.c) ? d.c : PAL[0], v: d.v, t: String(d.t || "").slice(0, 80) });
+    if (was !== p.v && p.cur) p.cur.h = 1;
+    peers.set(id, p); drawBar(); drawCursor(id); drawFoc();
+  }
+  function gotCur(d, id) { const p = peers.get(id); if (!p || !d) return; p.cur = { v: d.v, x: +d.x || 0, y: +d.y || 0, h: d.h ? 1 : 0 }; drawCursor(id); }
+  function gotFoc(d, id) { const p = peers.get(id); if (!p) return; p.foc = d && d.k ? { v: d.v, k: String(d.k) } : null; drawFoc(); }
+  function gotTyp(d) {
+    if (!d || typeof d.k !== "string" || typeof d.v !== "string") return;
+    const els = elsOf(d.k);
+    if (els.includes(document.activeElement)) return;          // the receiver is editing this very field: theirs wins until the next save
+    const [t, p] = split(d.k);
+    if (t === "r") { const b = get(p); if (!b || typeof b !== "object") return; b.text = clean(d.v); b.html = true; }
+    else if (t === "i") { const x = ownerOf(d.k); if (!x) return; x.t = clean(d.v); x.h = true; }
+    else { const ks = p.split("."), last = ks.pop(), o = get(ks.join(".")); if (!o || typeof o !== "object" || typeof o[last] === "object") return; o[last] = d.v; }
+    const own = ownerOf(d.k); if (own && d.m && typeof d.m === "object") own.m = { by: String(d.m.by || ""), c: String(d.m.c || ""), at: +d.m.at || 0 };
+    sigSync();
+    els.forEach(el => { if (t === "p") { el.value = d.v; if (el.tagName === "TEXTAREA") grow(el); } else el.innerHTML = clean(d.v); live(el, own && own.m); });
+    if (t === "p" && (/^(pages|games)\.[^.]+\.title$/.test(p) || /Label$/.test(p)) && !$("#nav").contains(document.activeElement)) renderNav();
+    drawFoc();
+  }
+  const seenR = new Map();                                     // last copy received from each peer: base for merging with our unsaved edits
+  function gotDoc(d, id) {
+    if (!d || !d.d || typeof d.d !== "object") return;
+    let r; try { r = migrate(clone(d.d)); } catch (e) { return; }
+    const local = dirty || saving, prev = seenR.get(id);
+    if (sha && !d.s) return;                                     // their copy never reached GitHub, ours did: keep ours
+    if (!local) {
+      if (d.j && !d.x && d.s === sha && d.t > TAB) return;       // first handshake between two clean copies: the lower id keeps its copy
+      doc = r; base = d.b && typeof d.b === "object" ? migrate(clone(d.b)) : clone(r); sha = d.s || sha;
+    } else if (d.j && !d.x && d.s === sha) return;             // a clean copy of the same version brings nothing new
+    else if (d.s === sha) doc = merge(prev || base, doc, r);
+    else return;                                               // different GitHub versions: GitHub conflict handling will merge on save
+    seenR.set(id, clone(r)); sigSync(); later();
+  }
+
+  /* --- outgoing --- */
+  const payload = j => ({ d: doc, b: base, s: sha, t: TAB, j: j ? 1 : 0, x: dirty || saving ? 1 : 0 });
+  function hello(to) { const h = hi(); lastHi = JSON.stringify(h); send("hi", h, to); drawBar(); }
+  const typQ = new Set(); let typT = null, typLast = 0;
+  function flushTyp() {
+    typT = null; typLast = Date.now();
+    for (const k of typQ) { const v = valOf(k), o = ownerOf(k); if (typeof v === "string") send("typ", { k, v, m: o && o.m }); }
+    typQ.clear();
+  }
+  let curT = null, curLast = 0, xy = null, out = false;
+  function sendCur() {
+    curT = null; curLast = Date.now(); if (!xy) return;
+    const r = $("#page").getBoundingClientRect(); if (!r.width) return;
+    send("cur", out ? { v: view, h: 1 } : { v: view, x: +((xy[0] - r.left) / r.width).toFixed(4), y: Math.round(xy[1] - r.top) });
+  }
+  const curSoon = () => { if (!room || curT) return; curT = setTimeout(sendCur, Math.max(0, 35 - (Date.now() - curLast))); };
+
+  addEventListener("mousemove", e => { xy = [e.clientX, e.clientY]; out = false; curSoon(); }, { passive: true });
+  document.documentElement.addEventListener("mouseleave", () => { out = true; curSoon(); });
+  addEventListener("scroll", curSoon, { passive: true });
+  addEventListener("resize", () => { peers.forEach((p, id) => drawCursor(id)); drawFoc(); });
+  document.addEventListener("input", () => { fromInput = true; setTimeout(() => fromInput = false, 0); }, true);
+  document.addEventListener("input", e => {
+    if (!room) return; const k = keyOf(e.target); if (!k) return;
+    typQ.add(k); if (!typT) typT = setTimeout(flushTyp, Math.max(0, 100 - (Date.now() - typLast)));
+    drawFoc();
+  });
+  document.addEventListener("focusin", e => {
+    const k = keyOf(e.target); if (!room || !k || k === myFoc) return;
+    myFoc = k; send("foc", { v: view, k });
+  });
+  document.addEventListener("focusout", () => setTimeout(() => {
+    if (room && myFoc && keyOf(document.activeElement) !== myFoc) { myFoc = keyOf(document.activeElement); send("foc", myFoc ? { v: view, k: myFoc } : null); }
+    if (pendingRender && !typing()) { pendingRender = false; render(); }
+  }, 30));
+
+  async function start() {
+    if (!REMOTE || !(window.crypto && crypto.subtle)) return;
+    try {
+      const hex = async s => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].map(b => b.toString(16).padStart(2, "0")).join("");
+      const rid = (await hex("room|" + CFG.repo + "|" + KEY)).slice(0, 32), pw = await hex("pass|" + CFG.repo + "|" + KEY);
+      let mod = null;
+      for (const u of ["https://cdn.jsdelivr.net/npm/trystero@0.25.4/+esm", "https://cdn.jsdelivr.net/npm/trystero@0.25.4/torrent/+esm"]) {
+        try { mod = await import(u); if (mod && mod.joinRoom) break; } catch (e) { mod = null; }
+      }
+      if (!mod || !mod.joinRoom) return;
+      const r = mod.joinRoom({ appId: "cats-land-gdd", password: pw }, rid);
+      let legacy = false;
+      for (const n of ["hi", "cur", "foc", "typ", "doc"]) {
+        const a = r.makeAction(n); legacy = Array.isArray(a);
+        A[n] = Array.isArray(a) ? { send: (d, to) => a[0](d, to), on: f => a[1](f) }
+          : { send: (d, to) => a.send(d, to ? { target: to } : undefined), on: f => { a.onMessage = (d, meta) => f(d, meta && typeof meta === "object" ? meta.peerId : meta); } };
+      }
+      const H = { hi: gotHi, cur: gotCur, foc: gotFoc, typ: gotTyp, doc: gotDoc };
+      for (const n in H) A[n].on((d, id) => { try { H[n](d, id); } catch (e) {} });
+      const join = id => { if (!peers.has(id)) peers.set(id, {}); hello(id); if (myFoc) send("foc", { v: view, k: myFoc }, id); send("doc", payload(true), id); if (xy) sendCur(); };
+      const leave = id => { seenR.delete(id); const p = peers.get(id); if (p && p.el) p.el.remove(); peers.delete(id); drawBar(); drawFoc(); };
+      if (legacy) { r.onPeerJoin(join); r.onPeerLeave(leave); }
+      else { r.onPeerJoin = join; r.onPeerLeave = leave; }
+      room = r; ui(); drawBar();
+      setInterval(() => { if (JSON.stringify(hi()) !== lastHi) hello(); }, 3000);
+      addEventListener("pagehide", () => { try { r.leave(); } catch (e) {} });
+    } catch (e) { room = null; }
+  }
+
+  return {
+    start,
+    hello: () => { if (room) hello(); else drawBar(); },
+    saved() {
+      if (!room) return;
+      const due = Date.now() + (fromInput ? 2000 : 300);
+      if (docT && docDue <= due) return;
+      clearTimeout(docT); docDue = due; docT = setTimeout(() => { docT = null; send("doc", payload(false)); }, due - Date.now());
+    },
+    rendered() { if (!room) return; if (JSON.stringify(hi()) !== lastHi) hello(); else drawBar(); peers.forEach((p, id) => drawCursor(id)); drawFoc(); },
+    peers,
+  };
+})();
+
 (async () => {
   try { await load(); } catch (e) { doc = seed(); base = clone(doc); setTimeout(() => sync("err", "Нет доступа: " + e.message), 0); }
   const before = JSON.stringify(doc);
   doc = migrate(doc);
+  sigSync();
+  if (REMOTE && FIRST) { const n = Date.now(); doc.pages.concat(doc.games).forEach(p => SEEN[p.id] = n); LSset(SEENK, JSON.stringify(SEEN)); }
   if (JSON.stringify(doc) !== before) save("обновление структуры");
   render(); askName(false);
   if (REMOTE) setInterval(pull, 20000);
+  RT.start();
 })();
 </script>
 </body>

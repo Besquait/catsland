@@ -342,6 +342,10 @@ body.rt main{padding-top:70px}
 .wrow .from{margin-left:auto;font:700 11px/1 "Martian Mono",monospace;color:var(--ink3)}
 .wrow .pd{width:12px;height:12px;border-radius:50%;border:2px solid var(--edge);flex:none}
 .titleS{font:800 34px/1.1 Rubik;color:var(--ink);margin:0}
+.mfilt{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+.mfilt button{padding:6px 12px;border:2.5px solid var(--edge);border-radius:8px 11px 7px 10px;background:var(--card);font-weight:800;color:var(--ink2)}
+.mfilt button b{font:700 11px/1 "Martian Mono",monospace;opacity:.6;margin-left:6px}
+.mfilt button.on{background:var(--sun);color:#1B2350;box-shadow:3px 3px 0 var(--sh);transform:rotate(-1deg)}
 </style>
 </head>
 <body>
@@ -451,6 +455,8 @@ const LEXP = new Set();
 const ALL = () => doc.pages.concat(doc.games, doc.mechs || []);
 const SPECIAL = new Set(["games", "mechs", "work"]);
 const MECH_ORDER = ["work", "redo", "test", "idea", "done"];
+let mgame = LS("cl_mgame") || "all";
+const mechGames = m => doc.games.filter(g => g.blocks.some(b => b.kind === "mech" && b.link === m.id));
 const workCols = () => doc.work.cols;
 const workNow = () => (workCols()[1] || { cards: [] }).cards;
 const TAGS = ["Все против всех", "Команды", "На выбывание", "На очки", "Гонка", "Паркур", "Кооператив"];
@@ -794,9 +800,12 @@ function render() {
     const card = m => { const sum = (m.blocks.find(b => b.kind === "text") || {}).text || "";
       return `<button class="gc" data-go="${m.id}"><span class="pill" style="background:${STATUS[m.status][1]}">${STATUS[m.status][0]}</span><div class="n">${esc(m.emoji)} ${esc(m.title)}</div>
         <div class="d">${sum ? esc(plainOf(sum)) : "<span style='color:var(--ink3)'>Пока пусто</span>"}</div>${balCount(m) ? `<div class="tags"><span>${balCount(m)}</span></div>` : ""}</button>`; };
+    if (mgame !== "all" && mgame !== "none" && !doc.games.some(g => g.id === mgame)) mgame = "all";
+    const inF = m => mgame === "all" || (mgame === "none" ? !mechGames(m).length : mechGames(m).some(g => g.id === mgame));
+    const chip = (id, t, n) => `<button class="${mgame === id ? "on" : ""}" data-mgame="${id}">${t}<b>${n}</b></button>`;
     P.innerHTML = banner + `<div class="head"><span class="emoji">⚙️</span><input class="title" data-p="mechsLabel" value="${esc(doc.mechsLabel)}"></div>
-      <p class="hint2" style="margin-top:0">Каждая механика — своя страница: как работает, баланс, история правок баланса. Сверху то, что делается сейчас.</p>` +
-      MECH_ORDER.map(k => { const ms = doc.mechs.filter(m => m.status === k); return ms.length ? `<div class="mgroup"><div class="mgh"><span class="dot" style="background:${STATUS[k][1]}"></span>${STATUS[k][0]} · ${ms.length}</div><div class="games">${ms.map(card).join("")}</div></div>` : ""; }).join("") +
+      <div class="mfilt">${chip("all", "Все", doc.mechs.length)}${doc.games.map(g => chip(g.id, esc(g.emoji) + " " + esc(g.title), doc.mechs.filter(m => mechGames(m).some(x => x.id === g.id)).length)).join("")}${chip("none", "Без игры", doc.mechs.filter(m => !mechGames(m).length).length)}</div>` +
+      MECH_ORDER.map(k => { const ms = doc.mechs.filter(m => m.status === k && inF(m)); return ms.length ? `<div class="mgroup"><div class="mgh"><span class="dot" style="background:${STATUS[k][1]}"></span>${STATUS[k][0]} · ${ms.length}</div><div class="games">${ms.map(card).join("")}</div></div>` : ""; }).join("") +
       `<div class="games"><button class="gc newg" data-newpage="mechs">+ Новая механика</button></div>`;
   } else if (view === "work") {
     const hot = [];
@@ -875,7 +884,8 @@ document.addEventListener("input", e => {
   if (t.id === "search") { q = t.value.trim().toLowerCase(); renderNav(); return; }
   if (t.tagName === "TEXTAREA") grow(t);
   if (d.rich) { setv(d.rich + ".text", clean(t.innerHTML)); setv(d.rich + ".html", true); slash(t); }
-  else if (d.p) { setv(d.p, t.value); if (/\.(title)$/.test(d.p) && !d.p.includes(".blocks.") || /Label$/.test(d.p)) renderNav(); }
+  else if (d.p) { setv(d.p, t.value);
+    if (/^mechs\.[^.]+\.title$/.test(d.p)) { const id = d.p.split(".")[1]; ALL().forEach(x => x.blocks.forEach(b => { if (b.kind === "mech" && b.link === id) b.title = t.value; })); } if (/\.(title)$/.test(d.p) && !d.p.includes(".blocks.") || /Label$/.test(d.p)) renderNav(); }
   else if (d.item) { const [l, id] = pair(d.item); const x = l.find(x => x.id === id); if (t.isContentEditable) { x.t = clean(t.innerHTML); x.h = true; } else x.t = t.value; }
   else if (d.col) { const [l, id] = pair(d.col); l.find(x => x.id === id).c = t.value; t.parentElement.style.background = t.value; }
   else return;
@@ -919,7 +929,7 @@ document.addEventListener("paste", e => {
   if (card && e.clipboardData.files.length) { e.preventDefault(); addImages(card.querySelector("[data-drop]").dataset.drop, e.clipboardData.files); }
 });
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb]");
+  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame]");
   if (!t || t.disabled) return; const d = t.dataset;
   if (d.go) { view = d.go; $("nav").classList.remove("open"); render(); scrollTo(0, 0); return; }
   if ("dockadd" in d) { const after = lastBlock && get(blocksPath()).some(b => b.id === lastBlock) ? lastBlock : null;
@@ -934,6 +944,7 @@ document.addEventListener("click", e => {
     let j = i + +dir; while (j >= 0 && j < l.length && l[j].done) j += +dir; if (j < 0 || j >= l.length) return;
     l.splice(j, 0, l.splice(i, 1)[0]); save(label()); render(); return; }
   if (d.prio) { const [l, id] = pair(d.prio), it = l.find(x => x.id === id); it.pr = PRIO_NEXT[it.pr || ""]; if (!it.pr) delete it.pr; save(label() + ": приоритет"); render(); return; }
+  if (d.mgame) { mgame = d.mgame; LSset("cl_mgame", mgame); render(); return; }
   if (d.towork) { const [l, id] = pair(d.towork), it = l.find(x => x.id === id), txt = itemText(it).trim(); if (!txt) { toast("Пункт пустой"); return; }
     workNow().push({ id: uid(), t: txt, link: where(view) ? view : undefined }); save("в работу: " + txt.slice(0, 40)); renderNav(); toast("Добавлено в «В работе»"); return; }
   if ("newmechb" in d) { const pg = mechPage(); doc.mechs.push(pg); const b = norm(MC(pg.title)); b.link = pg.id; insertBlock(b); return; }
@@ -1054,7 +1065,9 @@ function menuKey(e) {
 }
 
 function pickTemplate(section) {
-  if (section === "mechs") { const pg = mechPage(); doc.mechs.push(pg); view = pg.id; save("новая механика"); render(); const n = $(".title"); n.focus(); n.select(); return; }
+  if (section === "mechs") { const pg = mechPage(); doc.mechs.push(pg);
+    const gg = view === "mechs" && doc.games.find(g => g.id === mgame); if (gg) { const b = norm(MC(pg.title)); b.link = pg.id; gg.blocks.push(b); }
+    view = pg.id; save("новая механика"); render(); const n = $(".title"); n.focus(); n.select(); return; }
   const T = section === "games" ? GAME_TPL : PAGE_TPL;
   const w = document.createElement("div"); w.className = "modal";
   w.innerHTML = `<div class="tpl"><h3>${section === "games" ? "Новая мини-игра" : "Новая страница"}</h3><p>Выберите шаблон — всё внутри потом можно менять, удалять и дополнять.</p>

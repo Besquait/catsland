@@ -370,6 +370,32 @@ body.rt main{padding-top:70px}
 .it .wpill:hover{box-shadow:2px 2px 0 var(--sh)}
 .kc.pr-g{border-left:7px solid #3CC46A}.kc.pr-y{border-left:7px solid #FFC83D}.kc.pr-r{border-left:7px solid #F2553D}
 @media (pointer:fine){[data-mv],[data-imv],[data-kmove]{display:none!important}}
+cite[data-ai]{font-style:normal;background:#E9E1FF;box-shadow:inset 0 -2px 0 #8A6CFF;border-radius:3px;padding:0 2px}
+cite[data-ai]::before{content:"🤖";font-size:.8em;margin-right:3px}
+.fbar .f-ai{background:rgba(138,108,255,.35)}
+.card.aim{outline:3px dashed #8A6CFF;outline-offset:3px}
+.card.aim .bh:after{content:"🤖 для ИИ";flex:none;padding:2px 8px;border-radius:999px;background:#E9E1FF;color:#1B2350;font:800 11px/1.4 Rubik,sans-serif}
+.bc button.aion{background:#E9E1FF}
+.aisec{margin:0 0 26px}.aisec h3{margin:0 0 10px;font-size:17px}
+.aic{background:var(--card);border:2.5px solid var(--edge);border-radius:10px 13px 9px 12px;box-shadow:3px 3px 0 var(--sh);padding:12px 14px;margin:0 0 12px}
+.aic.again{border-color:#F2553D}.aic.ok{opacity:.6;box-shadow:none}
+.aic .q{background:#E9E1FF;border-radius:6px;padding:4px 8px;display:inline-block;margin:0 0 6px}
+.aic .src{font:700 11px/1.4 "Martian Mono",monospace;color:var(--ink3);cursor:pointer}.aic .src:hover{color:var(--ink)}
+.aic .lbl2{font-weight:800;margin-top:8px}.aic p{margin:2px 0;white-space:pre-wrap}
+.aic .acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.aic .acts button{padding:5px 12px;border:2.5px solid var(--edge);border-radius:8px 11px 7px 10px;background:var(--card);font-weight:800;color:var(--ink2)}
+.aic .acts .okb:hover{background:#3CC46A;color:#1B2350}.aic .acts .agb:hover{background:#F2553D;color:#fff}
+.aic .note{color:#F2553D;font-weight:700}
+/* boards: one frame level only — cards have borders, columns are soft tinted areas, headers are plain text */
+.bcol{border:0;border-radius:12px;padding:10px 8px}
+.bcol:nth-child(4n+1){background:#FFE1E980}.bcol:nth-child(4n+2){background:#FFF1C980}.bcol:nth-child(4n+3){background:#FFE1DA80}.bcol:nth-child(4n+4){background:#DDF5E380}
+.bcol .bch{background:none!important;border:0;padding:2px 4px}
+.bch .x{opacity:0}.bch:hover .x{opacity:1}
+.kc.mk{background:var(--card);border-style:solid}
+.kc .klink{border:0;background:none;padding:0;margin:4px 0 0;opacity:.7}
+.addcol{border:0;width:28px;opacity:0;transition:opacity .15s}.board:hover .addcol{opacity:.6}.addcol:hover{opacity:1}
+.bcol .add{opacity:.45}
+.wboard{margin:0 0 24px}
 </style>
 </head>
 <body>
@@ -477,7 +503,18 @@ const PRIO = { "": "без приоритета", g: "низкий", y: "сре�
 const PRIO_NEXT = { "": "g", g: "y", y: "r", r: "" };
 const LEXP = new Set();
 const ALL = () => doc.pages.concat(doc.games, doc.mechs || []);
-const SPECIAL = new Set(["games", "mechs", "work"]);
+const SPECIAL = new Set(["games", "mechs", "work", "ai"]);
+/* everything marked for the AI: <cite data-ai> in rich text and blocks with b.ai */
+function aiMarks() {
+  const out = [];
+  for (const pg of ALL()) for (const b of pg.blocks) {
+    if (b.ai) out.push({ id: b.id, pg, b, q: b.title || "Блок", block: true });
+    const rich = (b.html ? [b.text] : []).concat((b.items || []).filter(x => x.h).map(x => x.t));
+    rich.forEach(h => { if (h && h.includes("data-ai")) new DOMParser().parseFromString(h, "text/html").querySelectorAll("cite[data-ai]").forEach(c => out.push({ id: c.dataset.ai, pg, b, q: c.textContent })); });
+  }
+  return out;
+}
+const aiOpen = () => aiMarks().length + doc.ai.filter(x => x.st !== "ok").length;
 const MECH_ORDER = ["work", "redo", "test", "idea", "done"];
 let mgame = LS("cl_mgame") || "all";
 /* where the user came from: in-app back button + browser back share one stack */
@@ -535,6 +572,7 @@ function migrate(d) {
     delete d.intro; delete d.style;
   }
   d.pagesLabel = d.pagesLabel ?? "Диз-док"; d.gamesLabel = d.gamesLabel ?? "Мини-игры"; d.mechsLabel = d.mechsLabel ?? "Механики"; d.v = 3;
+  d.ai = Array.isArray(d.ai) ? d.ai : [];
   if (!d.work || !d.work.cols) d.work = { id: "work", kind: "board", title: "В работе", cols: [["Надо сделать"], ["В работе"], ["Проверить"], ["Готово"]].map(([t]) => ({ id: uid(), t, cards: [] })) };
   d.mechs = (d.mechs || []).map(m => { m.status = STATUS[m.status] ? m.status : "idea"; m.tags = m.tags || []; m.emoji = m.emoji || "⚙️"; return m; });
   d.games = (d.games || []).map(g => {
@@ -653,7 +691,7 @@ async function addImages(p, files) {
 }
 
 /* ===== rich text: small tag whitelist, everything else is unwrapped ===== */
-const KEEP = new Set(["B", "STRONG", "I", "EM", "U", "S", "STRIKE", "MARK", "BR", "DIV", "P", "UL", "OL", "LI", "H4"]);
+const KEEP = new Set(["B", "STRONG", "I", "EM", "U", "S", "STRIKE", "MARK", "BR", "DIV", "P", "UL", "OL", "LI", "H4", "CITE"]);
 function clean(html) {
   const src = new DOMParser().parseFromString("<body>" + (html || "") + "</body>", "text/html").body;
   const walk = (node, out) => {
@@ -663,7 +701,9 @@ function clean(html) {
       let tag = n.tagName;
       const st = n.getAttribute("style") || "", marked = /background-color:\s*rgb\(255, 229, 138\)/.test(st);
       if (tag === "SPAN" || tag === "FONT") tag = marked ? "MARK" : /font-weight:\s*(bold|[6-9]00)/.test(st) ? "B" : /italic/.test(st) ? "I" : null;
+      if (tag === "CITE" && !/^[a-z0-9]+$/.test(n.getAttribute("data-ai") || "")) tag = null;
       let into = tag && KEEP.has(tag) ? out.appendChild(document.createElement(tag)) : out;
+      if (tag === "CITE") into.setAttribute("data-ai", n.getAttribute("data-ai"));
       if (marked && tag !== "MARK") into = into.appendChild(document.createElement("MARK"));   // marker applied on top of <b>, <i>, …
       walk(n, into);
     }
@@ -675,7 +715,7 @@ const richHTML = b => b.html ? clean(b.text) : esc(b.text).replace(/\n/g, "<br>"
 const plainOf = h => new DOMParser().parseFromString(h, "text/html").body.textContent;
 const plain = b => b.html ? plainOf(b.text) : (b.text || "");
 const TBAR = [["b", "bold", "Жирный — Ctrl+B"], ["i", "italic", "Курсив — Ctrl+I"], ["u", "underline", "Подчеркнуть — Ctrl+U"], ["s", "strikeThrough", "Зачеркнуть — Ctrl+Shift+S"],
-  ["🖍", "mark", "Маркер — Ctrl+Shift+H"], ["H", "h4", "Подзаголовок — Ctrl+Shift+1"], ["•", "insertUnorderedList", "Список — Ctrl+Shift+8"], ["1.", "insertOrderedList", "Нумерованный список — Ctrl+Shift+7"], ["⌫", "removeFormat", "Убрать оформление — Ctrl+\\"]];
+  ["🖍", "mark", "Маркер — Ctrl+Shift+H"], ["H", "h4", "Подзаголовок — Ctrl+Shift+1"], ["•", "insertUnorderedList", "Список — Ctrl+Shift+8"], ["1.", "insertOrderedList", "Нумерованный список — Ctrl+Shift+7"], ["⌫", "removeFormat", "Убрать оформление — Ctrl+\\"], ["🤖", "ai", "Для ИИ: выделите текст — ИИ прочитает и исправит. Клик внутри пометки снимает её"]];
 /* shortcuts by physical key (e.code), so they work on the Russian layout and never reach the browser */
 const KEYS = { KeyB: "bold", KeyI: "italic", KeyU: "underline", Backslash: "removeFormat" };
 const SKEYS = { KeyS: "strikeThrough", KeyX: "strikeThrough", KeyH: "mark", Digit1: "h4", Digit7: "insertOrderedList", Digit8: "insertUnorderedList" };
@@ -683,6 +723,9 @@ const toolbar = () => "";
 const fbar = () => `<div class="fbar off" id="fbar"><div class="fgrp">${TBAR.map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}</div><span class="sep"></span><button class="dadd" data-dockadd title="Вставить блок (или «/» в пустой строке)">＋ Блок</button></div>`;
 function fmt(cmd) {
   const at = (getSelection().anchorNode || {}).parentElement;
+  if (cmd === "ai") { const c = at?.closest("cite[data-ai]"); if (c) { c.replaceWith(...c.childNodes); return; }
+    const sel = getSelection(), txt = sel.toString(); if (!txt.trim()) { toast("Выделите текст, который нужно пометить для ИИ"); return; }
+    document.execCommand("insertHTML", false, `<cite data-ai="${uid()}">${esc(txt).replace(/\n/g, "<br>")}</cite>`); toast("Помечено для ИИ"); return; }
   if (cmd === "mark") document.execCommand("hiliteColor", false, at?.closest("mark,span[style*=background]") ? "transparent" : "#FFE58A");
   else if (cmd === "h4") document.execCommand("formatBlock", false, at?.closest("h4") ? "div" : "h4");
   else document.execCommand(cmd, false, null);
@@ -791,13 +834,13 @@ function balCount(pg) {
 function blockHTML(bp, b, i, n, next) {
   const p = bp + "." + b.id;
   const ctl = `<div class="bc"><span class="drag" draggable="true" data-bdrag="${b.id}" title="Перетащить">⠿</span><button data-mv="${b.id}|-1" title="Выше" ${i ? "" : "disabled"}>↑</button><button data-mv="${b.id}|1" title="Ниже" ${i < n - 1 ? "" : "disabled"}>↓</button>
-    ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}<button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
+    ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}<button data-aib="${p}" class="${b.ai ? "aion" : ""}" title="${b.ai ? "Снять пометку для ИИ" : "Пометить весь блок для ИИ"}">🤖</button><button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
   const [uc, ua] = unA(b);
   const mb = b.kind === "heading" && next && next.kind === "mech" ? `<button class="mboard" data-mboard title="Все механики этой игры по статусам">⚙️ Доска механик →</button>` : "";
   if (b.kind === "heading") return `<div class="hblock${uc}"${ua} data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${mb}${ctl}</div>`;
   const cnt = b.kind === "list" && b.items.length ? `<span class="cnt">${b.items.filter(x => x.done).length}/${b.items.length}</span>` : "";
   const tone = b.kind === "note" ? `<button class="tone" data-tone="${p}" title="Сменить тип заметки">${TONES[b.tone]?.[0] || "💡"}</button>` : "";
-  return `<div class="card k-${b.kind}${b.kind === "note" ? " t-" + b.tone : ""}${b.wide ? " wide" : ""}${uc}"${ua} data-block="${b.id}">
+  return `<div class="card k-${b.kind}${b.kind === "note" ? " t-" + b.tone : ""}${b.wide ? " wide" : ""}${b.ai ? " aim" : ""}${uc}"${ua} data-block="${b.id}">
     <div class="bh">${tone}<input class="bt" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок">${cnt}${ctl}</div>${bodyHTML(p, b)}</div>`;
 }
 function blocksHTML() {
@@ -819,6 +862,7 @@ function renderNav() {
   $("#nav").innerHTML = `<div class="logo">Cats <span>Land</span></div>
     <input id="search" class="search" placeholder="Поиск по диз-доку" value="${esc(q)}">
     <div class="nl ${view === "work" ? "on" : ""}" data-go="work" style="margin-top:12px">🔥 <span class="t">В работе</span><span class="c">${workNow().length + doc.mechs.filter(m => m.status === "work").length || ""}</span></div>
+    <div class="nl ${view === "ai" ? "on" : ""}" data-go="ai">🤖 <span class="t">Для ИИ</span><span class="c">${aiOpen() || ""}</span></div>
     <div class="lbl"><input class="lbli" data-p="pagesLabel" value="${esc(doc.pagesLabel)}"><button data-newpage="pages" title="Новая страница">+</button></div>
     ${doc.pages.filter(hit).map(x => navItem(x)).join("") || (q ? `<div class="none">ничего</div>` : "")}
     <div class="lbl"><input class="lbli" data-p="mechsLabel" value="${esc(doc.mechsLabel)}"><button data-newpage="mechs" title="Новая механика">+</button></div>
@@ -862,11 +906,24 @@ function render() {
       <div class="mfilt">${chip("all", "Все", doc.mechs.length)}${doc.games.map(g => chip(g.id, esc(g.emoji) + " " + esc(g.title), doc.mechs.filter(m => mechGames(m).some(x => x.id === g.id)).length)).join("")}${Object.entries(SCOPES).map(([k, t]) => chip(k, t, doc.mechs.filter(m => scopeOf(m) === k).length)).join("")}</div>` +
       MECH_ORDER.map(k => { const ms = doc.mechs.filter(m => m.status === k && inF(m)); return ms.length ? `<div class="mgroup"><div class="mgh"><span class="dot" style="background:${STATUS[k][1]}"></span>${STATUS[k][0]} · ${ms.length}</div><div class="games">${ms.map(card).join("")}</div></div>` : ""; }).join("") +
       `<div class="games"><button class="gc newg" data-newpage="mechs">+ Новая механика</button></div>`;
+  } else if (view === "ai") {
+    const ms = aiMarks(), again = doc.ai.filter(x => x.st === "again"), check = doc.ai.filter(x => x.st === "check"), ok = doc.ai.filter(x => x.st === "ok").sort((a, c) => (c.okAt || 0) - (a.okAt || 0));
+    const src = (id, t) => where(id) ? `<span class="src" data-go="${id}">${esc(t || get(where(id) + "." + id).title)} →</span>` : `<span class="src">${esc(t || "")}</span>`;
+    const entry = x => `<div class="aic ${x.st}"><div class="q">🤖 ${esc(x.q)}</div> ${src(x.pg, x.pgt)}
+      <div class="lbl2">Что сделал ИИ</div><p>${esc(x.what)}</p>${x.test ? `<div class="lbl2">Что проверить</div><p>${esc(x.test)}</p>` : ""}
+      ${x.note ? `<p class="note">Не работает: ${esc(x.note)}</p>` : ""}
+      ${x.st === "check" ? `<div class="acts"><button class="okb" data-aiok="${x.id}">✓ Проверено, работает</button><button class="agb" data-aiagain="${x.id}">↺ Не работает</button></div>` : ""}
+      ${x.st === "ok" ? `<div class="acts"><button class="agb" data-aiagain="${x.id}">↺ Сломалось снова</button></div>` : ""}</div>`;
+    P.innerHTML = banner + `<div class="head"><span class="emoji">🤖</span><h1 class="titleS">Для ИИ</h1></div>
+      <div class="aisec"><h3>Ждёт ИИ · ${ms.length + again.length}</h3>${ms.map(m => `<div class="aic"><div class="q">🤖 ${m.block ? "Весь блок «" + esc(m.q) + "»" : esc(m.q)}</div> ${src(m.pg.id, m.pg.title + (m.block ? "" : " · " + (m.b.title || "")))}</div>`).join("")}${again.map(entry).join("")}
+        ${ms.length + again.length ? "" : `<p style="color:var(--ink3)">Пусто. Выделите текст и нажмите 🤖 в панели снизу, или 🤖 у блока.</p>`}</div>
+      <div class="aisec"><h3>ИИ исправил — проверить · ${check.length}</h3>${check.map(entry).join("") || `<p style="color:var(--ink3)">Нечего проверять</p>`}</div>
+      ${ok.length ? `<div class="aisec"><h3>Проверено · ${ok.length}</h3>${ok.slice(0, 15).map(entry).join("")}</div>` : ""}`;
   } else if (view === "work") {
     const hot = [];
     ALL().forEach(pg => pg.blocks.forEach(b => b.kind === "list" && b.items.forEach(x => { if (!x.done && x.pr === "r" && itemText(x).trim() && !cardOf(x.id)) hot.push([pg, x]); })));
     P.innerHTML = banner + `<div class="head"><span class="emoji">🔥</span><h1 class="titleS">В работе</h1></div>
-      <div class="card wide k-board" data-block="work">${bodyHTML("work", doc.work)}</div>
+      <div class="wboard k-board" data-block="work">${bodyHTML("work", doc.work)}</div>
       ${hot.length ? `<div class="wsec"><h3>Срочное из чек-листов · ${hot.length}</h3>${hot.map(([pg, x]) => `<div class="wrow" data-go="${pg.id}"><span class="pd" style="background:#F2553D"></span>${esc(itemText(x))}<span class="from">${esc(pg.emoji)} ${esc(pg.title)}</span></div>`).join("")}</div>` : ""}`;
   } else if (view === "games") {
     const gs = doc.games;
@@ -983,7 +1040,7 @@ document.addEventListener("paste", e => {
   if (card && e.clipboardData.files.length) { e.preventDefault(); addImages(card.querySelector("[data-drop]").dataset.drop, e.clipboardData.files); }
 });
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame],[data-delid],[data-mboard],[data-mscope]");
+  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame],[data-delid],[data-mboard],[data-mscope],[data-aib],[data-aiok],[data-aiagain]");
   if (!t || t.disabled) return; const d = t.dataset;
   if (d.go) { go(d.go); return; }
   if ("dockadd" in d) { const after = lastBlock && get(blocksPath()).some(b => b.id === lastBlock) ? lastBlock : null;
@@ -1002,6 +1059,11 @@ document.addEventListener("click", e => {
     let j = i + +dir; while (j >= 0 && j < l.length && l[j].done) j += +dir; if (j < 0 || j >= l.length) return;
     l.splice(j, 0, l.splice(i, 1)[0]); save(label()); render(); return; }
   if (d.prio) { const [l, id] = pair(d.prio), it = l.find(x => x.id === id); it.pr = PRIO_NEXT[it.pr || ""]; if (!it.pr) delete it.pr; save(label() + ": приоритет"); render(); return; }
+  if (d.aib) { const b = get(d.aib); if (b.ai) delete b.ai; else b.ai = true; save(label() + ": для ИИ"); render(); return; }
+  if (d.aiok) { const x = doc.ai.find(x => x.id === d.aiok); x.st = "ok"; x.okAt = Date.now(); x.okBy = me(); delete x.note; save("проверено: " + x.q.slice(0, 40)); render(); return; }
+  if (d.aiagain) { const x = doc.ai.find(x => x.id === d.aiagain);
+    modal(`<h3>Что не работает?</h3><p>ИИ увидит это в следующий раз и переделает.</p><input placeholder="Например: блоки пропадают, но без мигания"><button class="btn">Вернуть ИИ</button>`,
+      v => { if (!v) return false; x.st = "again"; x.note = v; x.noteBy = me(); save("не работает: " + x.q.slice(0, 40)); render(); }); return; }
   if (d.mscope) { const m = get("mechs." + d.mscope); m.scope = scopeOf(m) === "lobby" ? "common" : "lobby"; save(label()); render(); return; }
   if ("mboard" in d) { mgame = where(view) === "games" ? view : "all"; LSset("cl_mgame", mgame); go("mechs"); return; }
   if (d.mgame) { mgame = d.mgame; LSset("cl_mgame", mgame); render(); return; }
@@ -1057,6 +1119,7 @@ function fstate() {
     if (on && FSTATE[c]) try { a = document.queryCommandState(c); } catch (e) {}
     if (on && c === "mark") a = !!at?.closest("mark,span[style*=background]");
     if (on && c === "h4") a = !!at?.closest("h4");
+    if (on && c === "ai") a = !!at?.closest("cite[data-ai]");
     b.classList.toggle("act", a);
   });
 }

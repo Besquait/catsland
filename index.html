@@ -575,7 +575,7 @@ const PRIO = { "": "без приоритета", g: "низкий", y: "сре�
 const PRIO_NEXT = { "": "g", g: "y", y: "r", r: "" };
 const LEXP = new Set();
 const ALL = () => doc.pages.concat(doc.games, doc.mechs || []);
-const SPECIAL = new Set(["games", "mechs", "work", "ai", "style", "balance"]);
+const SPECIAL = new Set(["games", "mechs", "work", "ai", "sitestyle", "balance"]);
 const isBal = b => b.kind === "table" && /баланс|параметр/i.test(b.title || "") && !/истори/i.test(b.title || "");
 /* every balance table of every page in one place, editable, with the latest changes under each */
 function balanceHTML() {
@@ -1005,7 +1005,7 @@ function renderNav() {
     <div class="foot"><div class="sync"><i id="syncI"></i><span id="syncT">${REMOTE ? "Сохранено" : "Только этот браузер"}</span></div>
       <div>Вы: <a onclick="askName(true)">${esc(me())}</a></div>
       ${anyUnseen() ? `<a onclick="markAllSeen()">Отметить всё прочитанным</a>` : ""}
-      <a data-go="style">Стили сайта</a>
+      <a data-go="sitestyle">Стили сайта</a>
       <a onclick="exportMD()">Скачать весь диз-док (.md)</a>
       ${REMOTE ? `<a onclick="share()">Скопировать ссылку для своих</a>` : `<a onclick="askKey()">Подключить общий диз-док</a>`}</div>`;
   if (f) { const s = $("#search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
@@ -1042,7 +1042,7 @@ function render() {
   } else if (view === "balance") {
     P.innerHTML = banner + `<div class="head"><span class="emoji">📊</span><h1 class="titleS">Баланс</h1></div>
       <p class="hint" style="margin:0 0 6px;color:var(--ink2)">Все параметры всех механик на одной странице. Меняйте прямо здесь — изменение попадёт в историю механики.</p>` + balanceHTML();
-  } else if (view === "style") {
+  } else if (view === "sitestyle") {
     P.innerHTML = banner + `<div class="head"><span class="emoji">🎨</span><h1 class="titleS">Стили сайта</h1></div>` + styleGuide();
   } else if (view === "ai") {
     const ms = aiMarks(), again = doc.ai.filter(x => x.st === "again"), check = doc.ai.filter(x => x.st === "check"), ok = doc.ai.filter(x => x.st === "ok").sort((a, c) => (c.okAt || 0) - (a.okAt || 0));

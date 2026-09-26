@@ -346,6 +346,25 @@ body.rt main{padding-top:70px}
 .mfilt button{padding:6px 12px;border:2.5px solid var(--edge);border-radius:8px 11px 7px 10px;background:var(--card);font-weight:800;color:var(--ink2)}
 .mfilt button b{font:700 11px/1 "Martian Mono",monospace;opacity:.6;margin-left:6px}
 .mfilt button.on{background:var(--sun);color:#1B2350;box-shadow:3px 3px 0 var(--sh);transform:rotate(-1deg)}
+.gc{position:relative}
+.gc .gdel{position:absolute;top:8px;right:10px;width:26px;height:26px;display:grid;place-items:center;border:2px solid var(--edge);border-radius:7px;background:var(--card);color:var(--ink2);font:800 15px/1 Rubik;opacity:0;transition:opacity .1s}
+.gc:hover .gdel{opacity:1}
+.gc .gdel:hover{background:var(--redo);color:#fff}
+.head .hdel{margin-left:auto;align-self:center;padding:6px 10px;border:2px solid transparent;border-radius:8px;color:var(--ink3);font-size:18px;opacity:.55}
+.head .hdel:hover{opacity:1;border-color:var(--edge);background:var(--redo);color:#fff}
+.back{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:6px 12px;border:2.5px solid var(--edge);border-radius:8px 11px 7px 10px;background:var(--card);font-weight:800;color:var(--ink2);box-shadow:2px 2px 0 var(--sh)}
+.back:hover{background:var(--sun);color:#1B2350}
+.hblock .mboard{flex:none;padding:6px 12px;border:2.5px solid var(--edge);border-radius:8px 11px 7px 10px;background:var(--sun);color:#1B2350;font-weight:800;box-shadow:2px 2px 0 var(--sh);white-space:nowrap}
+.hblock .mboard:active{transform:translate(2px,2px);box-shadow:none}
+.mnew{max-width:520px}
+.mnew .where{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
+.mnew .where button{padding:8px 12px;border:2.5px solid var(--edge);border-radius:8px 11px 7px 10px;background:var(--card);font-weight:800;color:var(--ink2)}
+.mnew .where button.on{background:var(--sun);color:#1B2350;box-shadow:3px 3px 0 var(--sh);transform:rotate(-1deg)}
+.mnew .ng{display:none;margin-top:8px}.mnew .ng.on{display:block}
+.mnew small{display:block;color:var(--ink3);margin-top:4px}
+.kc.mk{background:var(--bg);border-style:dashed}
+.kc.mk .mkh{display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer}
+.kc.mk .mkh span{flex:1}
 </style>
 </head>
 <body>
@@ -456,9 +475,20 @@ const ALL = () => doc.pages.concat(doc.games, doc.mechs || []);
 const SPECIAL = new Set(["games", "mechs", "work"]);
 const MECH_ORDER = ["work", "redo", "test", "idea", "done"];
 let mgame = LS("cl_mgame") || "all";
+/* where the user came from: in-app back button + browser back share one stack */
+const NAV = [];
+function navPush(v) { if (v !== view) { NAV.push(view); history.pushState({ v }, ""); } view = v; }
+function go(v) { navPush(v); $("nav").classList.remove("open"); render(); scrollTo(0, 0); }
+addEventListener("popstate", e => { if (!NAV.length) return; view = NAV.pop(); render(); scrollTo(0, 0); });
+const backBtn = () => NAV.length ? `<button class="back" onclick="history.back()">← Назад</button>` : "";
 const mechGames = m => doc.games.filter(g => g.blocks.some(b => b.kind === "mech" && b.link === m.id));
+const SCOPES = { lobby: "🏠 Лобби", common: "🌐 Общая" };
+const scopeOf = m => mechGames(m).length ? "game" : m.scope === "lobby" ? "lobby" : "common";
 const workCols = () => doc.work.cols;
 const workNow = () => (workCols()[1] || { cards: [] }).cards;
+const COL_STATUS = ["redo", "work", "test", "done"];      // columns of the work board, left to right
+const mechCards = ci => doc.mechs.filter(m => COL_STATUS[ci] !== "done" && m.status === COL_STATUS[ci]).map(m =>
+  `<div class="kc mk" draggable="true" data-mdrag="${m.id}"><div class="mkh" data-go="${m.id}">⚙️ <span>${esc(m.title)}</span></div><span class="pill" style="background:${STATUS[m.status][1]}">${STATUS[m.status][0]}</span></div>`).join("");
 const TAGS = ["Все против всех", "Команды", "На выбывание", "На очки", "Гонка", "Паркур", "Кооператив"];
 
 function page(tpl, title) { return { id: uid(), emoji: tpl[0], title: title || tpl[1], sub: "", blocks: tpl[3]() }; }
@@ -711,10 +741,10 @@ function bodyHTML(p, b) {
     case "links": return `<div class="lks">${b.links.map(l => `<div class="lk">${safeURL(l.u) ? `<a href="${esc(l.u)}" target="_blank" rel="noopener" title="Открыть">↗</a>` : `<span class="nolink">↗</span>`}
       <input data-p="${p}.links.${l.id}.t" value="${esc(l.t)}" placeholder="Название"><input class="u" data-p="${p}.links.${l.id}.u" value="${esc(l.u)}" placeholder="https://…">
       <button class="x" data-del="${p}.links|${l.id}">×</button></div>`).join("")}</div><button class="add" data-push="${p}.links|link">+ ссылка</button>`;
-    case "board": return `<div class="board">${b.cols.map((c, ci) => `<div class="bcol" data-kcol="${p}.cols.${c.id}.cards"><div class="bch"><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><span class="cnt">${c.cards.length}</span>
+    case "board": return `<div class="board">${b.cols.map((c, ci) => `<div class="bcol" data-kcol="${p}.cols.${c.id}.cards"><div class="bch"><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><span class="cnt">${c.cards.length + (p === "work" && COL_STATUS[ci] !== "done" ? doc.mechs.filter(m => m.status === COL_STATUS[ci]).length : 0)}</span>
       <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${c.cards.map(k => `<div class="kc${unA(k)[0]}"${unA(k)[1]} draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(k.t)}</textarea>${k.link && where(k.link) ? `<a class="klink" data-go="${k.link}">→ ${esc(get(where(k.link) + "." + k.link).title)}</a>` : ""}
       <div class="kctl"><button data-kmove="${p}|${c.id}|${k.id}|-1" ${ci ? "" : "disabled"}>←</button><button data-kmove="${p}|${c.id}|${k.id}|1" ${ci < b.cols.length - 1 ? "" : "disabled"}>→</button><button data-del="${p}.cols.${c.id}.cards|${k.id}">×</button></div></div>`).join("")}
-      <button class="add" data-push="${p}.cols.${c.id}.cards|card">+ карточка</button></div>`).join("")}<button class="addcol" data-push="${p}.cols|kcol" title="Добавить колонку">+</button></div>`;
+      ${p === "work" ? mechCards(ci) : ""}<button class="add" data-push="${p}.cols.${c.id}.cards|card">+ карточка</button></div>`).join("")}<button class="addcol" data-push="${p}.cols|kcol" title="Добавить колонку">+</button></div>`;
   }
   return "";
 }
@@ -736,12 +766,13 @@ function balCount(pg) {
   const n = t ? t.rows.filter(r => Object.values(r.c || {}).some(v => String(v).trim())).length : 0;
   return n ? n + " парам." : "";
 }
-function blockHTML(bp, b, i, n) {
+function blockHTML(bp, b, i, n, next) {
   const p = bp + "." + b.id;
   const ctl = `<div class="bc"><span class="drag" draggable="true" data-bdrag="${b.id}" title="Перетащить">⠿</span><button data-mv="${b.id}|-1" title="Выше" ${i ? "" : "disabled"}>↑</button><button data-mv="${b.id}|1" title="Ниже" ${i < n - 1 ? "" : "disabled"}>↓</button>
     ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}<button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
   const [uc, ua] = unA(b);
-  if (b.kind === "heading") return `<div class="hblock${uc}"${ua} data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${ctl}</div>`;
+  const mb = b.kind === "heading" && next && next.kind === "mech" ? `<button class="mboard" data-mboard title="Все механики этой игры по статусам">⚙️ Доска механик →</button>` : "";
+  if (b.kind === "heading") return `<div class="hblock${uc}"${ua} data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${mb}${ctl}</div>`;
   const cnt = b.kind === "list" && b.items.length ? `<span class="cnt">${b.items.filter(x => x.done).length}/${b.items.length}</span>` : "";
   const tone = b.kind === "note" ? `<button class="tone" data-tone="${p}" title="Сменить тип заметки">${TONES[b.tone]?.[0] || "💡"}</button>` : "";
   return `<div class="card k-${b.kind}${b.kind === "note" ? " t-" + b.tone : ""}${b.wide ? " wide" : ""}${uc}"${ua} data-block="${b.id}">
@@ -750,7 +781,7 @@ function blockHTML(bp, b, i, n) {
 function blocksHTML() {
   const bp = blocksPath(), list = get(bp);
   const nm = list.some(b => b.kind === "mech") ? `<button class="newmech" data-newmechb>＋ Механика</button>` : "";
-  return `<div class="grid">${list.map((b, i) => blockHTML(bp, b, i, list.length)).join("") || `<div class="card wide empty">Блоков нет — добавьте первый ниже</div>`}${nm}</div>
+  return `<div class="grid">${list.map((b, i) => blockHTML(bp, b, i, list.length, list[i + 1])).join("") || `<div class="card wide empty">Блоков нет — добавьте первый ниже</div>`}${nm}</div>
     <div class="addbar"><span>＋ Блок</span>${Object.entries(KINDS).map(([k, [e, n]]) => `<button data-addb="${k}"><i>${e}</i>${n}</button>`).join("")}
     <button class="ready" data-readymenu>★ Готовые блоки</button></div>`;
 }
@@ -765,7 +796,7 @@ function renderNav() {
   const f = document.activeElement && document.activeElement.id === "search";
   $("#nav").innerHTML = `<div class="logo">Cats <span>Land</span></div>
     <input id="search" class="search" placeholder="Поиск по диз-доку" value="${esc(q)}">
-    <div class="nl ${view === "work" ? "on" : ""}" data-go="work" style="margin-top:12px">🔥 <span class="t">В работе</span><span class="c">${workNow().length || ""}</span></div>
+    <div class="nl ${view === "work" ? "on" : ""}" data-go="work" style="margin-top:12px">🔥 <span class="t">В работе</span><span class="c">${workNow().length + doc.mechs.filter(m => m.status === "work").length || ""}</span></div>
     <div class="lbl"><input class="lbli" data-p="pagesLabel" value="${esc(doc.pagesLabel)}"><button data-newpage="pages" title="Новая страница">+</button></div>
     ${doc.pages.filter(hit).map(x => navItem(x)).join("") || (q ? `<div class="none">ничего</div>` : "")}
     <div class="lbl"><input class="lbli" data-p="mechsLabel" value="${esc(doc.mechsLabel)}"><button data-newpage="mechs" title="Новая механика">+</button></div>
@@ -783,7 +814,7 @@ function renderNav() {
 function gameCard(g) {
   const pr = progress(g), cv = cover(g), first = g.sub || (g.blocks.find(b => (b.kind === "text" || b.kind === "note") && plain(b).trim()) || {}).text;
   const desc = g.sub ? g.sub : first ? plainOf(g.blocks.find(b => b.text === first).html ? first : esc(first)) : "";
-  return `<button class="gc" data-go="${g.id}" draggable="true" data-gdrag="${g.id}">${cv ? `<div class="cov"><img data-src="${esc(cv)}" alt=""></div>` : ""}
+  return `<button class="gc" data-go="${g.id}" draggable="true" data-gdrag="${g.id}"><span class="gdel" data-delid="${g.id}" title="Удалить мини-игру">×</span>${cv ? `<div class="cov"><img data-src="${esc(cv)}" alt=""></div>` : ""}
     <span class="pill" style="background:${STATUS[g.status][1]}">${STATUS[g.status][0]}</span><div class="n">${esc(g.emoji)} ${esc(g.title)}</div>
     <div class="d">${desc ? esc(desc) : "<span style='color:var(--ink3)'>Пока пусто</span>"}</div>
     ${g.tags.length ? `<div class="tags">${g.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
@@ -795,27 +826,25 @@ function render() {
   LSset("cl_view", view); enterView();
   renderNav();
   const P = $("#page");
-  const banner = REMOTE ? "" : `<div class="banner">Сейчас правки сохраняются только в этом браузере. <a onclick="askKey()">Подключить общий диз-док</a></div>`;
+  const banner = (REMOTE ? "" : `<div class="banner">Сейчас правки сохраняются только в этом браузере. <a onclick="askKey()">Подключить общий диз-док</a></div>`) + backBtn();
   if (view === "mechs") {
     const card = m => { const sum = (m.blocks.find(b => b.kind === "text") || {}).text || "";
-      return `<button class="gc" data-go="${m.id}"><span class="pill" style="background:${STATUS[m.status][1]}">${STATUS[m.status][0]}</span><div class="n">${esc(m.emoji)} ${esc(m.title)}</div>
+      return `<button class="gc" data-go="${m.id}"><span class="gdel" data-delid="${m.id}" title="Удалить механику">×</span><span class="pill" style="background:${STATUS[m.status][1]}">${STATUS[m.status][0]}</span><div class="n">${esc(m.emoji)} ${esc(m.title)}</div>
         <div class="d">${sum ? esc(plainOf(sum)) : "<span style='color:var(--ink3)'>Пока пусто</span>"}</div>${balCount(m) ? `<div class="tags"><span>${balCount(m)}</span></div>` : ""}</button>`; };
-    if (mgame !== "all" && mgame !== "none" && !doc.games.some(g => g.id === mgame)) mgame = "all";
-    const inF = m => mgame === "all" || (mgame === "none" ? !mechGames(m).length : mechGames(m).some(g => g.id === mgame));
+    if (mgame !== "all" && !SCOPES[mgame] && !doc.games.some(g => g.id === mgame)) mgame = "all";
+    const inF = m => mgame === "all" || (SCOPES[mgame] ? scopeOf(m) === mgame : mechGames(m).some(g => g.id === mgame));
     const chip = (id, t, n) => `<button class="${mgame === id ? "on" : ""}" data-mgame="${id}">${t}<b>${n}</b></button>`;
     P.innerHTML = banner + `<div class="head"><span class="emoji">⚙️</span><input class="title" data-p="mechsLabel" value="${esc(doc.mechsLabel)}"></div>
-      <div class="mfilt">${chip("all", "Все", doc.mechs.length)}${doc.games.map(g => chip(g.id, esc(g.emoji) + " " + esc(g.title), doc.mechs.filter(m => mechGames(m).some(x => x.id === g.id)).length)).join("")}${chip("none", "Без игры", doc.mechs.filter(m => !mechGames(m).length).length)}</div>` +
+      <div class="mfilt">${chip("all", "Все", doc.mechs.length)}${doc.games.map(g => chip(g.id, esc(g.emoji) + " " + esc(g.title), doc.mechs.filter(m => mechGames(m).some(x => x.id === g.id)).length)).join("")}${Object.entries(SCOPES).map(([k, t]) => chip(k, t, doc.mechs.filter(m => scopeOf(m) === k).length)).join("")}</div>` +
       MECH_ORDER.map(k => { const ms = doc.mechs.filter(m => m.status === k && inF(m)); return ms.length ? `<div class="mgroup"><div class="mgh"><span class="dot" style="background:${STATUS[k][1]}"></span>${STATUS[k][0]} · ${ms.length}</div><div class="games">${ms.map(card).join("")}</div></div>` : ""; }).join("") +
       `<div class="games"><button class="gc newg" data-newpage="mechs">+ Новая механика</button></div>`;
   } else if (view === "work") {
     const hot = [];
     ALL().forEach(pg => pg.blocks.forEach(b => b.kind === "list" && b.items.forEach(x => { if (!x.done && x.pr === "r" && itemText(x).trim()) hot.push([pg, x]); })));
-    const mw = doc.mechs.filter(m => m.status === "work" || m.status === "redo");
     P.innerHTML = banner + `<div class="head"><span class="emoji">🔥</span><h1 class="titleS">В работе</h1></div>
-      <p class="hint2" style="margin-top:0">Перетаскивайте карточки между колонками. Задачу из любого чек-листа сюда — кнопка 🔥 у пункта.</p>
+      <p class="hint2" style="margin-top:0">Задачи и механики вместе. Механика стоит в колонке своего статуса — перетащите, и статус сменится. Задачу из любого чек-листа сюда — кнопка 🔥 у пункта.</p>
       <div class="card wide k-board" data-block="work">${bodyHTML("work", doc.work)}</div>
-      <div class="wsec"><h3>Механики в работе · ${mw.length}</h3>${mw.map(m => `<div class="wrow" data-go="${m.id}"><span class="pill" style="background:${STATUS[m.status][1]}">${STATUS[m.status][0]}</span>${esc(m.emoji)} ${esc(m.title)}</div>`).join("") || `<p class="hint2">Нет — поставьте механике статус «В работе»</p>`}</div>
-      <div class="wsec"><h3>Срочное из чек-листов · ${hot.length}</h3>${hot.map(([pg, x]) => `<div class="wrow" data-go="${pg.id}"><span class="pd" style="background:#F2553D"></span>${esc(itemText(x))}<span class="from">${esc(pg.emoji)} ${esc(pg.title)}</span></div>`).join("") || `<p class="hint2">Нет пунктов с красным приоритетом</p>`}</div>`;
+      ${hot.length ? `<div class="wsec"><h3>Срочное из чек-листов · ${hot.length}</h3>${hot.map(([pg, x]) => `<div class="wrow" data-go="${pg.id}"><span class="pd" style="background:#F2553D"></span>${esc(itemText(x))}<span class="from">${esc(pg.emoji)} ${esc(pg.title)}</span></div>`).join("")}</div>` : ""}`;
   } else if (view === "games") {
     const gs = doc.games;
     P.innerHTML = banner + `<div class="head"><span class="emoji">🗂️</span><input class="title" data-p="gamesLabel" value="${esc(doc.gamesLabel)}"></div>
@@ -827,9 +856,9 @@ function render() {
     const pg = curPage(), sec = where(view), isGame = sec === "games", isMech = sec === "mechs", path = pagePath();
     const refs = isMech ? ALL().filter(x => x.blocks.some(b => b.kind === "mech" && b.link === pg.id)) : [];
     const [hc, ha] = unA(pg);
-    P.innerHTML = banner + `<div class="head${hc}"${ha}><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"></div>
+    P.innerHTML = banner + `<div class="head${hc}"${ha}><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"><button class="hdel" data-delpage title="Удалить">🗑</button></div>
       <textarea class="sub" rows="1" data-p="${path}.sub" placeholder="Подзаголовок — пара слов о странице">${esc(pg.sub)}</textarea>` +
-      (refs.length ? `<div class="refs">Используется в: ${refs.map(r => `<a data-go="${r.id}">${esc(r.emoji)} ${esc(r.title)}</a>`).join("")}</div>` : "") +
+      (isMech ? `<div class="refs">${refs.length ? "Используется в:" : "Где:"} ${refs.map(r => `<a data-go="${r.id}">${esc(r.emoji)} ${esc(r.title)}</a>`).join("")}${refs.length ? "" : `<a data-mscope="${pg.id}" title="Переключить: лобби / общая">${SCOPES[scopeOf(pg)]}</a>`}</div>` : "") +
       (isGame || isMech ? `<div class="status">${Object.entries(STATUS).map(([k, [t, c]]) => `<button class="${pg.status === k ? "on" : ""}" style="${pg.status === k ? "background:" + c : ""}" data-status="${k}">${t}</button>`).join("")}</div>
       ${isGame ? `<div class="tagrow">${TAGS.concat(pg.tags.filter(t => !TAGS.includes(t))).map(t => `<button class="${pg.tags.includes(t) ? "on" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}<button data-newtag>+ тег</button></div>` : ""}` : "")
       + blocksHTML() + `<div class="pageact"><button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button><button data-duppage>⧉ Дублировать страницу</button>
@@ -929,9 +958,9 @@ document.addEventListener("paste", e => {
   if (card && e.clipboardData.files.length) { e.preventDefault(); addImages(card.querySelector("[data-drop]").dataset.drop, e.clipboardData.files); }
 });
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame]");
+  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame],[data-delid],[data-mboard],[data-mscope]");
   if (!t || t.disabled) return; const d = t.dataset;
-  if (d.go) { view = d.go; $("nav").classList.remove("open"); render(); scrollTo(0, 0); return; }
+  if (d.go) { go(d.go); return; }
   if ("dockadd" in d) { const after = lastBlock && get(blocksPath()).some(b => b.id === lastBlock) ? lastBlock : null;
     openMenu(t, Object.values(KINDS).map(([e, n, f]) => ({ e, n, run: () => insertBlock(f(), after) })).concat(READY.map(([e, n, f]) => ({ e, n: "★ " + n, run: () => insertBlock(f(), after) })))); return; }
   if (d.gview) { gview = d.gview; LSset("cl_gview", gview); render(); return; }
@@ -944,12 +973,14 @@ document.addEventListener("click", e => {
     let j = i + +dir; while (j >= 0 && j < l.length && l[j].done) j += +dir; if (j < 0 || j >= l.length) return;
     l.splice(j, 0, l.splice(i, 1)[0]); save(label()); render(); return; }
   if (d.prio) { const [l, id] = pair(d.prio), it = l.find(x => x.id === id); it.pr = PRIO_NEXT[it.pr || ""]; if (!it.pr) delete it.pr; save(label() + ": приоритет"); render(); return; }
+  if (d.mscope) { const m = get("mechs." + d.mscope); m.scope = scopeOf(m) === "lobby" ? "common" : "lobby"; save(label()); render(); return; }
+  if ("mboard" in d) { mgame = where(view) === "games" ? view : "all"; LSset("cl_mgame", mgame); go("mechs"); return; }
   if (d.mgame) { mgame = d.mgame; LSset("cl_mgame", mgame); render(); return; }
   if (d.towork) { const [l, id] = pair(d.towork), it = l.find(x => x.id === id), txt = itemText(it).trim(); if (!txt) { toast("Пункт пустой"); return; }
     workNow().push({ id: uid(), t: txt, link: where(view) ? view : undefined }); save("в работу: " + txt.slice(0, 40)); renderNav(); toast("Добавлено в «В работе»"); return; }
   if ("newmechb" in d) { const pg = mechPage(); doc.mechs.push(pg); const b = norm(MC(pg.title)); b.link = pg.id; insertBlock(b); return; }
   if (d.lexp) { LEXP.has(d.lexp) ? LEXP.delete(d.lexp) : LEXP.add(d.lexp); render(); return; }
-  if (d.mechnew) { const b = get(d.mechnew), pg = mechPage(b.title, b.text); doc.mechs.push(pg); b.link = pg.id; save("новая механика " + pg.title); view = pg.id; render(); scrollTo(0, 0); return; }
+  if (d.mechnew) { const b = get(d.mechnew), pg = mechPage(b.title, b.text); doc.mechs.push(pg); b.link = pg.id; save("новая механика " + pg.title); go(pg.id); return; }
   if (d.del) {
     const [l, id] = pair(d.del); const i = l.findIndex(x => x.id === id); if (i < 0) return;
     const it = l[i]; if ((it.cards && it.cards.length) && !confirm("Удалить колонку вместе с карточками?")) return;
@@ -968,9 +999,9 @@ document.addEventListener("click", e => {
   if (d.emoji) { pickEmoji(t, d.emoji); return; }
   if (d.addb) { insertBlock(KINDS[d.addb][2]()); return; }
   if ("readymenu" in d) { openMenu(t, READY.map(([e, n, f]) => ({ e, n, run: () => insertBlock(f()) }))); return; }
-  if ("delpage" in d) { const pg = curPage(); if (!confirm("Удалить страницу «" + pg.title + "»?")) return; const s = where(view); doc[s] = doc[s].filter(x => x !== pg);
-    view = s === "games" ? "games" : (doc.pages[0] || {}).id || "games"; save("удалена " + pg.title); render(); return; }
-  if ("duppage" in d) { const s = where(view), pg = curPage(), c = clone(pg); c.id = uid(); c.title = pg.title + " (копия)"; doc[s].splice(doc[s].indexOf(pg) + 1, 0, c); view = c.id; save("копия " + pg.title); render(); toast("Страница скопирована"); return; }
+  if ("delpage" in d) { delPage(view); return; }
+  if (d.delid) { delPage(d.delid); return; }
+  if ("duppage" in d) { const s = where(view), pg = curPage(), c = clone(pg); c.id = uid(); c.title = pg.title + " (копия)"; doc[s].splice(doc[s].indexOf(pg) + 1, 0, c); navPush(c.id); save("копия " + pg.title); render(); toast("Страница скопирована"); return; }
   if (d.pmv) { const s = where(view), arr = doc[s], i = arr.indexOf(curPage()), j = i + +d.pmv; if (j < 0 || j >= arr.length) return; arr.splice(j, 0, arr.splice(i, 1)[0]); save(label()); render(); return; }
   const bl = get(blocksPath());
   if (d.rmb) {
@@ -1002,12 +1033,14 @@ function fstate() {
 document.addEventListener("selectionchange", fstate);
 let lastBlock = null;
 document.addEventListener("focusin", e => { const b = e.target.closest && e.target.closest("[data-block]"); if (b) lastBlock = b.dataset.block; fstate(); });
-document.addEventListener("focusout", () => setTimeout(fstate, 0));
+document.addEventListener("focusout", e => { if (e.target.spellcheck) e.target.spellcheck = false; setTimeout(fstate, 0); });
+document.addEventListener("focusin", e => { const t = e.target; if (t.isContentEditable || t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && t.type !== "checkbox" && t.type !== "color")) t.spellcheck = true; });
+document.body.spellcheck = false;
 
 /* drag & drop: blocks, board cards, game cards between status columns, image files */
 let drag = null;
 document.addEventListener("dragstart", e => {
-  const t = e.target.closest && e.target.closest("[data-bdrag],[data-kdrag],[data-gdrag],[data-idrag]"); if (!t) return;
+  const t = e.target.closest && e.target.closest("[data-bdrag],[data-kdrag],[data-gdrag],[data-idrag],[data-mdrag]"); if (!t) return;
   drag = t.dataset; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", "x");
   ((t.dataset.idrag && t.closest(".it")) || t.closest(".card") || t).classList.add("dragging");
 });
@@ -1016,7 +1049,7 @@ const dropTarget = e => {
   if (e.dataTransfer.types.includes("Files")) return e.target.closest(".k-images");
   if (!drag) return null;
   if (drag.bdrag) return e.target.closest("[data-block]");
-  if (drag.kdrag) return e.target.closest("[data-kcol]");
+  if (drag.kdrag || drag.mdrag) return e.target.closest("[data-kcol]");
   if (drag.gdrag) return e.target.closest("[data-scol]");
   if (drag.idrag) { const r = e.target.closest("[data-irow]"); return r && !r.classList.contains("done") && r.dataset.irow.split("|")[0] === drag.idrag.split("|")[0] ? r : null; }
 };
@@ -1028,6 +1061,8 @@ document.addEventListener("drop", e => {
   else if (drag.kdrag) { const [from, id] = pair(drag.kdrag); const k = from.splice(from.findIndex(x => x.id === id), 1)[0]; const to = get(t.dataset.kcol);
     const before = e.target.closest("[data-kdrag]"); const bi = before ? to.findIndex(x => x.id === before.dataset.kdrag.split("|")[1]) : -1; to.splice(bi < 0 ? to.length : bi, 0, k); }
   else if (drag.gdrag) { const g = doc.games.find(x => x.id === drag.gdrag); g.status = t.dataset.scol; }
+  else if (drag.mdrag) { const ci = workCols().findIndex(c => t.dataset.kcol === "work.cols." + c.id + ".cards"); const m = doc.mechs.find(x => x.id === drag.mdrag);
+    if (m && ci >= 0) { m.status = COL_STATUS[ci]; toast(`«${m.title}»: ${STATUS[m.status][0]}${m.status === "done" ? " — ушла с доски" : ""}`); } }
   else if (drag.idrag) { const [l, id] = pair(drag.idrag), tid = t.dataset.irow.split("|")[1]; if (tid === id) { drag = null; return; }
     const it = l.splice(l.findIndex(x => x.id === id), 1)[0]; l.splice(l.findIndex(x => x.id === tid), 0, it); }
   drag = null; save(label()); render();
@@ -1064,10 +1099,47 @@ function menuKey(e) {
   menuEl.querySelector(".sel").scrollIntoView({ block: "nearest" });
 }
 
+function delPage(id) {
+  const s = where(id); if (!s) return; const pg = get(s + "." + id);
+  const cards = s === "mechs" ? ALL().reduce((n, x) => n + x.blocks.filter(b => b.kind === "mech" && b.link === id).length, 0) : 0;
+  if (!confirm(`Удалить ${s === "mechs" ? "механику" : s === "games" ? "мини-игру" : "страницу"} «${pg.title}»?${cards ? "\nКарточки механики на страницах игр тоже уберутся." : ""}`)) return;
+  doc[s] = doc[s].filter(x => x !== pg);
+  if (cards) ALL().forEach(x => { x.blocks = x.blocks.filter(b => !(b.kind === "mech" && b.link === id)); });
+  if (view === id) { while (NAV.length && NAV[NAV.length - 1] !== "games" && NAV[NAV.length - 1] !== "mechs" && NAV[NAV.length - 1] !== "work" && !where(NAV[NAV.length - 1])) NAV.pop();
+    view = NAV.length ? NAV.pop() : s === "games" ? "games" : s === "mechs" ? "mechs" : (doc.pages[0] || {}).id || "games"; }
+  save("удалена " + pg.title); render(); toast("Удалено: " + pg.title);
+}
+function newMechDialog() {
+  const pre = where(view) === "games" ? view : view === "mechs" && mgame !== "all" ? mgame : "common";
+  let sel = doc.games.some(g => g.id === pre) || SCOPES[pre] ? pre : "common";
+  const opts = doc.games.map(g => [g.id, esc(g.emoji) + " " + esc(g.title)]).concat(Object.entries(SCOPES), [["newgame", "＋ Новая мини-игра"]]);
+  const w = document.createElement("div"); w.className = "modal";
+  w.innerHTML = `<div class="mnew"><h3>Новая механика</h3><input class="mn" placeholder="Название, например «Бита»">
+    <div class="where">${opts.map(([k, t]) => `<button data-w="${k}" class="${k === sel ? "on" : ""}">${t}</button>`).join("")}</div>
+    <small>Игра — карточка механики появится на странице игры. Лобби и общая — для всего Cats Land.</small>
+    <div class="ng"><input class="gn" placeholder="Название новой мини-игры"></div>
+    <button class="btn" style="margin-top:14px">Создать</button></div>`;
+  document.body.appendChild(w); setTimeout(() => w.querySelector(".mn").focus(), 20);
+  const make = () => {
+    const title = w.querySelector(".mn").value.trim() || "Новая механика";
+    let game = doc.games.find(g => g.id === sel);
+    if (sel === "newgame") { const gt = w.querySelector(".gn").value.trim(); if (!gt) { w.querySelector(".gn").focus(); return; }
+      game = page(GAME_TPL[GAME_TPL.length - 1], gt); Object.assign(game, { status: "idea", tags: [] }); game.blocks.forEach(norm); doc.games.push(game); }
+    const pg = mechPage(title); if (!game) pg.scope = sel; doc.mechs.push(pg);
+    if (game) { if (!game.blocks.some(b => b.kind === "mech")) game.blocks.push(norm(HD("Механики")));
+      const b = norm(MC(title)); b.link = pg.id; game.blocks.push(b); }
+    w.remove(); navPush(pg.id); save("новая механика " + title); render(); scrollTo(0, 0);
+  };
+  w.onclick = e => {
+    if (e.target === w) return w.remove();
+    const b = e.target.closest("[data-w]");
+    if (b) { sel = b.dataset.w; w.querySelectorAll("[data-w]").forEach(x => x.classList.toggle("on", x === b)); w.querySelector(".ng").classList.toggle("on", sel === "newgame"); if (sel === "newgame") w.querySelector(".gn").focus(); return; }
+    if (e.target.closest(".btn")) make();
+  };
+  w.addEventListener("keydown", e => { if (e.key === "Enter") make(); if (e.key === "Escape") w.remove(); });
+}
 function pickTemplate(section) {
-  if (section === "mechs") { const pg = mechPage(); doc.mechs.push(pg);
-    const gg = view === "mechs" && doc.games.find(g => g.id === mgame); if (gg) { const b = norm(MC(pg.title)); b.link = pg.id; gg.blocks.push(b); }
-    view = pg.id; save("новая механика"); render(); const n = $(".title"); n.focus(); n.select(); return; }
+  if (section === "mechs") { newMechDialog(); return; }
   const T = section === "games" ? GAME_TPL : PAGE_TPL;
   const w = document.createElement("div"); w.className = "modal";
   w.innerHTML = `<div class="tpl"><h3>${section === "games" ? "Новая мини-игра" : "Новая страница"}</h3><p>Выберите шаблон — всё внутри потом можно менять, удалять и дополнять.</p>
@@ -1077,7 +1149,7 @@ function pickTemplate(section) {
     const b = e.target.closest("[data-t]"); if (!b) return;
     const tpl = T[+b.dataset.t], pg = page(tpl, section === "games" ? (tpl[1] === "Пустая" ? "Новая мини-игра" : tpl[1]) : tpl[1]);
     if (section === "games") Object.assign(pg, { status: "idea", tags: [] });
-    pg.blocks.forEach(norm); doc[section].push(pg); view = pg.id; w.remove(); save("новая страница " + pg.title); render();
+    pg.blocks.forEach(norm); doc[section].push(pg); navPush(pg.id); w.remove(); save("новая страница " + pg.title); render();
     const n = $(".title"); n.focus(); n.select();
   };
   document.body.appendChild(w);

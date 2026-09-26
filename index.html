@@ -426,6 +426,32 @@ cite[data-ai]::before{content:"🤖";font-size:.8em;margin-right:3px}
 .sg .ty div{margin:0 0 8px}
 .sg .ex{min-width:220px;max-width:340px;flex:1}
 .sg ul{margin:0;padding-left:20px;color:var(--ink2)}.sg li{margin:3px 0}
+/* rules: how it must work + was it checked */
+.rl{align-items:flex-start;padding:6px 8px;margin:0 -8px;border-radius:var(--r1)}
+.rl.ok{box-shadow:inset 4px 0 0 var(--done)}
+.rl.bug{box-shadow:inset 4px 0 0 var(--redo);background:color-mix(in srgb,var(--soft3) 70%,transparent)}
+.rl .rst{display:flex;gap:4px;flex:none;margin-top:1px}
+.rl .rst button{width:26px;height:24px;border:var(--b1) solid var(--line);border-radius:var(--r1);color:var(--ink3);font:800 var(--fs2)/1 var(--sans);background:var(--card)}
+.rl .rst button:hover{border-color:var(--edge);color:var(--ink)}
+.rl .rst .ok.on{background:var(--done);border-color:var(--edge);color:var(--ink)}
+.rl .rst .bug.on{background:var(--redo);border-color:var(--edge);color:var(--white)}
+.rl .rnote{width:100%;margin:6px 0 2px;padding:6px 8px;border:var(--b1) solid var(--redo);border-radius:var(--r1);background:var(--card);resize:none;overflow:hidden;font:400 var(--fs2)/1.4 var(--sans)}
+.rl .rby{display:block;margin-top:2px;font:700 var(--fs1)/1.3 var(--mono);color:var(--ink3)}
+.bh .cnt .g{color:var(--done)}.bh .cnt .r{color:var(--redo)}
+/* page history */
+.hbtn{margin-left:auto;align-self:center;padding:7px 12px;border:var(--b1) solid var(--edge);border-radius:var(--r2);background:var(--card);color:var(--ink2);font:800 var(--fs2)/1.2 var(--sans);box-shadow:var(--sh1);white-space:nowrap}
+.hbtn.on,.hbtn:hover{background:var(--sun);color:var(--ink)}
+.head .hbtn+.hdel{margin-left:6px}
+.hist{margin:6px 0 26px;padding:16px 18px;background:var(--card);border:var(--b2) solid var(--edge);border-radius:var(--r3);box-shadow:var(--sh2)}
+.hist h3{margin:0 0 4px;font:800 var(--fs5)/1.2 var(--sans)}
+.hist .hint{margin:0 0 12px;color:var(--ink3);font-size:var(--fs2)}
+.he{padding:12px 0;border-top:var(--b1) dashed var(--line)}
+.he .hh{font:700 var(--fs1)/1.4 var(--mono);color:var(--ink3);margin-bottom:6px}.he .hh b{color:var(--ink)}
+.he .hl{margin:3px 0;line-height:1.5}.he .hl .lb{font-weight:700}
+.he del{color:var(--redo);text-decoration-thickness:2px;background:color-mix(in srgb,var(--soft3) 60%,transparent);border-radius:3px;padding:0 2px}
+.he ins{color:#1E7B3C;text-decoration:none;background:var(--soft4);border-radius:3px;padding:0 2px}
+.he .why{width:100%;margin-top:6px;padding:6px 8px;border:var(--b1) dashed var(--line);border-radius:var(--r1);background:transparent;font:400 var(--fs2)/1.3 var(--sans)}
+.he .why:focus,.he .why.has{border-style:solid;border-color:var(--edge);background:var(--bg)}
 </style>
 </head>
 <body>
@@ -457,6 +483,7 @@ let doc, base, sha = null, dirty = false, saving = false, timer = null, what = n
 /* ===== blocks and templates ===== */
 function B(kind, title, extra) { return Object.assign({ id: uid(), kind, title, wide: false }, extra || {}); }
 const TX = (title, ph, wide) => B("text", title, { ph, wide: !!wide, text: "" });
+const RL = (title, ph, items) => B("rules", title, { ph, items: (items || []).map(t => ({ id: uid(), t })) });
 const CL = (title, ph, items) => B("list", title, { ph, items: (items || []).map(t => ({ id: uid(), t, done: false })) });
 function TB_(title, heads, rows, extra) {
   const cols = heads.map(t => ({ id: uid(), t }));
@@ -472,6 +499,7 @@ const KB = (title, cols) => B("board", title, { wide: true, cols: cols.map(([t, 
 const KINDS = {
   text: ["¶", "Текст", () => TX("Новый раздел", "Пишите здесь…")],
   list: ["☑", "Чеклист", () => CL("Список", "Пункт")],
+  rules: ["📏", "Правила", () => RL("Правила", "Как должно работать")],
   table: ["▦", "Таблица", () => TB_("Таблица", ["Колонка", "Колонка"])],
   images: ["🖼", "Картинки", () => IM("Картинки")],
   note: ["💡", "Заметка", () => NT("idea", "Заметка", "Идея, вопрос или что-то важное")],
@@ -491,7 +519,7 @@ const READY = [
   ["✨", "Эффекты (сочность)", () => CL("Эффекты", "Что должно ощущаться", ["Тряска камеры при падении", "Конфетти на победе"])],
   ["❓", "Открытые вопросы", () => NT("question", "Открытые вопросы", "Что ещё не решили")],
   ["⚠️", "Важно", () => NT("warn", "Важно", "О чём нельзя забыть")],
-  ["🧩", "Крайние случаи", () => CL("Крайние случаи", "Что если…", ["Что если игрок вышел посреди раунда?", "Что если все выбыли одновременно?"])],
+  ["🧩", "Правила и крайние случаи", () => RL("Правила и крайние случаи", "Как должно работать", ["Игрок вышел посреди раунда — его место освобождается, раунд идёт дальше", "Все выбыли одновременно — раунд заканчивается ничьей"])],
   ["🖼", "Референсы", () => IM("Референсы")],
   ["🗂", "Доска задач", () => KB("Задачи", [["Надо сделать"], ["В работе"], ["Переделать"], ["Готово"]])],
 ];
@@ -525,7 +553,7 @@ const TONES = { idea: ["💡", "Идея"], info: ["📌", "Заметка"], qu
 const MECH_TPL = (summary) => [Object.assign(TX("Суть", "Что это и зачем — 1–2 предложения", true), summary ? { text: summary, html: true } : {}),
   TX("Как работает", "По шагам: когда запускается → что происходит → чем заканчивается", true),
   TB_("Баланс и параметры", ["Параметр", "Значение", "Ед.", "На что влияет", "Комментарий"]),
-  CL("Крайние случаи", "Что если…"), TB_("История баланса", ["Дата", "Параметр", "Было → стало", "Почему"]),
+  RL("Правила и крайние случаи", "Как должно работать"),
   NT("question", "Открытые вопросы", "Что ещё не решили"), CL("Доделать", "Что нужно сделать")];
 const MC = (title, text) => B("mech", title, { text: text || "", html: true, link: null, ph: "Коротко: что делает механика" });
 const mechPage = (title, summary) => ({ id: uid(), emoji: "⚙️", title: title || "Новая механика", sub: "", status: "idea", tags: [], blocks: MECH_TPL(summary).map(norm) });
@@ -578,7 +606,7 @@ let mgame = LS("cl_mgame") || "all";
 /* where the user came from: in-app back button + browser back share one stack */
 const NAV = [];
 function navPush(v) { if (v !== view) { NAV.push(view); history.pushState({ v }, ""); } view = v; }
-function go(v) { navPush(v); $("nav").classList.remove("open"); render(); scrollTo(0, 0); }
+function go(v) { if (v !== view) { HOPEN = false; HALL = false; } navPush(v); $("nav").classList.remove("open"); render(); scrollTo(0, 0); }
 addEventListener("popstate", e => { if (!NAV.length) return; view = NAV.pop(); render(); scrollTo(0, 0); });
 const backBtn = () => NAV.length ? `<button class="back" onclick="history.back()">← Назад</button>` : "";
 const mechGames = m => doc.games.filter(g => g.blocks.some(b => b.kind === "mech" && b.link === m.id));
@@ -649,7 +677,9 @@ function migrate(d) {
   return d;
 }
 function norm(b) {
-  const def = { text: { text: "" }, note: { text: "", tone: "idea" }, list: { items: [] }, palette: { colors: [] }, table: { cols: [], rows: [] }, images: { imgs: [] }, links: { links: [] }, board: { cols: [] }, heading: {}, mech: { text: "", link: null } }[b.kind];
+  if (b.kind === "list" && /^Крайние случаи/.test(b.title || "")) {          // edge cases are rules to check, not tasks
+    b.kind = "rules"; b.title = "Правила и крайние случаи"; b.ph = "Как должно работать"; (b.items || []).forEach(x => { delete x.done; delete x.dt; }); }
+  const def = { rules: { items: [] }, text: { text: "" }, note: { text: "", tone: "idea" }, list: { items: [] }, palette: { colors: [] }, table: { cols: [], rows: [] }, images: { imgs: [] }, links: { links: [] }, board: { cols: [] }, heading: {}, mech: { text: "", link: null } }[b.kind];
   if (!def) return Object.assign(b, { kind: "text", text: b.text || "" });
   for (const k in def) if (b[k] == null) b[k] = def[k];
   return b;
@@ -683,6 +713,7 @@ async function load() {
 }
 function save(msg) {
   if (msg) what.add(msg);
+  histTrack();
   if (!REMOTE) { sync(LSset("cl_doc2", JSON.stringify(doc)) ? "" : "err", LSset("cl_doc2", JSON.stringify(doc)) ? "Сохранено в этом браузере" : "Не влезло в память браузера"); return; }
   stamp();
   dirty = true; sync("busy", "Сохраняю…"); clearTimeout(timer); timer = setTimeout(push, 1200);
@@ -847,6 +878,7 @@ function bodyHTML(p, b) {
     case "text": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Пишите здесь…")}">${richHTML(b)}</div>`;
     case "note": return toolbar() + `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Текст заметки")}">${richHTML(b)}</div>`;
     case "list": return listHTML(p, b);
+    case "rules": return rulesHTML(p, b);
     case "mech": { const lp = b.link && (doc.mechs || []).find(x => x.id === b.link);
       return `<div class="f rich" contenteditable="true" data-rich="${p}" data-ph="${esc(b.ph || "Коротко: что делает механика")}">${richHTML(b)}</div>
       <div class="mfoot">${lp ? `<span class="pill" style="background:${STATUS[lp.status][1]}">${STATUS[lp.status][0]}</span><span class="cnt">${balCount(lp)}</span><button class="mgo" data-go="${lp.id}">Открыть механику →</button>`
@@ -884,6 +916,18 @@ function listHTML(p, b) {
   return `<div class="cl">${shown.map(row).join("")}</div>${hid ? `<button class="lmore" data-lexp="${b.id}">Показать ещё ${hid}</button>` : ex && all.length > 10 ? `<button class="lmore" data-lexp="${b.id}">Свернуть</button>` : ""}
     <button class="add" data-addi="${p}.items">+ пункт</button>`;
 }
+const ddm = t => { const d = new Date(t); return d.toLocaleDateString("ru", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" }); };
+/* rules: a statement of how the game must behave; the team marks each one "works" or "bug + what is wrong" */
+function rulesHTML(p, b) {
+  const row = x => { const k = `${p}.items|${x.id}`, st = x.st || "";
+    return `<div class="it rl ${st}${unA(x)[0]}"${unA(x)[1]} data-irow="${k}"><span class="ih" draggable="true" data-idrag="${k}" title="Перетащить">⠿</span>
+      <div class="itw"><div class="rich itx" contenteditable="true" data-item="${k}" data-ph="${esc(b.ph || "Как должно работать")}">${x.h ? clean(x.t) : esc(x.t)}</div>
+      ${st === "bug" ? `<textarea class="rnote" rows="1" data-rnote="${k}" placeholder="Что не так? ИИ увидит это и починит">${esc(x.note || "")}</textarea>` : ""}
+      ${st && x.stBy ? `<span class="rby">${st === "ok" ? "работает — проверил" : "ошибка — нашёл"} ${esc(x.stBy)} · ${ddm(x.stAt)}</span>` : ""}</div>
+      <span class="rst"><button class="ok${st === "ok" ? " on" : ""}" data-rst="${k}|ok" title="Работает как написано">✓</button><button class="bug${st === "bug" ? " on" : ""}" data-rst="${k}|bug" title="Ошибка — работает не так">✗</button></span>
+      <button class="del" data-del="${k}" title="Удалить">×</button></div>`; };
+  return `<div class="cl">${b.items.map(row).join("")}</div><button class="add" data-addi="${p}.items">+ правило</button>`;
+}
 function balCount(pg) {
   const t = pg.blocks.find(x => x.kind === "table" && /баланс|параметр/i.test(x.title || ""));
   const n = t ? t.rows.filter(r => Object.values(r.c || {}).some(v => String(v).trim())).length : 0;
@@ -896,7 +940,9 @@ function blockHTML(bp, b, i, n, next) {
   const [uc, ua] = unA(b);
   const mb = b.kind === "heading" && next && next.kind === "mech" ? `<button class="mboard" data-mboard title="Все механики этой игры по статусам">⚙️ Доска механик →</button>` : "";
   if (b.kind === "heading") return `<div class="hblock${uc}"${ua} data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${mb}${ctl}</div>`;
-  const cnt = b.kind === "list" && b.items.length ? `<span class="cnt">${b.items.filter(x => x.done).length}/${b.items.length}</span>` : "";
+  const rn = st => b.items.filter(x => x.st === st).length;
+  const cnt = b.kind === "list" && b.items.length ? `<span class="cnt">${b.items.filter(x => x.done).length}/${b.items.length}</span>`
+    : b.kind === "rules" && b.items.length ? `<span class="cnt" title="работает / ошибки / всего"><span class="g">✓${rn("ok")}</span> <span class="r">✗${rn("bug")}</span> /${b.items.length}</span>` : "";
   const tone = b.kind === "note" ? `<button class="tone" data-tone="${p}" title="Сменить тип заметки">${TONES[b.tone]?.[0] || "💡"}</button>` : "";
   return `<div class="card k-${b.kind}${b.kind === "note" ? " t-" + b.tone : ""}${b.wide ? " wide" : ""}${b.ai ? " aim" : ""}${uc}"${ua} data-block="${b.id}">
     <div class="bh">${tone}<input class="bt" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок">${cnt}${ctl}</div>${bodyHTML(p, b)}</div>`;
@@ -997,12 +1043,12 @@ function render() {
     const pg = curPage(), sec = where(view), isGame = sec === "games", isMech = sec === "mechs", path = pagePath();
     const refs = isMech ? ALL().filter(x => x.blocks.some(b => b.kind === "mech" && b.link === pg.id)) : [];
     const [hc, ha] = unA(pg);
-    P.innerHTML = banner + `<div class="head${hc}"${ha}><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"><button class="hdel" data-delpage title="Удалить">🗑</button></div>
+    P.innerHTML = banner + `<div class="head${hc}"${ha}><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"><button class="hbtn${HOPEN ? " on" : ""}" data-hist title="Что менялось на странице">🕘 История${(pg.hist || []).length ? " · " + pg.hist.length : ""}</button><button class="hdel" data-delpage title="Удалить">🗑</button></div>
       <textarea class="sub" rows="1" data-p="${path}.sub" placeholder="Подзаголовок — пара слов о странице">${esc(pg.sub)}</textarea>` +
       (isMech ? `<div class="refs">${refs.length ? "Используется в:" : "Где:"} ${refs.map(r => `<a data-go="${r.id}">${esc(r.emoji)} ${esc(r.title)}</a>`).join("")}${refs.length ? "" : `<a data-mscope="${pg.id}" title="Переключить: лобби / общая">${SCOPES[scopeOf(pg)]}</a>`}</div>` : "") +
       (isGame || isMech ? `<div class="status">${Object.entries(STATUS).map(([k, [t, c]]) => `<button class="${pg.status === k ? "on" : ""}" style="${pg.status === k ? "background:" + c : ""}" data-status="${k}">${t}</button>`).join("")}</div>
       ${isGame ? `<div class="tagrow">${TAGS.concat(pg.tags.filter(t => !TAGS.includes(t))).map(t => `<button class="${pg.tags.includes(t) ? "on" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}<button data-newtag>+ тег</button></div>` : ""}` : "")
-      + blocksHTML() + `<div class="pageact">${isMech ? "" : `<button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button>`}<button data-duppage>⧉ Дублировать страницу</button>
+      + (HOPEN ? histHTML(pg, path) : "") + blocksHTML() + `<div class="pageact">${isMech ? "" : `<button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button>`}<button data-duppage>⧉ Дублировать страницу</button>
       <button onclick="exportMD(true)">⬇ Скачать страницу (.md)</button></div>`;
   }
   $("#dock").innerHTML = SPECIAL.has(view) ? "" : fbar(); fstate();
@@ -1029,6 +1075,7 @@ function mdOf(pg) {
     o += (b.kind === "heading" ? "## " : "### ") + (b.kind === "note" ? TONES[b.tone][0] + " " : "") + (b.title || "") + "\n\n";
     if (b.kind === "text" || b.kind === "note") o += (b.html ? md(b.text) : b.text) + "\n\n";
     if (b.kind === "mech") { const lp = b.link && (doc.mechs || []).find(x => x.id === b.link); o += md(b.text) + (lp ? "\n\n→ механика: " + lp.title : "") + "\n\n"; }
+    if (b.kind === "rules") o += b.items.map(i => `- ${i.st === "ok" ? "✓" : i.st === "bug" ? "✗" : "?"} ${i.h ? md(i.t) : i.t}${i.note ? " — ошибка: " + i.note : ""}`).join("\n") + "\n\n";
     if (b.kind === "list") o += b.items.map(i => `- [${i.done ? "x" : " "}] ${i.h ? md(i.t) : i.t}`).join("\n") + "\n\n";
     if (b.kind === "palette") o += b.colors.map(c => `- ${c.n}: ${c.c}`).join("\n") + "\n\n";
     if (b.kind === "table" && b.cols.length) o += "| " + b.cols.map(c => c.t).join(" | ") + " |\n|" + b.cols.map(() => " --- |").join("") + "\n" + b.rows.map(r => "| " + b.cols.map(c => ((r.c || {})[c.id] || "").replace(/\n/g, " ")).join(" | ") + " |").join("\n") + "\n\n";
@@ -1059,6 +1106,7 @@ document.addEventListener("input", e => {
     if (/^mechs\.[^.]+\.title$/.test(d.p)) { const id = d.p.split(".")[1]; ALL().forEach(x => x.blocks.forEach(b => { if (b.kind === "mech" && b.link === id) b.title = t.value; })); } if (/\.(title)$/.test(d.p) && !d.p.includes(".blocks.") || /Label$/.test(d.p)) renderNav(); }
   else if (d.item) { const [l, id] = pair(d.item); const x = l.find(x => x.id === id); if (t.isContentEditable) { x.t = clean(t.innerHTML); x.h = true; } else x.t = t.value;
     const c = cardOf(id); if (c) c.k.t = itemText(x); }
+  else if (d.rnote) { const [l, id] = pair(d.rnote); l.find(x => x.id === id).note = t.value; }
   else if (d.col) { const [l, id] = pair(d.col); l.find(x => x.id === id).c = t.value; t.parentElement.style.background = t.value; }
   else return;
   save(label());
@@ -1101,7 +1149,7 @@ document.addEventListener("paste", e => {
   if (card && e.clipboardData.files.length) { e.preventDefault(); addImages(card.querySelector("[data-drop]").dataset.drop, e.clipboardData.files); }
 });
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame],[data-delid],[data-mboard],[data-mscope],[data-aib],[data-aiok],[data-aiagain]");
+  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame],[data-delid],[data-mboard],[data-mscope],[data-aib],[data-aiok],[data-aiagain],[data-rst],[data-hist],[data-hall]");
   if (!t || t.disabled) return; const d = t.dataset;
   if (d.go) { go(d.go); return; }
   if ("dockadd" in d) { const after = lastBlock && get(blocksPath()).some(b => b.id === lastBlock) ? lastBlock : null;
@@ -1120,6 +1168,13 @@ document.addEventListener("click", e => {
     let j = i + +dir; while (j >= 0 && j < l.length && l[j].done) j += +dir; if (j < 0 || j >= l.length) return;
     l.splice(j, 0, l.splice(i, 1)[0]); save(label()); render(); return; }
   if (d.prio) { const [l, id] = pair(d.prio), it = l.find(x => x.id === id); it.pr = PRIO_NEXT[it.pr || ""]; if (!it.pr) delete it.pr; save(label() + ": приоритет"); render(); return; }
+  if (d.rst) { const cut = d.rst.lastIndexOf("|"), k = d.rst.slice(0, cut), st = d.rst.slice(cut + 1), [l, id] = pair(k), x = l.find(i => i.id === id);
+    if (x.st === st) { delete x.st; delete x.stBy; delete x.stAt; } else { x.st = st; x.stBy = me(); x.stAt = Date.now(); }
+    if (x.st !== "bug") delete x.note;
+    save(label() + (x.st === "bug" ? ": ошибка" : ": проверено")); render();
+    if (x.st === "bug") { const n = document.querySelector(`[data-rnote="${k}"]`); if (n) n.focus(); } return; }
+  if ("hist" in d) { HOPEN = !HOPEN; render(); return; }
+  if ("hall" in d) { HALL = true; render(); return; }
   if (d.aib) { const b = get(d.aib); if (b.ai) delete b.ai; else b.ai = true; save(label() + ": для ИИ"); render(); return; }
   if (d.aiok) { const x = doc.ai.find(x => x.id === d.aiok); x.st = "ok"; x.okAt = Date.now(); x.okBy = me(); delete x.note; save("проверено: " + x.q.slice(0, 40)); render(); return; }
   if (d.aiagain) { const x = doc.ai.find(x => x.id === d.aiagain);
@@ -1349,12 +1404,96 @@ function walkSig(fn) {
     fn(pg, JSON.stringify([pg.title, pg.sub, pg.emoji, pg.status || "", pg.tags || []]));
     for (const b of pg.blocks || []) {
       fn(b, bsig(b));
-      if (b.kind === "list") b.items.forEach(x => fn(x, JSON.stringify([x.t, x.done, !!x.h, x.pr || ""])));
+      if (b.kind === "list" || b.kind === "rules") b.items.forEach(x => fn(x, JSON.stringify([x.t, x.done, !!x.h, x.pr || "", x.st || "", x.note || ""])));
       if (b.kind === "board") b.cols.forEach(c => c.cards.forEach(k => fn(k, JSON.stringify(k.t))));
     }
   }
 }
-function sigSync() { if (!REMOTE || !doc) return; SIG = new Map(); walkSig((o, s) => SIG.set(o.id, s)); }
+/* ===== page history: which block changed, old -> new, who, when, why.
+   Edits of one block by one person within 10 minutes fold into one entry (base = state before the first edit). ===== */
+let HB = new Map(), HOPEN = false, HALL = false;
+const HPEND = new Map();
+function hrep(b) {
+  const t = b.title || "";
+  if (b.kind === "table") { const f = (b.cols[0] || {}).id, o = {};
+    b.rows.forEach(r => { o[r.id] = { n: String((r.c || {})[f] || "").trim(), c: Object.fromEntries(b.cols.map(c => [c.t || "?", String((r.c || {})[c.id] ?? "")])) }; }); return { t, k: "tab", r: o }; }
+  if (b.kind === "list" || b.kind === "rules") { const o = {}; b.items.forEach(x => o[x.id] = { t: itemText(x), d: !!x.done, s: x.st || "", n: x.note || "" }); return { t, k: "it", r: o }; }
+  if (b.kind === "text" || b.kind === "note" || b.kind === "mech") return { t, k: "tx", r: plain(b) };
+  return { t, k: "-" };
+}
+const hpage = pg => ({ t: pg.title, k: "pg", r: pg.status || "" });
+function histBase() { if (!doc) return; HB = new Map(); for (const pg of ALL()) { HB.set(pg.id, JSON.stringify(hpage(pg))); for (const b of pg.blocks) HB.set(b.id, JSON.stringify(hrep(b))); } }
+const SNAME = { ok: "работает", bug: "ошибка", "": "не проверено" };
+function hdiff(a, b) {
+  const L = [];
+  if (a.t !== b.t && a.k !== "pg") L.push({ k: "c", l: "Заголовок", a: a.t, b: b.t });
+  if (a.k === "pg") { if (a.t !== b.t) L.push({ k: "c", l: "Название", a: a.t, b: b.t }); if (a.r !== b.r) L.push({ k: "c", l: "Статус", a: (STATUS[a.r] || [a.r])[0], b: (STATUS[b.r] || [b.r])[0] }); }
+  else if (a.k === "tx") { if (a.r !== b.r) L.push({ k: "x", a: a.r.slice(0, 4000), b: b.r.slice(0, 4000) }); }
+  else if (a.k === "tab") {
+    for (const [id, r] of Object.entries(b.r)) { const o = a.r[id];
+      if (!o) { if (Object.values(r.c).some(v => v.trim())) L.push({ k: "+", b: Object.values(r.c).filter(v => v.trim()).join(" · ") }); continue; }
+      for (const [c, v] of Object.entries(r.c)) if ((o.c[c] ?? "") !== v) L.push({ k: "c", l: (r.n || o.n || "строка") + " · " + c, a: o.c[c] ?? "", b: v }); }
+    for (const [id, o] of Object.entries(a.r)) if (!b.r[id] && Object.values(o.c).some(v => v.trim())) L.push({ k: "-", a: Object.values(o.c).filter(v => v.trim()).join(" · ") });
+  } else if (a.k === "it") {
+    for (const [id, x] of Object.entries(b.r)) { const o = a.r[id];
+      if (!o) { if (x.t.trim()) L.push({ k: "+", b: x.t }); continue; }
+      if (o.t !== x.t) L.push({ k: "x", a: o.t, b: x.t });
+      if (o.d !== x.d) L.push({ k: "c", l: x.t, a: o.d ? "сделано" : "открыто", b: x.d ? "сделано" : "открыто" });
+      if (o.s !== x.s) L.push({ k: "c", l: x.t, a: SNAME[o.s], b: SNAME[x.s] });
+      if (o.n !== x.n && x.n) L.push({ k: "c", l: "Что не так: " + x.t, a: o.n, b: x.n }); }
+    for (const [id, o] of Object.entries(a.r)) if (!b.r[id] && o.t.trim()) L.push({ k: "-", a: o.t });
+  }
+  return L;
+}
+function histTrack() {
+  if (!doc || !HB.size) return histBase();
+  const now = Date.now();
+  for (const pg of ALL()) {
+    const one = (key, cur, title) => {
+      const prev = HB.get(key); HB.set(key, cur); if (prev === undefined || prev === cur) return;
+      const a = JSON.parse(prev), b = JSON.parse(cur); if (b.k === "-") return;
+      pg.hist = pg.hist || [];
+      const pend = HPEND.get(key), e = pend && now - pend.at < 600000 && pg.hist.find(h => h.id === pend.id && h.by === me());
+      if (e) { e.lines = hdiff(pend.base, b); e.at = now; pend.at = now; e.bt = title;
+        if (!e.lines.length) { pg.hist.splice(pg.hist.indexOf(e), 1); HPEND.delete(key); } return; }
+      const lines = hdiff(a, b); if (!lines.length) return;
+      const h = { id: uid(), at: now, by: me(), blk: key, bt: title, lines };
+      pg.hist.unshift(h); if (pg.hist.length > 120) pg.hist.length = 120;
+      HPEND.set(key, { id: h.id, base: a, at: now });
+    };
+    one(pg.id, JSON.stringify(hpage(pg)), "Страница");
+    for (const b of pg.blocks) one(b.id, JSON.stringify(hrep(b)), b.title || KINDS[b.kind]?.[1] || "Блок");
+  }
+}
+/* word diff for texts: common words plain, removed <del>, added <ins> */
+function wdiff(a, b) {
+  const A = a.split(/(\s+)/), Bw = b.split(/(\s+)/);
+  if (A.length * Bw.length > 250000) return `<del>${esc(a)}</del> → <ins>${esc(b)}</ins>`;
+  const n = A.length, m = Bw.length, T = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) T[i][j] = A[i] === Bw[j] ? T[i + 1][j + 1] + 1 : Math.max(T[i + 1][j], T[i][j + 1]);
+  let i = 0, j = 0, eq = "", dl = "", ad = "";
+  const seg = [];                                            // [kind, text]: "=", "-", "+"
+  const flush = () => { if (eq) seg.push(["=", eq]); if (dl) seg.push(["-", dl]); if (ad) seg.push(["+", ad]); eq = dl = ad = ""; };
+  while (i < n || j < m) {
+    if (i < n && j < m && A[i] === Bw[j]) { if (dl || ad) flush(); eq += A[i]; i++; j++; }
+    else { if (eq) flush(); if (j < m && (i === n || T[i][j + 1] >= T[i + 1][j])) ad += Bw[j++]; else dl += A[i++]; }
+  }
+  flush();
+  /* unchanged text is only context: keep a few words around each change */
+  return seg.map(([k, t], x) => k === "-" ? `<del>${esc(t)}</del>` : k === "+" ? `<ins>${esc(t)}</ins>`
+    : t.length <= 110 ? esc(t) : x === 0 ? "… " + esc(t.slice(-50)) : x === seg.length - 1 ? esc(t.slice(0, 50)) + " …" : esc(t.slice(0, 50)) + " … " + esc(t.slice(-50))).join("");
+}
+function histHTML(pg, path) {
+  const hs = pg.hist || [], show = HALL ? hs : hs.slice(0, 20);
+  const line = l => l.k === "x" ? `<div class="hl">${wdiff(l.a, l.b)}</div>`
+    : l.k === "+" ? `<div class="hl"><ins>+ ${esc(l.b)}</ins></div>` : l.k === "-" ? `<div class="hl"><del>− ${esc(l.a)}</del></div>`
+    : `<div class="hl"><span class="lb">${esc(l.l)}:</span> <del>${esc(l.a || "—")}</del> → <ins>${esc(l.b || "—")}</ins></div>`;
+  return `<div class="hist"><h3>🕘 История изменений</h3><p class="hint">Что поменялось, кто и когда. Впишите «почему» — через месяц будет понятно, откуда такие числа. ИИ тоже это читает.</p>
+    ${show.map(h => `<div class="he"><div class="hh">${ddm(h.at)} · <b>${esc(h.by)}</b> · ${esc(h.bt)}</div>${h.lines.map(line).join("")}
+      <input class="why${h.why ? " has" : ""}" data-p="${path}.hist.${h.id}.why" value="${esc(h.why || "")}" placeholder="Почему? (необязательно)"></div>`).join("") || `<p class="hint">Пока пусто — изменения появятся здесь после первых правок.</p>`}
+    ${hs.length > show.length ? `<button class="add" data-hall>Показать все ${hs.length}</button>` : ""}</div>`;
+}
+function sigSync() { histBase(); if (!REMOTE || !doc) return; SIG = new Map(); walkSig((o, s) => SIG.set(o.id, s)); }
 function stamp() {
   if (!SIG) return sigSync();
   const next = new Map(), m = { by: me(), c: MYC, at: Date.now() };

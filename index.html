@@ -369,6 +369,7 @@ body.rt main{padding-top:70px}
 .it .wpill{display:inline-block;margin:1px 0 3px;padding:2px 8px;border:2px solid var(--edge);border-radius:999px;font:800 11px/1.3 Rubik,sans-serif;color:#1B2350;white-space:nowrap;cursor:pointer}
 .it .wpill:hover{box-shadow:2px 2px 0 var(--sh)}
 .kc.pr-g{border-left:7px solid #3CC46A}.kc.pr-y{border-left:7px solid #FFC83D}.kc.pr-r{border-left:7px solid #F2553D}
+@media (pointer:fine){[data-mv],[data-imv],[data-kmove]{display:none!important}}
 </style>
 </head>
 <body>
@@ -492,7 +493,7 @@ const workCols = () => doc.work.cols;
 const workNow = () => (workCols()[1] || { cards: [] }).cards;
 const COL_STATUS = ["redo", "work", "test", "done"];      // columns of the work board, left to right
 const mechCards = ci => doc.mechs.filter(m => COL_STATUS[ci] !== "done" && m.status === COL_STATUS[ci]).map(m =>
-  `<div class="kc mk" draggable="true" data-mdrag="${m.id}"><div class="mkh" data-go="${m.id}">⚙️ <span>${esc(m.title)}</span></div><span class="pill" style="background:${STATUS[m.status][1]}">${STATUS[m.status][0]}</span></div>`).join("");
+  `<div class="kc mk" draggable="true" data-mdrag="${m.id}"><div class="mkh" data-go="${m.id}">⚙️ <span>${esc(m.title)}</span></div></div>`).join("");
 /* a checklist item sent to the work board and its card are one task (card.ref = item id):
    text is edited in either place, ticking the item moves the card to the last column, moving the card there ticks the item */
 const itemById = id => { for (const pg of ALL()) for (const b of pg.blocks) if (b.kind === "list") { const x = b.items.find(i => i.id === id); if (x) return x; } return null; };
@@ -836,7 +837,7 @@ function gameCard(g) {
   const pr = progress(g), cv = cover(g), first = g.sub || (g.blocks.find(b => (b.kind === "text" || b.kind === "note") && plain(b).trim()) || {}).text;
   const desc = g.sub ? g.sub : first ? plainOf(g.blocks.find(b => b.text === first).html ? first : esc(first)) : "";
   return `<button class="gc" data-go="${g.id}" draggable="true" data-gdrag="${g.id}"><span class="gdel" data-delid="${g.id}" title="Удалить мини-игру">×</span>${cv ? `<div class="cov"><img data-src="${esc(cv)}" alt=""></div>` : ""}
-    <span class="pill" style="background:${STATUS[g.status][1]}">${STATUS[g.status][0]}</span><div class="n">${esc(g.emoji)} ${esc(g.title)}</div>
+    ${gview === "status" && view === "games" ? "" : `<span class="pill" style="background:${STATUS[g.status][1]}">${STATUS[g.status][0]}</span>`}<div class="n">${esc(g.emoji)} ${esc(g.title)}</div>
     <div class="d">${desc ? esc(desc) : "<span style='color:var(--ink3)'>Пока пусто</span>"}</div>
     ${g.tags.length ? `<div class="tags">${g.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
     ${pr != null ? `<div class="bar" title="Выполнено пунктов"><i style="width:${pr}%"></i><b>${pr}%</b></div>` : ""}</button>`;
@@ -852,7 +853,7 @@ function render() {
   const banner = (REMOTE ? "" : `<div class="banner">Сейчас правки сохраняются только в этом браузере. <a onclick="askKey()">Подключить общий диз-док</a></div>`) + backBtn();
   if (view === "mechs") {
     const card = m => { const sum = (m.blocks.find(b => b.kind === "text") || {}).text || "";
-      return `<button class="gc" data-go="${m.id}"><span class="gdel" data-delid="${m.id}" title="Удалить механику">×</span><span class="pill" style="background:${STATUS[m.status][1]}">${STATUS[m.status][0]}</span><div class="n">${esc(m.emoji)} ${esc(m.title)}</div>
+      return `<button class="gc" data-go="${m.id}"><span class="gdel" data-delid="${m.id}" title="Удалить механику">×</span><div class="n">${esc(m.emoji)} ${esc(m.title)}</div>
         <div class="d">${sum ? esc(plainOf(sum)) : "<span style='color:var(--ink3)'>Пока пусто</span>"}</div>${balCount(m) ? `<div class="tags"><span>${balCount(m)}</span></div>` : ""}</button>`; };
     if (mgame !== "all" && !SCOPES[mgame] && !doc.games.some(g => g.id === mgame)) mgame = "all";
     const inF = m => mgame === "all" || (SCOPES[mgame] ? scopeOf(m) === mgame : mechGames(m).some(g => g.id === mgame));
@@ -865,7 +866,6 @@ function render() {
     const hot = [];
     ALL().forEach(pg => pg.blocks.forEach(b => b.kind === "list" && b.items.forEach(x => { if (!x.done && x.pr === "r" && itemText(x).trim() && !cardOf(x.id)) hot.push([pg, x]); })));
     P.innerHTML = banner + `<div class="head"><span class="emoji">🔥</span><h1 class="titleS">В работе</h1></div>
-      <p class="hint2" style="margin-top:0">Задачи и механики вместе. Механика стоит в колонке своего статуса — перетащите, и статус сменится. Задачу из любого чек-листа сюда — кнопка 🔥 у пункта.</p>
       <div class="card wide k-board" data-block="work">${bodyHTML("work", doc.work)}</div>
       ${hot.length ? `<div class="wsec"><h3>Срочное из чек-листов · ${hot.length}</h3>${hot.map(([pg, x]) => `<div class="wrow" data-go="${pg.id}"><span class="pd" style="background:#F2553D"></span>${esc(itemText(x))}<span class="from">${esc(pg.emoji)} ${esc(pg.title)}</span></div>`).join("")}</div>` : ""}`;
   } else if (view === "games") {
@@ -874,7 +874,7 @@ function render() {
       <div class="viewsw"><button class="${gview === "gallery" ? "on" : ""}" data-gview="gallery">Карточки</button><button class="${gview === "status" ? "on" : ""}" data-gview="status">По статусам</button><span>${gs.length} шт.</span></div>` +
       (gview === "gallery" ? `<div class="games">${gs.map(gameCard).join("")}<button class="gc newg" data-newpage="games">+ ${esc(doc.gamesLabel)}: новая</button></div>`
         : `<div class="sboard">${Object.entries(STATUS).map(([k, [t, c]]) => `<div class="scol" data-scol="${k}"><div class="sch"><span class="dot" style="background:${c}"></span>${t}<span class="cnt">${gs.filter(g => g.status === k).length}</span></div>
-          ${gs.filter(g => g.status === k).map(gameCard).join("")}</div>`).join("")}</div><p class="hint2">Перетащите карточку в другую колонку, чтобы сменить статус</p>`);
+          ${gs.filter(g => g.status === k).map(gameCard).join("")}</div>`).join("")}</div>`);
   } else {
     const pg = curPage(), sec = where(view), isGame = sec === "games", isMech = sec === "mechs", path = pagePath();
     const refs = isMech ? ALL().filter(x => x.blocks.some(b => b.kind === "mech" && b.link === pg.id)) : [];
@@ -884,8 +884,8 @@ function render() {
       (isMech ? `<div class="refs">${refs.length ? "Используется в:" : "Где:"} ${refs.map(r => `<a data-go="${r.id}">${esc(r.emoji)} ${esc(r.title)}</a>`).join("")}${refs.length ? "" : `<a data-mscope="${pg.id}" title="Переключить: лобби / общая">${SCOPES[scopeOf(pg)]}</a>`}</div>` : "") +
       (isGame || isMech ? `<div class="status">${Object.entries(STATUS).map(([k, [t, c]]) => `<button class="${pg.status === k ? "on" : ""}" style="${pg.status === k ? "background:" + c : ""}" data-status="${k}">${t}</button>`).join("")}</div>
       ${isGame ? `<div class="tagrow">${TAGS.concat(pg.tags.filter(t => !TAGS.includes(t))).map(t => `<button class="${pg.tags.includes(t) ? "on" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}<button data-newtag>+ тег</button></div>` : ""}` : "")
-      + blocksHTML() + `<div class="pageact"><button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button><button data-duppage>⧉ Дублировать страницу</button>
-      <button onclick="exportMD(true)">⬇ Скачать страницу (.md)</button><button class="danger" data-delpage>Удалить страницу</button></div>`;
+      + blocksHTML() + `<div class="pageact">${isMech ? "" : `<button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button>`}<button data-duppage>⧉ Дублировать страницу</button>
+      <button onclick="exportMD(true)">⬇ Скачать страницу (.md)</button></div>`;
   }
   $("#dock").innerHTML = SPECIAL.has(view) ? "" : fbar(); fstate();
   P.querySelectorAll("textarea").forEach(grow);

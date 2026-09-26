@@ -452,6 +452,20 @@ cite[data-ai]::before{content:"🤖";font-size:.8em;margin-right:3px}
 .he ins{color:#1E7B3C;text-decoration:none;background:var(--soft4);border-radius:3px;padding:0 2px}
 .he .why{width:100%;margin-top:6px;padding:6px 8px;border:var(--b1) dashed var(--line);border-radius:var(--r1);background:transparent;font:400 var(--fs2)/1.3 var(--sans)}
 .he .why:focus,.he .why.has{border-style:solid;border-color:var(--edge);background:var(--bg)}
+/* more air */
+.page{max-width:920px}
+.grid{gap:28px}
+.card{padding:18px 24px 22px}
+.bh{margin-bottom:12px;padding-bottom:10px}
+.cl{gap:4px}.it{padding:4px 0}
+.games{gap:26px}
+/* balance overview */
+.bal h2{margin:30px 0 12px;font:800 var(--fs6)/1.2 var(--sans)}
+.bal .card{margin:0 0 22px}
+.bal .bh a{cursor:pointer}.bal .bh a:hover{color:var(--accent)}
+.bal .recent{margin-top:12px;padding-top:10px;border-top:var(--b1) dashed var(--line);font-size:var(--fs2);color:var(--ink2)}
+.bal .recent div{margin:3px 0}.bal .recent del{color:var(--redo)}.bal .recent ins{color:#1E7B3C;text-decoration:none;font-weight:700}
+.bal .recent i{color:var(--ink3);font-style:normal;font:700 var(--fs1)/1.3 var(--mono)}
 </style>
 </head>
 <body>
@@ -561,7 +575,19 @@ const PRIO = { "": "без приоритета", g: "низкий", y: "сре�
 const PRIO_NEXT = { "": "g", g: "y", y: "r", r: "" };
 const LEXP = new Set();
 const ALL = () => doc.pages.concat(doc.games, doc.mechs || []);
-const SPECIAL = new Set(["games", "mechs", "work", "ai", "style"]);
+const SPECIAL = new Set(["games", "mechs", "work", "ai", "style", "balance"]);
+const isBal = b => b.kind === "table" && /баланс|параметр/i.test(b.title || "") && !/истори/i.test(b.title || "");
+/* every balance table of every page in one place, editable, with the latest changes under each */
+function balanceHTML() {
+  const pgs = ALL().filter(pg => pg.blocks.some(isBal));
+  const groups = doc.games.map(g => [esc(g.emoji) + " " + esc(g.title), pgs.filter(pg => pg === g || (where(pg.id) === "mechs" && mechGames(pg).includes(g)))])
+    .concat([["Лобби и общее", pgs.filter(pg => where(pg.id) !== "games" && !(where(pg.id) === "mechs" && mechGames(pg).length))]]).filter(([, l]) => l.length);
+  const card = pg => pg.blocks.filter(isBal).map(b => { const p = where(pg.id) + "." + pg.id + ".blocks." + b.id;
+    const rec = (pg.hist || []).filter(h => h.blk === b.id).flatMap(h => h.lines.filter(l => l.k === "c").map(l => [h, l])).slice(0, 4);
+    return `<div class="card k-table wide" data-block="${b.id}"><div class="bh"><a data-go="${pg.id}"><b>${esc(pg.emoji)} ${esc(pg.title)}</b> · ${esc(b.title)} →</a></div>${bodyHTML(p, b)}
+      ${rec.length ? `<div class="recent">${rec.map(([h, l]) => `<div>${esc(l.l)}: <del>${esc(l.a || "—")}</del> → <ins>${esc(l.b || "—")}</ins> <i>${ddm(h.at)} · ${esc(h.by)}</i>${h.why ? " — " + esc(h.why) : ""}</div>`).join("")}</div>` : ""}</div>`; }).join("");
+  return `<div class="bal">${groups.map(([t, l]) => `<h2>${t}</h2>${l.map(card).join("")}`).join("") || `<p class="hint">Нет таблиц баланса. Они появляются сами у каждой механики («Баланс и параметры»).</p>`}</div>`;
+}
 /* the site's own style guide: tokens are read from :root, samples use the real classes */
 function styleGuide() {
   const v = n => getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim();
@@ -600,7 +626,8 @@ function aiMarks() {
   }
   return out;
 }
-const aiOpen = () => aiMarks().length + doc.ai.filter(x => x.st !== "ok").length;
+const ruleBugs = () => ALL().flatMap(pg => pg.blocks.filter(b => b.kind === "rules").flatMap(b => b.items.filter(x => x.st === "bug").map(x => ({ pg, b, x }))));
+const aiOpen = () => aiMarks().length + ruleBugs().length + doc.ai.filter(x => x.st !== "ok").length;
 const MECH_ORDER = ["work", "redo", "test", "idea", "done"];
 let mgame = LS("cl_mgame") || "all";
 /* where the user came from: in-app back button + browser back share one stack */
@@ -966,6 +993,7 @@ function renderNav() {
   $("#nav").innerHTML = `<div class="logo">Cats <span>Land</span></div>
     <input id="search" class="search" placeholder="Поиск по диз-доку" value="${esc(q)}">
     <div class="nl ${view === "work" ? "on" : ""}" data-go="work" style="margin-top:12px">🔥 <span class="t">В работе</span><span class="c">${workNow().length + doc.mechs.filter(m => m.status === "work").length || ""}</span></div>
+    <div class="nl ${view === "balance" ? "on" : ""}" data-go="balance">📊 <span class="t">Баланс</span></div>
     <div class="nl ${view === "ai" ? "on" : ""}" data-go="ai">🤖 <span class="t">Для ИИ</span><span class="c">${aiOpen() || ""}</span></div>
     <div class="lbl"><input class="lbli" data-p="pagesLabel" value="${esc(doc.pagesLabel)}"><button data-newpage="pages" title="Новая страница">+</button></div>
     ${doc.pages.filter(hit).map(x => navItem(x)).join("") || (q ? `<div class="none">ничего</div>` : "")}
@@ -1011,6 +1039,9 @@ function render() {
       <div class="mfilt">${chip("all", "Все", doc.mechs.length)}${doc.games.map(g => chip(g.id, esc(g.emoji) + " " + esc(g.title), doc.mechs.filter(m => mechGames(m).some(x => x.id === g.id)).length)).join("")}${Object.entries(SCOPES).map(([k, t]) => chip(k, t, doc.mechs.filter(m => scopeOf(m) === k).length)).join("")}</div>` +
       MECH_ORDER.map(k => { const ms = doc.mechs.filter(m => m.status === k && inF(m)); return ms.length ? `<div class="mgroup"><div class="mgh"><span class="dot" style="background:${STATUS[k][1]}"></span>${STATUS[k][0]} · ${ms.length}</div><div class="games">${ms.map(card).join("")}</div></div>` : ""; }).join("") +
       `<div class="games"><button class="gc newg" data-newpage="mechs">+ Новая механика</button></div>`;
+  } else if (view === "balance") {
+    P.innerHTML = banner + `<div class="head"><span class="emoji">📊</span><h1 class="titleS">Баланс</h1></div>
+      <p class="hint" style="margin:0 0 6px;color:var(--ink2)">Все параметры всех механик на одной странице. Меняйте прямо здесь — изменение попадёт в историю механики.</p>` + balanceHTML();
   } else if (view === "style") {
     P.innerHTML = banner + `<div class="head"><span class="emoji">🎨</span><h1 class="titleS">Стили сайта</h1></div>` + styleGuide();
   } else if (view === "ai") {
@@ -1022,8 +1053,8 @@ function render() {
       ${x.st === "check" ? `<div class="acts"><button class="okb" data-aiok="${x.id}">✓ Проверено, работает</button><button class="agb" data-aiagain="${x.id}">↺ Не работает</button></div>` : ""}
       ${x.st === "ok" ? `<div class="acts"><button class="agb" data-aiagain="${x.id}">↺ Сломалось снова</button></div>` : ""}</div>`;
     P.innerHTML = banner + `<div class="head"><span class="emoji">🤖</span><h1 class="titleS">Для ИИ</h1></div>
-      <div class="aisec"><h3>Ждёт ИИ · ${ms.length + again.length}</h3>${ms.map(m => `<div class="aic"><div class="q">🤖 ${m.block ? "Весь блок «" + esc(m.q) + "»" : esc(m.q)}</div> ${src(m.pg.id, m.pg.title + (m.block ? "" : " · " + (m.b.title || "")))}</div>`).join("")}${again.map(entry).join("")}
-        ${ms.length + again.length ? "" : `<p style="color:var(--ink3)">Пусто. Выделите текст и нажмите 🤖 в панели снизу, или 🤖 у блока.</p>`}</div>
+      <div class="aisec"><h3>Ждёт ИИ · ${ms.length + again.length + ruleBugs().length}</h3>${ruleBugs().map(({ pg, b, x }) => `<div class="aic again"><div class="q">✗ ${esc(itemText(x))}</div> ${src(pg.id, pg.title + " · " + (b.title || ""))}<p class="note">${x.note ? "Что не так: " + esc(x.note) : "Ошибка — не описано, что не так"}</p></div>`).join("")}${ms.map(m => `<div class="aic"><div class="q">🤖 ${m.block ? "Весь блок «" + esc(m.q) + "»" : esc(m.q)}</div> ${src(m.pg.id, m.pg.title + (m.block ? "" : " · " + (m.b.title || "")))}</div>`).join("")}${again.map(entry).join("")}
+        ${ms.length + again.length + ruleBugs().length ? "" : `<p style="color:var(--ink3)">Пусто. Выделите текст и нажмите 🤖 в панели снизу, или 🤖 у блока.</p>`}</div>
       <div class="aisec"><h3>ИИ исправил — проверить · ${check.length}</h3>${check.map(entry).join("") || `<p style="color:var(--ink3)">Нечего проверять</p>`}</div>
       ${ok.length ? `<div class="aisec"><h3>Проверено · ${ok.length}</h3>${ok.slice(0, 15).map(entry).join("")}</div>` : ""}`;
   } else if (view === "work") {

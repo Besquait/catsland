@@ -346,6 +346,7 @@ body.rt main{padding-top:70px}
 .mgh .dot{width:12px;height:12px;border-radius:3px;border:var(--b1) solid var(--edge)}
 .newmech{display:grid;place-items:center;min-height:140px;border:var(--b2) dashed var(--edge);border-radius:var(--r3);background:transparent;color:var(--ink2);font-weight:800;font-size:var(--fs5);cursor:pointer}
 .newmech:hover{background:var(--card);color:var(--ink);transform:rotate(-.5deg)}
+.wfbar{margin:0 0 12px;flex-wrap:wrap}.wfbar b{font-weight:800;opacity:.7}
 .klink{display:inline-block;margin:2px 0 4px;padding:2px 8px;border:var(--b1) solid var(--edge);border-radius:var(--r1);background:var(--bg);font:700 var(--fs1)/1.4 var(--mono);color:var(--ink2);cursor:pointer}
 .klink:hover{background:var(--sun);color:var(--ink)}
 .it .tw{opacity:0;font-size:var(--fs2);padding:0 3px;line-height:1}
@@ -642,7 +643,18 @@ const scopeOf = m => mechGames(m).length ? "game" : m.scope === "lobby" ? "lobby
 const workCols = () => doc.work.cols;
 const workNow = () => (workCols()[1] || { cards: [] }).cards;
 const COL_STATUS = ["redo", "work", "test", "done"];      // columns of the work board, left to right
-const mechCards = ci => doc.mechs.filter(m => COL_STATUS[ci] !== "done" && m.status === COL_STATUS[ci]).map(m =>
+/* work board split by game: a card belongs to the game of the page it links to (or of its checklist item); a mechanic
+   belongs to the game that lists it, common mechanics and general pages go to "Общее" */
+const pageOfItem = id => ALL().find(pg => pg.blocks.some(b => b.kind === "list" && b.items.some(i => i.id === id)));
+const gameOfPage = pg => !pg ? "none" : where(pg.id) === "games" ? pg.id : where(pg.id) === "mechs"
+  ? ((doc.games.find(g => g.blocks.some(b => b.kind === "mech" && b.link === pg.id)) || {}).id || (pg.scope === "common" ? "common" : "none")) : "common";
+const cardGame = k => gameOfPage(k.link && where(k.link) ? get(where(k.link) + "." + k.link) : k.ref ? pageOfItem(k.ref) : null);
+const wfOk = gid => wf === "all" || wf === gid;
+const bcards = (p, c) => p === "work" ? c.cards.filter(k => wfOk(cardGame(k))) : c.cards;
+const wfOpen = gid => workCols().slice(0, -1).reduce((n, c) => n + c.cards.filter(k => cardGame(k) === gid).length, 0) + doc.mechs.filter(m => m.status !== "done" && m.status !== "idea" && gameOfPage(m) === gid).length;
+const wfBar = () => `<div class="viewsw wfbar">${[["all", "🗂️", "Все"]].concat(doc.games.map(g => [g.id, g.emoji, g.title]), [["common", "🌐", "Общее"], ["none", "·", "Без игры"]])
+  .filter(([id]) => id === "all" || id === wf || wfOpen(id)).map(([id, e, t]) => `<button class="${wf === id ? "on" : ""}" data-wf="${id}">${esc(e)} ${esc(t)}${id === "all" ? "" : ` <b>${wfOpen(id)}</b>`}</button>`).join("")}</div>`;
+const mechCards = ci => doc.mechs.filter(m => COL_STATUS[ci] !== "done" && m.status === COL_STATUS[ci] && wfOk(gameOfPage(m))).map(m =>
   `<div class="kc mk" draggable="true" data-mdrag="${m.id}"><div class="mkh" data-go="${m.id}">⚙️ <span>${esc(m.title)}</span></div></div>`).join("");
 /* a checklist item sent to the work board and its card are one task (card.ref = item id):
    text is edited in either place, ticking the item moves the card to the last column, moving the card there ticks the item */
@@ -882,7 +894,7 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 const me = () => SS("cl_name") || LS("cl_name") || "Гость";
 function sync(cls, t) { const el = $("#syncT"); if (!el) return; el.textContent = t; $("#syncI").className = cls; }
 function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 2200); }
-let view = LS("cl_view") || "intro", q = "", gview = LS("cl_gview") || "gallery";
+let view = LS("cl_view") || "intro", q = "", gview = LS("cl_gview") || "gallery", wf = LS("cl_wf") || "all";
 
 function get(path) { if (!path) return doc; return path.split(".").reduce((o, k) => o == null ? o : (Array.isArray(o) ? o.find(x => x.id === k) : o[k]), doc); }
 function setv(path, v) { const ks = path.split("."); const last = ks.pop(); const o = get(ks.join(".")); if (o) o[last] = v; }
@@ -922,8 +934,8 @@ function bodyHTML(p, b) {
     case "links": return `<div class="lks">${b.links.map(l => `<div class="lk">${safeURL(l.u) ? `<a href="${esc(l.u)}" target="_blank" rel="noopener" title="Открыть">↗</a>` : `<span class="nolink">↗</span>`}
       <input data-p="${p}.links.${l.id}.t" value="${esc(l.t)}" placeholder="Название"><input class="u" data-p="${p}.links.${l.id}.u" value="${esc(l.u)}" placeholder="https://…">
       <button class="x" data-del="${p}.links|${l.id}">×</button></div>`).join("")}</div><button class="add" data-push="${p}.links|link">+ ссылка</button>`;
-    case "board": return `<div class="board">${b.cols.map((c, ci) => `<div class="bcol" data-kcol="${p}.cols.${c.id}.cards"><div class="bch"><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><span class="cnt">${c.cards.length + (p === "work" && COL_STATUS[ci] !== "done" ? doc.mechs.filter(m => m.status === COL_STATUS[ci]).length : 0)}</span>
-      <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${c.cards.map(k => { const x = k.ref && itemById(k.ref); return `<div class="kc${unA(k)[0]}${x && x.pr ? " pr-" + x.pr : ""}"${unA(k)[1]} draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(x ? itemText(x) : k.t)}</textarea>${k.link && where(k.link) ? `<a class="klink" data-go="${k.link}">→ ${esc(get(where(k.link) + "." + k.link).title)}</a>` : ""}
+    case "board": return `<div class="board">${b.cols.map((c, ci) => `<div class="bcol" data-kcol="${p}.cols.${c.id}.cards"><div class="bch"><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><span class="cnt">${bcards(p, c).length + (p === "work" && COL_STATUS[ci] !== "done" ? doc.mechs.filter(m => m.status === COL_STATUS[ci] && wfOk(gameOfPage(m))).length : 0)}</span>
+      <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${bcards(p, c).map(k => { const x = k.ref && itemById(k.ref); return `<div class="kc${unA(k)[0]}${x && x.pr ? " pr-" + x.pr : ""}"${unA(k)[1]} draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(x ? itemText(x) : k.t)}</textarea>${k.link && where(k.link) ? `<a class="klink" data-go="${k.link}">→ ${esc(get(where(k.link) + "." + k.link).title)}</a>` : ""}
       <div class="kctl"><button data-kmove="${p}|${c.id}|${k.id}|-1" ${ci ? "" : "disabled"}>←</button><button data-kmove="${p}|${c.id}|${k.id}|1" ${ci < b.cols.length - 1 ? "" : "disabled"}>→</button><button data-del="${p}.cols.${c.id}.cards|${k.id}" title="${x ? "Убрать с доски (пункт в чек-листе останется)" : "Удалить"}">×</button></div></div>`; }).join("")}
       ${p === "work" ? mechCards(ci) : ""}<button class="add" data-push="${p}.cols.${c.id}.cards|card">+ карточка</button></div>`).join("")}<button class="addcol" data-push="${p}.cols|kcol" title="Добавить колонку">+</button></div>`;
   }
@@ -1061,7 +1073,7 @@ function render() {
     const hot = [];
     ALL().forEach(pg => pg.blocks.forEach(b => b.kind === "list" && b.items.forEach(x => { if (!x.done && x.pr === "r" && itemText(x).trim() && !cardOf(x.id)) hot.push([pg, x]); })));
     P.innerHTML = banner + `<div class="head"><span class="emoji">🔥</span><h1 class="titleS">В работе</h1></div>
-      <div class="card wide k-board" data-block="work">${bodyHTML("work", doc.work)}</div>
+      ${wfBar()}<div class="card wide k-board" data-block="work">${bodyHTML("work", doc.work)}</div>
       ${hot.length ? `<div class="wsec"><h3>Срочное из чек-листов · ${hot.length}</h3>${hot.map(([pg, x]) => `<div class="wrow" data-go="${pg.id}"><span class="pd" style="background:var(--redo)"></span>${esc(itemText(x))}<span class="from">${esc(pg.emoji)} ${esc(pg.title)}</span></div>`).join("")}</div>` : ""}`;
   } else if (view === "games") {
     const gs = doc.games;
@@ -1180,12 +1192,13 @@ document.addEventListener("paste", e => {
   if (card && e.clipboardData.files.length) { e.preventDefault(); addImages(card.querySelector("[data-drop]").dataset.drop, e.clipboardData.files); }
 });
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame],[data-delid],[data-mboard],[data-mscope],[data-aib],[data-aiok],[data-aiagain],[data-rst],[data-hist],[data-hall]");
+  const t = e.target.closest("[data-go],[data-newpage],[data-status],[data-chk],[data-del],[data-addi],[data-push],[data-addb],[data-readymenu],[data-rmb],[data-dupb],[data-mv],[data-wide],[data-delpage],[data-duppage],[data-pmv],[data-emoji],[data-tone],[data-tag],[data-newtag],[data-kmove],[data-imgfile],[data-imgurl],[data-zoom],[data-gview],[data-wf],[data-dockadd],[data-imv],[data-prio],[data-lexp],[data-mechnew],[data-towork],[data-newmechb],[data-mgame],[data-delid],[data-mboard],[data-mscope],[data-aib],[data-aiok],[data-aiagain],[data-rst],[data-hist],[data-hall]");
   if (!t || t.disabled) return; const d = t.dataset;
   if (d.go) { go(d.go); return; }
   if ("dockadd" in d) { const after = lastBlock && get(blocksPath()).some(b => b.id === lastBlock) ? lastBlock : null;
     openMenu(t, Object.values(KINDS).map(([e, n, f]) => ({ e, n, run: () => insertBlock(f(), after) })).concat(READY.map(([e, n, f]) => ({ e, n: "★ " + n, run: () => insertBlock(f(), after) })))); return; }
   if (d.gview) { gview = d.gview; LSset("cl_gview", gview); render(); return; }
+  if (d.wf) { wf = d.wf; LSset("cl_wf", wf); render(); return; }
   if (d.newpage) { pickTemplate(d.newpage); return; }
   if (d.status) { curPage().status = d.status; save(label() + ": статус"); render(); return; }
   if (d.tag) { const g = curPage(), i = g.tags.indexOf(d.tag); i < 0 ? g.tags.push(d.tag) : g.tags.splice(i, 1); save(label() + ": теги"); render(); return; }
@@ -1226,7 +1239,7 @@ document.addEventListener("click", e => {
     l.splice(i, 1); if (!it.cols && !it.cards) dropCard(id); save(label()); render(); return;
   }
   if (d.addi) { addItem(d.addi); return; }
-  if (d.push) { const [p, kind] = d.push.split("|"); const it = NEWITEM[kind](); get(p).push(it); save(label()); render();
+  if (d.push) { const [p, kind] = d.push.split("|"); const it = NEWITEM[kind](); if (kind === "card" && p.startsWith("work.") && where(wf) === "games") it.link = wf; get(p).push(it); save(label()); render();
     const el = document.querySelector(`[data-p$="${it.id}.t"],[data-p$=".${it.id}.n"]`); if (el && kind !== "row") el.focus(); return; }
   if (d.kmove) { const [p, cid, kid, dir] = d.kmove.split("|"); const cols = get(p + ".cols"); const ci = cols.findIndex(c => c.id === cid), to = cols[ci + +dir]; if (!to) return;
     const from = cols[ci].cards; to.cards.push(from.splice(from.findIndex(k => k.id === kid), 1)[0]); if (p === "work") syncFromBoard(); save(label()); render(); return; }

@@ -467,6 +467,26 @@ cite[data-ai]::before{content:"🤖";font-size:.8em;margin-right:3px}
 .bal .recent{margin-top:12px;padding-top:10px;border-top:var(--b1) dashed var(--line);font-size:var(--fs2);color:var(--ink2)}
 .bal .recent div{margin:3px 0}.bal .recent del{color:var(--redo)}.bal .recent ins{color:#1E7B3C;text-decoration:none;font-weight:700}
 .bal .recent i{color:var(--ink3);font-style:normal;font:700 var(--fs1)/1.3 var(--mono)}
+
+/* AI marks are the owner's tool: for everyone else they read as plain text */
+body:not(.owner) cite[data-ai]{background:none;box-shadow:none;padding:0}
+body:not(.owner) cite[data-ai]::before{content:none}
+body:not(.owner) .card.aim{outline:none}
+body:not(.owner) .card.aim .bh:after{content:none;display:none}
+/* six-column grid: a block is half (3), a wide block the whole row, a mechanic link a compact third (2) */
+.grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+.grid>.card{grid-column:span 3}
+.grid>.card.wide,.grid>.card.empty{grid-column:1/-1}
+.grid>.card.k-mech{grid-column:span 2;padding:12px 14px 12px 20px}
+.grid>.card.k-mech.wide{grid-column:1/-1}
+.grid>.newmech{grid-column:span 2}
+.card.k-mech .bh{margin-bottom:6px;padding-bottom:6px}
+.card.k-mech .bt{font-size:var(--fs3)}
+.card.k-mech .rich{font-size:var(--fs2);color:var(--ink2);min-height:0}
+.card.k-mech .mfoot{margin-top:8px;gap:6px}
+.card.k-mech .mgo{padding:4px 10px;box-shadow:none;font-size:var(--fs2)}
+@media (max-width:820px){.grid>.card,.grid>.card.k-mech{grid-column:1/-1}}
+@media (min-width:821px) and (max-width:1100px){.grid>.card.k-mech{grid-column:span 3}}
 </style>
 </head>
 <body>
@@ -848,9 +868,10 @@ const TBAR = [["b", "bold", "Жирный — Ctrl+B"], ["i", "italic", "Кур�
 const KEYS = { KeyB: "bold", KeyI: "italic", KeyU: "underline", Backslash: "removeFormat" };
 const SKEYS = { KeyS: "strikeThrough", KeyX: "strikeThrough", KeyH: "mark", Digit1: "h4", Digit7: "insertOrderedList", Digit8: "insertUnorderedList" };
 const toolbar = () => "";
-const fbar = () => `<div class="fbar off" id="fbar"><div class="fgrp">${TBAR.map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}</div><span class="sep"></span><button class="dadd" data-dockadd title="Вставить блок (или «/» в пустой строке)">＋ Блок</button></div>`;
+const fbar = () => `<div class="fbar off" id="fbar"><div class="fgrp">${TBAR.filter(([, c]) => c !== "ai" || isOwner()).map(([t, c, h]) => `<button data-fmt="${c}" title="${h}" class="f-${c}">${t}</button>`).join("")}</div><span class="sep"></span><button class="dadd" data-dockadd title="Вставить блок (или «/» в пустой строке)">＋ Блок</button></div>`;
 function fmt(cmd) {
   const at = (getSelection().anchorNode || {}).parentElement;
+  if (cmd === "ai" && !isOwner()) return;
   if (cmd === "ai") { const c = at?.closest("cite[data-ai]"); if (c) { c.replaceWith(...c.childNodes); return; }
     const sel = getSelection(), txt = sel.toString(); if (!txt.trim()) { toast("Выделите текст, который нужно пометить для ИИ"); return; }
     document.execCommand("insertHTML", false, `<cite data-ai="${uid()}">${esc(txt).replace(/\n/g, "<br>")}</cite>`); toast("Помечено для ИИ"); return; }
@@ -892,6 +913,10 @@ function autoList(e) {
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const me = () => SS("cl_name") || LS("cl_name") || "Гость";
+/* owner tools (the AI page, AI marks, site styles) are shown only to the owner's name. A display filter, not access control:
+   everyone with the link can read the whole document. */
+const OWNERS = ["besquait"];
+const isOwner = () => OWNERS.includes(me().trim().toLowerCase());
 function sync(cls, t) { const el = $("#syncT"); if (!el) return; el.textContent = t; $("#syncI").className = cls; }
 function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 2200); }
 let view = LS("cl_view") || "intro", q = "", gview = LS("cl_gview") || "gallery", wf = LS("cl_wf") || "all";
@@ -944,7 +969,7 @@ function bodyHTML(p, b) {
 /* open items keep the order the team sets (drag / arrows), done ones drop below, newest done first; long lists fold to 10 */
 function listHTML(p, b) {
   const open = b.items.filter(x => !x.done), done = b.items.filter(x => x.done).sort((a, c) => (c.dt || 0) - (a.dt || 0));
-  const all = open.concat(done), ex = LEXP.has(b.id), shown = ex ? all : all.slice(0, 10), hid = all.length - shown.length;
+  const all = open.concat(done), ex = LEXP.has(b.id), shown = ex ? all : open.length ? all.slice(0, 10) : [], hid = all.length - shown.length;
   const row = x => { const oi = open.indexOf(x), k = `${p}.items|${x.id}`;
     return `<div class="it${x.done ? " done" : ""}${x.pr ? " pr-" + x.pr : ""}${unA(x)[0]}"${unA(x)[1]} data-irow="${k}">${x.done ? `<span class="ih"></span>` : `<span class="ih" draggable="true" data-idrag="${k}" title="Перетащить">⠿</span>`}
       <input type="checkbox" data-chk="${k}" ${x.done ? "checked" : ""}>
@@ -952,7 +977,7 @@ function listHTML(p, b) {
       ${(c => c && !x.done ? `<button class="wpill" data-go="work" style="background:${colTone(c.ci)}" title="Задача на доске «В работе» — открыть">🔥 ${esc(c.col.t)}</button>` : "")(cardOf(x.id))}</div>
       <span class="ictl">${x.done ? "" : `<button data-imv="${k}|-1" ${oi ? "" : "disabled"} title="Выше">↑</button><button data-imv="${k}|1" ${oi < open.length - 1 ? "" : "disabled"} title="Ниже">↓</button>`}
       ${x.done || cardOf(x.id) ? "" : `<button class="tw" data-towork="${k}" title="В работу (на доску «В работе»)">🔥</button>`}<button class="prio" data-prio="${k}" title="Приоритет: ${PRIO[x.pr || ""]} (клик — сменить)"></button><button class="del" data-del="${k}" title="Удалить">×</button></span></div>`; };
-  return `<div class="cl">${shown.map(row).join("")}</div>${hid ? `<button class="lmore" data-lexp="${b.id}">Показать ещё ${hid}</button>` : ex && all.length > 10 ? `<button class="lmore" data-lexp="${b.id}">Свернуть</button>` : ""}
+  return `<div class="cl">${shown.map(row).join("")}</div>${hid ? `<button class="lmore" data-lexp="${b.id}">${open.length ? "Показать ещё " + hid : "✓ Всё сделано · показать " + hid}</button>` : ex && all.length > 10 ? `<button class="lmore" data-lexp="${b.id}">Свернуть</button>` : ""}
     <button class="add" data-addi="${p}.items">+ пункт</button>`;
 }
 const ddm = t => { const d = new Date(t); return d.toLocaleDateString("ru", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" }); };
@@ -961,7 +986,7 @@ function rulesHTML(p, b) {
   const row = x => { const k = `${p}.items|${x.id}`, st = x.st || "";
     return `<div class="it rl ${st}${unA(x)[0]}"${unA(x)[1]} data-irow="${k}"><span class="ih" draggable="true" data-idrag="${k}" title="Перетащить">⠿</span>
       <div class="itw"><div class="rich itx" contenteditable="true" data-item="${k}" data-ph="${esc(b.ph || "Как должно работать")}">${x.h ? clean(x.t) : esc(x.t)}</div>
-      ${st === "bug" ? `<textarea class="rnote" rows="1" data-rnote="${k}" placeholder="Что не так? ИИ увидит это и починит">${esc(x.note || "")}</textarea>` : ""}
+      ${st === "bug" ? `<textarea class="rnote" rows="1" data-rnote="${k}" placeholder="Что не так и как повторить?">${esc(x.note || "")}</textarea>` : ""}
       ${st && x.stBy ? `<span class="rby">${st === "ok" ? "работает — проверил" : "ошибка — нашёл"} ${esc(x.stBy)} · ${ddm(x.stAt)}</span>` : ""}</div>
       <span class="rst"><button class="ok${st === "ok" ? " on" : ""}" data-rst="${k}|ok" title="Работает как написано">✓</button><button class="bug${st === "bug" ? " on" : ""}" data-rst="${k}|bug" title="Ошибка — работает не так">✗</button></span>
       <button class="del" data-del="${k}" title="Удалить">×</button></div>`; };
@@ -975,7 +1000,7 @@ function balCount(pg) {
 function blockHTML(bp, b, i, n, next) {
   const p = bp + "." + b.id;
   const ctl = `<div class="bc"><span class="drag" draggable="true" data-bdrag="${b.id}" title="Перетащить">⠿</span><button data-mv="${b.id}|-1" title="Выше" ${i ? "" : "disabled"}>↑</button><button data-mv="${b.id}|1" title="Ниже" ${i < n - 1 ? "" : "disabled"}>↓</button>
-    ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}<button data-aib="${p}" class="${b.ai ? "aion" : ""}" title="${b.ai ? "Снять пометку для ИИ" : "Пометить весь блок для ИИ"}">🤖</button><button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
+    ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}${isOwner() ? `<button data-aib="${p}" class="${b.ai ? "aion" : ""}" title="${b.ai ? "Снять пометку для ИИ" : "Пометить весь блок для ИИ"}">🤖</button>` : ""}<button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
   const [uc, ua] = unA(b);
   const mb = b.kind === "heading" && next && next.kind === "mech" ? `<button class="mboard" data-mboard title="Все механики этой игры по статусам">⚙️ Доска механик →</button>` : "";
   if (b.kind === "heading") return `<div class="hblock${uc}"${ua} data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${mb}${ctl}</div>`;
@@ -1002,11 +1027,12 @@ function navItem(x, dot) {
 }
 function renderNav() {
   const f = document.activeElement && document.activeElement.id === "search";
+  document.body.classList.toggle("owner", isOwner());
   $("#nav").innerHTML = `<div class="logo">Cats <span>Land</span></div>
     <input id="search" class="search" placeholder="Поиск по диз-доку" value="${esc(q)}">
     <div class="nl ${view === "work" ? "on" : ""}" data-go="work" style="margin-top:12px">🔥 <span class="t">В работе</span><span class="c">${workNow().length + doc.mechs.filter(m => m.status === "work").length || ""}</span></div>
     <div class="nl ${view === "balance" ? "on" : ""}" data-go="balance">📊 <span class="t">Баланс</span></div>
-    <div class="nl ${view === "ai" ? "on" : ""}" data-go="ai">🤖 <span class="t">Для ИИ</span><span class="c">${aiOpen() || ""}</span></div>
+    ${isOwner() ? `<div class="nl ${view === "ai" ? "on" : ""}" data-go="ai">🤖 <span class="t">Для ИИ</span><span class="c">${aiOpen() || ""}</span></div>` : ""}
     <div class="lbl"><input class="lbli" data-p="pagesLabel" value="${esc(doc.pagesLabel)}"><button data-newpage="pages" title="Новая страница">+</button></div>
     ${doc.pages.filter(hit).map(x => navItem(x)).join("") || (q ? `<div class="none">ничего</div>` : "")}
     <div class="lbl"><input class="lbli" data-p="mechsLabel" value="${esc(doc.mechsLabel)}"><button data-newpage="mechs" title="Новая механика">+</button></div>
@@ -1017,7 +1043,7 @@ function renderNav() {
     <div class="foot"><div class="sync"><i id="syncI"></i><span id="syncT">${REMOTE ? "Сохранено" : "Только этот браузер"}</span></div>
       <div>Вы: <a onclick="askName(true)">${esc(me())}</a></div>
       ${anyUnseen() ? `<a onclick="markAllSeen()">Отметить всё прочитанным</a>` : ""}
-      <a data-go="sitestyle">Стили сайта</a>
+      ${isOwner() ? `<a data-go="sitestyle">Стили сайта</a>` : ""}
       <a onclick="exportMD()">Скачать весь диз-док (.md)</a>
       ${REMOTE ? `<a onclick="share()">Скопировать ссылку для своих</a>` : `<a onclick="askKey()">Подключить общий диз-док</a>`}</div>`;
   if (f) { const s = $("#search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
@@ -1035,7 +1061,7 @@ let linked = false;
 function render() {
   if (!linked && doc && doc.work) { linked = true; linkOldCards(); syncFromBoard(); }
   closeMenu();
-  if (!SPECIAL.has(view) && !curPage()) view = doc.pages[0] ? doc.pages[0].id : "games";
+  if ((!SPECIAL.has(view) && !curPage()) || ((view === "ai" || view === "sitestyle") && !isOwner())) view = doc.pages[0] ? doc.pages[0].id : "games";
   LSset("cl_view", view); enterView();
   renderNav();
   const P = $("#page");
@@ -1532,7 +1558,7 @@ function histHTML(pg, path) {
   const line = l => l.k === "x" ? `<div class="hl">${wdiff(l.a, l.b)}</div>`
     : l.k === "+" ? `<div class="hl"><ins>+ ${esc(l.b)}</ins></div>` : l.k === "-" ? `<div class="hl"><del>− ${esc(l.a)}</del></div>`
     : `<div class="hl"><span class="lb">${esc(l.l)}:</span> <del>${esc(l.a || "—")}</del> → <ins>${esc(l.b || "—")}</ins></div>`;
-  return `<div class="hist"><h3>🕘 История изменений</h3><p class="hint">Что поменялось, кто и когда. Впишите «почему» — через месяц будет понятно, откуда такие числа. ИИ тоже это читает.</p>
+  return `<div class="hist"><h3>🕘 История изменений</h3><p class="hint">Что поменялось, кто и когда. Впишите «почему» — через месяц будет понятно, откуда такие числа.</p>
     ${show.map(h => `<div class="he"><div class="hh">${ddm(h.at)} · <b>${esc(h.by)}</b> · ${esc(h.bt)}</div>${h.lines.map(line).join("")}
       <input class="why${h.why ? " has" : ""}" data-p="${path}.hist.${h.id}.why" value="${esc(h.why || "")}" placeholder="Почему? (необязательно)"></div>`).join("") || `<p class="hint">Пока пусто — изменения появятся здесь после первых правок.</p>`}
     ${hs.length > show.length ? `<button class="add" data-hall>Показать все ${hs.length}</button>` : ""}</div>`;

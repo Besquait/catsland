@@ -663,6 +663,8 @@ const scopeOf = m => mechGames(m).length ? "game" : m.scope === "lobby" ? "lobby
 const workCols = () => doc.work.cols;
 const workNow = () => (workCols()[1] || { cards: [] }).cards;
 const COL_STATUS = ["redo", "work", "test", "done"];      // columns of the work board, left to right
+/* extra columns go between "В работе" and "Проверить" and hold no mechanic status */
+const colStatus = ci => { const k = ci - (workCols().length - 4); return ci < 2 ? COL_STATUS[ci] : k >= 2 ? COL_STATUS[k] : null; };
 /* work board split by game: a card belongs to the game of the page it links to (or of its checklist item); a mechanic
    belongs to the game that lists it, common mechanics and general pages go to "Общее" */
 const pageOfItem = id => ALL().find(pg => pg.blocks.some(b => b.kind === "list" && b.items.some(i => i.id === id)));
@@ -674,7 +676,7 @@ const bcards = (p, c) => p === "work" ? c.cards.filter(k => wfOk(cardGame(k))) :
 const wfOpen = gid => workCols().slice(0, -1).reduce((n, c) => n + c.cards.filter(k => cardGame(k) === gid).length, 0) + doc.mechs.filter(m => m.status !== "done" && m.status !== "idea" && gameOfPage(m) === gid).length;
 const wfBar = () => `<div class="viewsw wfbar">${[["all", "🗂️", "Все"]].concat(doc.games.map(g => [g.id, g.emoji, g.title]), [["common", "🌐", "Общее"], ["none", "·", "Без игры"]])
   .filter(([id]) => id === "all" || id === wf || wfOpen(id)).map(([id, e, t]) => `<button class="${wf === id ? "on" : ""}" data-wf="${id}">${esc(e)} ${esc(t)}${id === "all" ? "" : ` <b>${wfOpen(id)}</b>`}</button>`).join("")}</div>`;
-const mechCards = ci => doc.mechs.filter(m => COL_STATUS[ci] !== "done" && m.status === COL_STATUS[ci] && wfOk(gameOfPage(m))).map(m =>
+const mechCards = ci => doc.mechs.filter(m => colStatus(ci) && colStatus(ci) !== "done" && m.status === colStatus(ci) && wfOk(gameOfPage(m))).map(m =>
   `<div class="kc mk" draggable="true" data-mdrag="${m.id}"><div class="mkh" data-go="${m.id}">⚙️ <span>${esc(m.title)}</span></div></div>`).join("");
 /* a checklist item sent to the work board and its card are one task (card.ref = item id):
    text is edited in either place, ticking the item moves the card to the last column, moving the card there ticks the item */
@@ -691,7 +693,7 @@ function linkOldCards() {
     const pg = get(where(k.link) + "." + k.link), taken = new Set(workCols().flatMap(c => c.cards.map(k => k.ref)));
     for (const b of pg.blocks) if (b.kind === "list") { const x = b.items.find(i => !taken.has(i.id) && itemText(i).trim() === (k.t || "").trim()); if (x) { k.ref = x.id; return; } } }));
 }
-const colTone = ci => STATUS[COL_STATUS[ci]] ? STATUS[COL_STATUS[ci]][1] : "var(--card)";
+const colTone = ci => STATUS[colStatus(ci)] ? STATUS[colStatus(ci)][1] : "var(--card)";
 const TAGS = ["Все против всех", "Команды", "На выбывание", "На очки", "Гонка", "Паркур", "Кооператив"];
 
 function page(tpl, title) { return { id: uid(), emoji: tpl[0], title: title || tpl[1], sub: "", blocks: tpl[3]() }; }
@@ -1341,7 +1343,7 @@ document.addEventListener("drop", e => {
     const before = e.target.closest("[data-kdrag]"); const bi = before ? to.findIndex(x => x.id === before.dataset.kdrag.split("|")[1]) : -1; to.splice(bi < 0 ? to.length : bi, 0, k); if (t.dataset.kcol.startsWith("work.")) syncFromBoard(); }
   else if (drag.gdrag) { const g = doc.games.find(x => x.id === drag.gdrag); g.status = t.dataset.scol; }
   else if (drag.mdrag) { const ci = workCols().findIndex(c => t.dataset.kcol === "work.cols." + c.id + ".cards"); const m = doc.mechs.find(x => x.id === drag.mdrag);
-    if (m && ci >= 0) { m.status = COL_STATUS[ci]; toast(`«${m.title}»: ${STATUS[m.status][0]}${m.status === "done" ? " — ушла с доски" : ""}`); } }
+    if (m && ci >= 0 && colStatus(ci)) { m.status = colStatus(ci); toast(`«${m.title}»: ${STATUS[m.status][0]}${m.status === "done" ? " — ушла с доски" : ""}`); } }
   else if (drag.idrag) { const [l, id] = pair(drag.idrag), tid = t.dataset.irow.split("|")[1]; if (tid === id) { drag = null; return; }
     const it = l.splice(l.findIndex(x => x.id === id), 1)[0]; l.splice(l.findIndex(x => x.id === tid), 0, it); }
   drag = null; save(label()); render();

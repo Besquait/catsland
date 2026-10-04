@@ -1729,7 +1729,7 @@ async function sndLoad() {
    (user ones by author and time), feedback by author (one vote per person per sound); requests carry their own id */
 const sndItems = s => [s.current].concat(s.variants || [], s.uploads || []).filter(Boolean);
 const sndFbItems = s => sndItems(s).concat(s.references || []);                 // everything that can get 👍 / 👎
-const sndItem = (s, f) => f.startsWith("ref:") ? (s.references || []).find(r => "ref:" + r.url === f) : sndItems(s).find(x => x.file === f);
+const sndItem = (s, f) => f === "current" ? s.current : f.startsWith("ref:") ? (s.references || []).find(r => "ref:" + r.url === f) : (s.variants || []).concat(s.uploads || []).find(x => x.file === f);
 const sndKeyed = d => { d = clone(d || sndEmpty()); (d.sounds || []).forEach(s => {
   ["uploads", "variants"].forEach(k => (s[k] || []).forEach(x => { x.id = "f:" + x.file; }));
   const seen = {}; (s.references || []).forEach(x => { const k = "r:" + (x.source === "user" ? x.by + "|" + x.at : x.url + "|" + x.title); seen[k] = (seen[k] || 0) + 1; x.id = k + (seen[k] > 1 ? "#" + seen[k] : ""); });
@@ -1889,6 +1889,7 @@ function sndRowHTML(s) {
     return `<span class="sfb"><button class="${mine && mine.vote > 0 ? "on" : ""}" data-sfb="${sid}|${esc(file)}|1" title="Нравится">👍${up ? " " + up : ""}</button><button class="${mine && mine.vote < 0 ? "on dn" : ""}" data-sfb="${sid}|${esc(file)}|-1" title="Не нравится">👎${dn ? " " + dn : ""}</button></span>`; };
   const fbl = file => { const F = (sndItem(s, file) || {}).feedback || [], mine = F.find(f => f.by === me_), said = F.filter(f => f.text && f.by !== me_);
     return said.length || mine ? `<div class="sfbl">${said.map(f => `<span>${f.vote > 0 ? "👍" : "👎"} ${esc(f.by)}: ${esc(f.text)}</span>`).join("")}${mine ? `<input data-sfbt="${sid}|${esc(file)}" value="${esc(mine.text || "")}" placeholder="${mine.vote > 0 ? "Что нравится? Можно не писать" : "Что не так? Например: слишком резкий"}">` : ""}</div>` : ""; };
+  const rmOpen = s.requests.some(r => r.status === "new" && r.type === "remove_from_game");
   const delReq = file => s.requests.some(r => r.status === "new" && r.type === "delete_variant" && r.target === file)
     ? `<span class="sx" title="Просьба уже у ИИ">удалить: ждёт ИИ</span>` : `<button class="sx" data-sreq="${sid}|delete_variant|${esc(file)}" title="Попросить ИИ удалить этот вариант">🗑 удалить</button>`;
   const reqs = s.requests.slice().sort((a, c) => (a.status === "new" ? 0 : 1) - (c.status === "new" ? 0 : 1) || String(c.at).localeCompare(String(a.at)));
@@ -1896,7 +1897,8 @@ function sndRowHTML(s) {
   const det = !open ? "" : `<div class="sdet">
     <div class="sfl"><div><label>Действие</label><input data-sp="${esc(s.id)}|action" value="${esc(s.action)}" placeholder="Что происходит"></div>
       <div><label>Где звучит</label><input data-sp="${esc(s.id)}|where" value="${esc(s.where)}" placeholder="Коротко, где и когда"></div></div>
-    <div class="ssec"><h4>Сейчас в игре</h4>${cur ? `<div class="sit">${pb(cur, s.action + " · сейчас в игре", 1)}<span class="sn">${esc(fileName(cur))}</span><small>${[s.current.duration ? fmtNum(s.current.duration) + " с" : "", s.current.size ? fmtSize(s.current.size) : ""].filter(Boolean).join(" · ")}</small>${fb(cur)}${choose("current")}${fbl(cur)}</div>` : `<div class="snone">Звука пока нет</div>`}
+    <div class="ssec"><h4>Сейчас в игре</h4>${cur ? `<div class="sit">${pb(cur, s.action + " · сейчас в игре", 1)}<span class="sn" title="${esc(fileName(cur))}">${esc(s.current.label || (s.variants.find(v => v.file === cur) || {}).label || fileName(cur))}</span><small>${[s.current.duration ? fmtNum(s.current.duration) + " с" : "", s.current.size ? fmtSize(s.current.size) : ""].filter(Boolean).join(" · ")}</small>${fb("current")}${rmOpen ? "" : `<button class="sx" data-sreq="${sid}|remove_from_game|${esc(cur)}" title="Попросить ИИ убрать звук из игры">🗑 убрать</button>`}${choose("current")}
+      ${rmOpen ? `<div class="sai">🤖 ИИ уберёт из игры</div>` : ""}${fbl("current")}</div>` : `<div class="snone">Звука пока нет</div>`}
       ${s.ue_asset ? `<small class="sloud">${esc(s.ue_asset)}</small>` : ""}</div>
     ${L ? `<div class="ssec"><h4>Громкость</h4><div class="sit"><span class="sn">${L.lufs != null ? fmtNum(L.lufs) + " LUFS" : ""}${L.peak != null ? ", пик " + fmtNum(L.peak) + " дБ" : ""}${L.change_db ? ", надо " + fmtNum(L.change_db, true) + " дБ" : ""}${L.note ? ", " + esc(L.note) : ""}</span></div></div>` : ""}
     ${s.variants.length ? `<div class="ssec"><h4>Варианты · ${s.variants.length}</h4>${s.variants.map(v => `<div class="sit">${pb(v.file, s.action + " · " + (v.label || fileName(v.file)), 1)}<span class="sn">${safeURL(v.url) ? `<a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.label || fileName(v.file))}</a>` : esc(v.label || fileName(v.file))}</span><small>${meta(v)}${v.size ? (meta(v) ? " · " : "") + fmtSize(v.size) : ""}</small>${fb(v.file)}${delReq(v.file)}${choose(v.file)}${fbl(v.file)}</div>`).join("")}</div>` : ""}
@@ -1962,7 +1964,7 @@ document.addEventListener("click", e => {
     const inp = document.querySelector(`[data-sfbt="${CSS.escape(id + "|" + file)}"]`); if (inp && +v < 0) inp.focus(); return; }
   if (d.sreq) { const [id, type, target] = d.sreq.split("|"), s = sndRow(id); if (!s) return; const text = (SREQT[id] || "").trim();
     if (type === "other" && !text) { toast("Напиши в поле, что сделать"); const i = document.querySelector(`[data-sreqt="${CSS.escape(id)}"]`); if (i) i.focus(); return; }
-    if (s.requests.some(r => r.status === "new" && r.type === type && (r.target || "") === (target || "") && (type !== "other" || r.text === text))) { toast("Такая просьба уже ждёт ИИ"); return; }
+    if (s.requests.some(r => r.status === "new" && r.type === type && (type === "remove_from_game" || (r.target || "") === (target || "")) && (type !== "other" || r.text === text))) { toast("Такая просьба уже ждёт ИИ"); return; }
     s.requests.push({ id: uid(), type, target: target || null, text, by: me(), at: new Date().toISOString(), status: "new", ai_note: "" });
     delete SREQT[id]; sndSave("просьба к ИИ: " + SND_REQ[type].toLowerCase()); render(); toast("Просьба ушла ИИ"); return; }
   if (d.sreqx) { const [id, rid] = d.sreqx.split("|"), s = sndRow(id); if (!s) return; const rq = s.requests.find(r => r.id === rid);

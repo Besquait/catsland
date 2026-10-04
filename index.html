@@ -1943,6 +1943,7 @@ function sndPick(id) { const inp = document.createElement("input"); inp.type = "
 
 /* ===== page ===== */
 const sndCur = s => s.current && s.current.file;
+const sndChosenDiff = s => !!s.chosen && s.chosen !== "current" && s.chosen !== sndCur(s) && s.chosen !== (s.current && s.current.source_file);
 const sndOpenReq = s => s.requests.filter(r => r.status === "new");
 const sndNeg = s => sndFbItems(s).reduce((n, x) => n + (x.feedback || []).filter(f => f.vote < 0).length, 0);
 const sndShown = s => sfilt === "all" || (sfilt === "new" ? s.uploads.some(u => u.status === "new") : sfilt === "req" ? sndOpenReq(s).length > 0 : s.status === sfilt);
@@ -2042,7 +2043,7 @@ function sndRowHTML(s) {
       <span class="ssel"><select data-spsel="${sid}|place" title="Где">${SND_PLACES.map(([k, t]) => `<option value="${k}"${s.place === k ? " selected" : ""}>${esc(t)}</option>`).join("")}</select><select data-spsel="${sid}|type" title="Тип">${SND_TYPES.map(([k, t]) => `<option value="${k}"${s.type === k ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>
       ${s.type === "move" ? `<input data-sp="${sid}|surface" value="${esc(s.surface || "")}" placeholder="Поверхность: стекло, камень…">` : ""}</span></div>`
       : `<div class="sname"><b>${esc(s.action) || "Без названия"}</b>${s.where ? `<span>${esc(s.where)}</span>` : ""}</div>`}<button class="slink sed" data-sedit="${sid}" title="${editing ? "Готово" : "Изменить название, место и тип"}">${editing ? "✓" : "✎"}</button>
-      ${loud ? `<span class="sloud">${loud}</span>` : ""}${nNew ? `<span class="snew">новых ${nNew}</span>` : ""}${s.chosen && s.chosen !== "current" ? `<span class="snew" title="Выбран не тот звук, что сейчас в игре">${s.chosen.startsWith("ref:") ? "выбран референс" : "выбран другой"}</span>` : ""}
+      ${loud ? `<span class="sloud">${loud}</span>` : ""}${nNew ? `<span class="snew">новых ${nNew}</span>` : ""}${sndChosenDiff(s) ? `<span class="snew" title="Выбран не тот звук, что сейчас в игре">${s.chosen.startsWith("ref:") ? "выбран референс" : "выбран другой"}</span>` : ""}
       ${openReq.length ? `<span class="snew ai" title="Открытые просьбы к ИИ">🤖 ${openReq.length}</span>` : ""}${sndNeg(s) ? `<span class="snew" title="Кому-то не нравится">👎 ${sndNeg(s)}</span>` : ""}
       <button class="pill" style="background:${SND_ST[s.status][1]}" data-sst="${sid}" title="Клик меняет статус">${SND_ST[s.status][0]}</button><span class="schev">⌄</span></div>
     ${up ? `<div class="sstate ${up.st}">${esc(up.t)}</div>` : ""}${det}</div>`;

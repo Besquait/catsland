@@ -543,6 +543,21 @@ body:not(.owner) .card.aim .bh:after{content:none;display:none}
 .sstate.busy:before{content:"";display:inline-block;width:9px;height:9px;margin-right:7px;border:var(--b1) solid var(--edge);border-radius:2px;background:var(--work);animation:spulse .8s infinite alternate}
 @keyframes spulse{to{opacity:.25}}
 .sdel{align-self:flex-start;font:700 var(--fs1)/1 var(--mono);color:var(--ink3);padding:4px 0}.sdel:hover{color:var(--redo)}
+.sfb{display:flex;gap:4px}
+.sfb button,.sx{padding:2px 7px;border:var(--b1) solid var(--line);border-radius:var(--r1);font:700 var(--fs1)/1.5 var(--mono);color:var(--ink2);background:var(--card);white-space:nowrap}
+.sfb button:hover,button.sx:hover{border-color:var(--edge);color:var(--ink)}
+.sfb button.on{border-color:var(--edge);background:var(--soft4);color:var(--ink);box-shadow:var(--sh1)}.sfb button.on.dn{background:var(--soft3)}
+span.sx{border-style:dashed;color:var(--ink3)}
+.sfbl{flex-basis:100%;margin:0 0 4px 34px;display:flex;flex-direction:column;gap:2px;font-size:var(--fs2);color:var(--ink2)}
+.sfbl input{width:100%;flex:none}
+.sico{width:26px;height:26px;flex:none;display:grid;place-items:center;border:var(--b1) solid var(--line);border-radius:var(--r1);background:var(--bg);font-size:var(--fs2)}
+.sreqb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.sreqb input{flex:1 1 220px;min-width:0;border:var(--b1) solid var(--line);border-radius:var(--r1);background:var(--card);outline:none;padding:6px 9px;font:500 var(--fs2)/1.3 var(--sans)}
+.sreqb input:focus{border-color:var(--edge)}
+.squick{display:flex;gap:4px;flex-wrap:wrap}
+.snew.ai{background:var(--ai-soft)}
+.ssec .add{padding-top:4px}
+@media (max-width:820px){.sfbl{margin-left:0}}
 .splayer{position:fixed;bottom:16px;left:calc(50% + 143px);transform:translateX(-50%);z-index:30;display:flex;gap:10px;align-items:center;padding:7px 8px 7px 14px;
   background:var(--ink);color:var(--card);border-radius:var(--r3);box-shadow:0 6px 18px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px);font:700 var(--fs2)/1.2 var(--sans)}
 .splayer[hidden]{display:none}
@@ -1683,7 +1698,7 @@ const sndEmpty = () => ({ version: 1, updated: new Date().toISOString(), budget_
 function sndNorm(d) {
   d = d && typeof d === "object" ? d : sndEmpty();
   d.version = d.version || 1; d.budget_mb = d.budget_mb || 500; d.sounds = Array.isArray(d.sounds) ? d.sounds : [];
-  d.sounds.forEach(s => { ["variants", "references", "uploads"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; }); s.chosen = s.chosen || "current"; s.status = SND_ST[s.status] ? s.status : "missing"; });
+  d.sounds.forEach(s => { ["variants", "references", "uploads", "requests"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; }); s.chosen = s.chosen || "current"; s.status = SND_ST[s.status] ? s.status : "missing"; });
   return d;
 }
 const sndRow = id => SND.sounds.find(s => s.id === id);
@@ -1710,9 +1725,16 @@ async function sndLoad() {
   const { sha: s, data } = await sndGet();
   sndSha = s; SND = sndNorm(data); sndBase = clone(SND);
 }
-/* uploads and variants have no id: key them by file for the merge, then drop the key */
-const sndKeyed = d => { d = clone(d || sndEmpty()); (d.sounds || []).forEach(s => ["uploads", "variants"].forEach(k => (s[k] || []).forEach(x => { x.id = "f:" + x.file; }))); return d; };
-const sndUnkey = d => { (d.sounds || []).forEach(s => ["uploads", "variants"].forEach(k => (s[k] || []).forEach(x => { delete x.id; }))); return d; };
+/* items without an id get a merge key, dropped after the merge: uploads and variants by file, references by url
+   (user ones by author and time), feedback by author (one vote per person per sound); requests carry their own id */
+const sndItems = s => [s.current].concat(s.variants || [], s.uploads || []).filter(Boolean);
+const sndItem = (s, f) => sndItems(s).find(x => x.file === f);
+const sndKeyed = d => { d = clone(d || sndEmpty()); (d.sounds || []).forEach(s => {
+  ["uploads", "variants"].forEach(k => (s[k] || []).forEach(x => { x.id = "f:" + x.file; }));
+  const seen = {}; (s.references || []).forEach(x => { const k = "r:" + (x.source === "user" ? x.by + "|" + x.at : x.url + "|" + x.title); seen[k] = (seen[k] || 0) + 1; x.id = k + (seen[k] > 1 ? "#" + seen[k] : ""); });
+  sndItems(s).forEach(x => (x.feedback || []).forEach(f => { f.id = "v:" + f.by; })); }); return d; };
+const sndUnkey = d => { (d.sounds || []).forEach(s => { ["uploads", "variants", "references"].forEach(k => (s[k] || []).forEach(x => { delete x.id; }));
+  sndItems(s).forEach(x => (x.feedback || []).forEach(f => { delete f.id; })); }); return d; };
 function sndSave(msg, fast) {
   if (msg) sndWhat.add(msg);
   SND.updated = new Date().toISOString();
@@ -1827,7 +1849,15 @@ function sndPick(id) { const inp = document.createElement("input"); inp.type = "
 
 /* ===== page ===== */
 const sndCur = s => s.current && s.current.file;
-const sndShown = s => sfilt === "all" || (sfilt === "new" ? s.uploads.some(u => u.status === "new") : s.status === sfilt);
+const sndOpenReq = s => s.requests.filter(r => r.status === "new");
+const sndNeg = s => sndItems(s).reduce((n, x) => n + (x.feedback || []).filter(f => f.vote < 0).length, 0);
+const sndShown = s => sfilt === "all" || (sfilt === "new" ? s.uploads.some(u => u.status === "new") : sfilt === "req" ? sndOpenReq(s).length > 0 : s.status === sfilt);
+const SND_REQ = { find_new: "Найди другие варианты", louder: "Сделай громче", quieter: "Сделай тише", remove_from_game: "Убери звук из игры", other: "Другое", delete_variant: "Удали вариант" };
+const SND_REQST = { new: ["ждёт ИИ", "var(--sun)"], done: ["сделано", "var(--done)"], rejected: ["отклонено", "var(--redo)"] };
+const SREQT = {};                                   // unsent comment for the next request, per row
+const refKind = u => /\.(mp3|ogg|wav|m4a|flac)(\?|#|$)/i.test(u) ? "audio" : /(^|\.)(youtube\.com|youtu\.be)$/i.test(hostOf(u)) ? "yt" : /(^|\.)freesound\.org$/i.test(hostOf(u)) ? "fs" : "link";
+function hostOf(u) { try { return new URL(u).hostname; } catch (e) { return ""; } }
+function refTitle(u) { if (refKind(u) === "yt") return "YouTube"; try { const x = new URL(u), tail = decodeURIComponent(x.pathname.split("/").filter(Boolean).pop() || ""); return x.hostname.replace(/^www\./, "") + (tail ? " · " + tail : ""); } catch (e) { return u; } }
 const sndQueue = g => SND.sounds.filter(s => s.game === g && sndShown(s) && sndCur(s)).map(s => ({ key: s.current.file, title: s.action }));
 function soundsHTML() {
   const head = `<div class="head"><span class="emoji">🔊</span><h1 class="titleS">Звуки</h1></div>`;
@@ -1836,12 +1866,12 @@ function soundsHTML() {
     return head + (sndErr ? `<p class="hint">Звуки не загрузились: ${esc(sndErr)}. <a class="klink" data-sretry>Ещё раз</a></p>` : `<p class="hint">Загружаю звуки…</p>`);
   }
   const all = SND.sounds, used = sndBytes(), budget = SND.budget_mb || 500, pct = Math.min(100, used / (budget * 1048576) * 100);
-  const cnt = k => k === "all" ? all.length : k === "new" ? all.filter(s => s.uploads.some(u => u.status === "new")).length : all.filter(s => s.status === k).length;
+  const cnt = k => k === "all" ? all.length : k === "new" ? all.filter(s => s.uploads.some(u => u.status === "new")).length : k === "req" ? all.reduce((n, s) => n + sndOpenReq(s).length, 0) : all.filter(s => s.status === k).length;
   const chip = (k, t) => `<button class="${sfilt === k ? "on" : ""}" data-sf="${k}">${t}<b>${cnt(k)}</b></button>`;
   const groups = SND_GAMES.concat([...new Set(all.map(s => s.game))].filter(g => !SND_GAMES.some(([k]) => k === g)).map(g => [g, "🎵 " + (g || "Без игры")]));
   return head + `<div class="sbud"><div class="bar" title="Сумма размеров всех файлов из списка"><i style="width:${pct.toFixed(1)}%"></i><b>${fmtSize(used)} из ${budget} МБ</b></div></div>
     <p class="shelp">Перетащи файл на строку звука или открой её и нажми «Выбрать файл». До 8 МБ, подходят wav, mp3, ogg, m4a и flac, большой файл лучше прислать в mp3 или ogg. Старые загрузки ИИ потом убирает, в истории git они остаются.</p>
-    <div class="mfilt">${chip("all", "Все")}${chip("missing", "Нет звука")}${chip("pending", "Ждёт замены")}${chip("variant", "Есть вариант")}${chip("new", "Новые загрузки")}</div>` +
+    <div class="mfilt">${chip("all", "Все")}${chip("missing", "Нет звука")}${chip("pending", "Ждёт замены")}${chip("variant", "Есть вариант")}${chip("new", "Новые загрузки")}${chip("req", "Просьбы к ИИ")}</div>` +
     groups.map(([g, t]) => { const rows = all.filter(s => s.game === g && sndShown(s)); if (!rows.length && (sfilt !== "all" || !SND_GAMES.some(([k]) => k === g))) return "";
       return `<div class="sgh"><h2>${esc(t)}</h2><span class="cnt">${rows.length}</span>${sndQueue(g).length > 1 ? `<button class="sbtn" data-sq="${esc(g)}">▶ Все по очереди</button>` : ""}<button class="sbtn" data-sadd="${esc(g)}">＋ Добавить звук</button></div>
         <div class="card slist">${rows.map(sndRowHTML).join("") || `<div class="empty">Пока пусто</div>`}</div>`; }).join("");
@@ -1852,18 +1882,34 @@ function sndRowHTML(s) {
   const pb = (key, title, sm) => key ? `<button class="splay${sm ? " sm" : ""}${PLAY && PLAY.key === key ? " on" : ""}" data-splay="${esc(key)}" data-stitle="${esc(title)}" title="Послушать">${PLAY && PLAY.key === key ? "■" : "▶"}</button>` : `<button class="splay${sm ? " sm" : ""}" disabled title="Файла нет">▶</button>`;
   const choose = v => `<button class="schoose${s.chosen === v ? " on" : ""}" data-schoose="${esc(s.id)}|${esc(v)}">${s.chosen === v ? "✓ основной" : "сделать основным"}</button>`;
   const meta = x => [x.licence, x.author, x.source].filter(Boolean).map(esc).join(" · ");
+  const sid = esc(s.id), me_ = me();
+  /* 👍 / 👎 per sound file: one vote per person, a second click on the same vote takes it back */
+  const fb = file => { const F = (sndItem(s, file) || {}).feedback || [], mine = F.find(f => f.by === me_), up = F.filter(f => f.vote > 0).length, dn = F.filter(f => f.vote < 0).length;
+    return `<span class="sfb"><button class="${mine && mine.vote > 0 ? "on" : ""}" data-sfb="${sid}|${esc(file)}|1" title="Нравится">👍${up ? " " + up : ""}</button><button class="${mine && mine.vote < 0 ? "on dn" : ""}" data-sfb="${sid}|${esc(file)}|-1" title="Не нравится">👎${dn ? " " + dn : ""}</button></span>`; };
+  const fbl = file => { const F = (sndItem(s, file) || {}).feedback || [], mine = F.find(f => f.by === me_), said = F.filter(f => f.text && f.by !== me_);
+    return said.length || mine ? `<div class="sfbl">${said.map(f => `<span>${f.vote > 0 ? "👍" : "👎"} ${esc(f.by)}: ${esc(f.text)}</span>`).join("")}${mine ? `<input data-sfbt="${sid}|${esc(file)}" value="${esc(mine.text || "")}" placeholder="${mine.vote > 0 ? "Что нравится? Можно не писать" : "Что не так? Например: слишком резкий"}">` : ""}</div>` : ""; };
+  const delReq = file => s.requests.some(r => r.status === "new" && r.type === "delete_variant" && r.target === file)
+    ? `<span class="sx" title="Просьба уже у ИИ">удалить: ждёт ИИ</span>` : `<button class="sx" data-sreq="${sid}|delete_variant|${esc(file)}" title="Попросить ИИ удалить этот вариант">🗑 удалить</button>`;
+  const reqs = s.requests.slice().sort((a, c) => (a.status === "new" ? 0 : 1) - (c.status === "new" ? 0 : 1) || String(c.at).localeCompare(String(a.at)));
+  const refIcon = r => safeURL(r.preview_url) ? pb(r.preview_url, s.action + " · " + (r.title || "референс"), 1) : `<span class="sico" title="${refKind(r.url || "") === "yt" ? "YouTube" : "Ссылка"}">${refKind(r.url || "") === "yt" ? "📺" : "🔗"}</span>`;
   const det = !open ? "" : `<div class="sdet">
     <div class="sfl"><div><label>Действие</label><input data-sp="${esc(s.id)}|action" value="${esc(s.action)}" placeholder="Что происходит"></div>
       <div><label>Где звучит</label><input data-sp="${esc(s.id)}|where" value="${esc(s.where)}" placeholder="Коротко, где и когда"></div></div>
-    <div class="ssec"><h4>Сейчас в игре</h4>${cur ? `<div class="sit">${pb(cur, s.action + " · сейчас в игре", 1)}<span class="sn">${esc(fileName(cur))}</span><small>${[s.current.duration ? fmtNum(s.current.duration) + " с" : "", s.current.size ? fmtSize(s.current.size) : ""].filter(Boolean).join(" · ")}</small>${choose("current")}</div>` : `<div class="snone">Звука пока нет</div>`}
+    <div class="ssec"><h4>Сейчас в игре</h4>${cur ? `<div class="sit">${pb(cur, s.action + " · сейчас в игре", 1)}<span class="sn">${esc(fileName(cur))}</span><small>${[s.current.duration ? fmtNum(s.current.duration) + " с" : "", s.current.size ? fmtSize(s.current.size) : ""].filter(Boolean).join(" · ")}</small>${fb(cur)}${choose("current")}${fbl(cur)}</div>` : `<div class="snone">Звука пока нет</div>`}
       ${s.ue_asset ? `<small class="sloud">${esc(s.ue_asset)}</small>` : ""}</div>
     ${L ? `<div class="ssec"><h4>Громкость</h4><div class="sit"><span class="sn">${L.lufs != null ? fmtNum(L.lufs) + " LUFS" : ""}${L.peak != null ? ", пик " + fmtNum(L.peak) + " дБ" : ""}${L.change_db ? ", надо " + fmtNum(L.change_db, true) + " дБ" : ""}${L.note ? ", " + esc(L.note) : ""}</span></div></div>` : ""}
-    ${s.variants.length ? `<div class="ssec"><h4>Варианты · ${s.variants.length}</h4>${s.variants.map(v => `<div class="sit">${pb(v.file, s.action + " · " + (v.label || fileName(v.file)), 1)}<span class="sn">${safeURL(v.url) ? `<a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.label || fileName(v.file))}</a>` : esc(v.label || fileName(v.file))}</span><small>${meta(v)}${v.size ? (meta(v) ? " · " : "") + fmtSize(v.size) : ""}</small>${choose(v.file)}</div>`).join("")}</div>` : ""}
+    ${s.variants.length ? `<div class="ssec"><h4>Варианты · ${s.variants.length}</h4>${s.variants.map(v => `<div class="sit">${pb(v.file, s.action + " · " + (v.label || fileName(v.file)), 1)}<span class="sn">${safeURL(v.url) ? `<a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.label || fileName(v.file))}</a>` : esc(v.label || fileName(v.file))}</span><small>${meta(v)}${v.size ? (meta(v) ? " · " : "") + fmtSize(v.size) : ""}</small>${fb(v.file)}${delReq(v.file)}${choose(v.file)}${fbl(v.file)}</div>`).join("")}</div>` : ""}
     ${s.uploads.length ? `<div class="ssec"><h4>Загрузки · ${s.uploads.length}</h4>${s.uploads.map(u => { const st = SND_UP[u.status] || SND_UP.new;
       return `<div class="sit">${pb(u.file, s.action + " · загрузка " + (u.by || ""), 1)}<small>${esc(u.by || "")} · ${u.at ? ddm(u.at) : ""}${u.size ? " · " + fmtSize(u.size) : ""}</small>
-        <input data-supn="${esc(s.id)}|${esc(u.file)}" value="${esc(u.note || "")}" placeholder="Заметка: громче, короче…"><span class="pill" style="background:${st[1]}">${st[0]}</span>${choose(u.file)}
-        ${u.ai_note ? `<div class="sai">🤖 ${esc(u.ai_note)}</div>` : ""}</div>`; }).join("")}</div>` : ""}
-    ${s.references.length ? `<div class="ssec"><h4>Референсы · ${s.references.length}</h4>${s.references.map(r => `<div class="sit">${pb(safeURL(r.preview_url), s.action + " · " + (r.title || "референс"), 1)}<span class="sn">${safeURL(r.url) ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title || r.url)}</a>` : esc(r.title || "")}</span><small>${meta(r)}</small></div>`).join("")}</div>` : ""}
+        <input data-supn="${esc(s.id)}|${esc(u.file)}" value="${esc(u.note || "")}" placeholder="Заметка: громче, короче…"><span class="pill" style="background:${st[1]}">${st[0]}</span>${fb(u.file)}${choose(u.file)}
+        ${u.ai_note ? `<div class="sai">🤖 ${esc(u.ai_note)}</div>` : ""}${fbl(u.file)}</div>`; }).join("")}</div>` : ""}
+    <div class="ssec"><h4>Просьбы к ИИ${sndOpenReq(s).length ? " · ждут " + sndOpenReq(s).length : ""}</h4>${reqs.map(r => { const st = SND_REQST[r.status] || SND_REQST.new;
+      return `<div class="sit"><span class="pill" style="background:${st[1]}">${st[0]}</span><span class="sn"><b>${esc(SND_REQ[r.type] || r.type)}</b>${r.target ? " · " + esc(fileName(r.target)) : ""}${r.text ? ": " + esc(r.text) : ""}</span><small>${esc(r.by || "")}${r.at ? " · " + ddm(r.at) : ""}</small>
+        ${r.status === "new" && (r.by === me_ || isOwner()) ? `<button class="sx" data-sreqx="${sid}|${esc(r.id)}">отменить</button>` : ""}${r.ai_note ? `<div class="sai">🤖 ${esc(r.ai_note)}</div>` : ""}</div>`; }).join("")}
+      <div class="sreqb"><input data-sreqt="${sid}" value="${esc(SREQT[s.id] || "")}" placeholder="Комментарий к просьбе, если нужен"><span class="squick">${["find_new", "louder", "quieter", "remove_from_game", "other"].map(k => `<button data-sreq="${sid}|${k}|">${SND_REQ[k]}</button>`).join("")}</span></div></div>
+    <div class="ssec"><h4>Референсы${s.references.length ? " · " + s.references.length : ""}</h4>${s.references.map(r => `<div class="sit">${refIcon(r)}<span class="sn">${safeURL(r.url) ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title || r.url)}</a>` : esc(r.title || "")}</span>
+      <small>${r.source === "user" ? esc(r.by || "") + (r.at ? " · " + ddm(r.at) : "") : meta(r)}</small>${r.source === "user" && (r.by === me_ || isOwner()) ? `<button class="sx" data-srefx="${sid}|${esc(r.at)}|${esc(r.by)}">убрать</button>` : ""}
+      ${r.comment ? `<div class="sai">💬 ${esc(r.comment)}</div>` : ""}</div>`).join("")}<button class="add" data-sref="${sid}">＋ Референс</button></div>
     <div class="ssec"><h4>Заметки</h4><textarea rows="1" data-sp="${esc(s.id)}|notes" placeholder="Что не так со звуком, каким он должен быть">${esc(s.notes || "")}</textarea></div>
     <div class="sdrop"><input data-snote="${esc(s.id)}" value="${esc(SNOTE[s.id] || "")}" placeholder="Заметка к новому файлу: громче, короче…">
       <span class="squick">${SND_QUICK.map(w => `<button data-squick="${esc(s.id)}|${w}">${w}</button>`).join("")}</span>
@@ -1872,6 +1918,7 @@ function sndRowHTML(s) {
   return `<div class="srow${open ? " open" : ""}" tabindex="0" data-srow="${esc(s.id)}">
     <div class="ssum" data-sexp="${esc(s.id)}">${pb(cur, s.action)}<div class="sname"><b>${esc(s.action) || "Без названия"}</b>${s.where ? `<span>${esc(s.where)}</span>` : ""}</div>
       ${loud ? `<span class="sloud">${loud}</span>` : ""}${nNew ? `<span class="snew">новых ${nNew}</span>` : ""}${s.chosen && s.chosen !== "current" ? `<span class="snew" title="Выбран не тот звук, что сейчас в игре">выбран другой</span>` : ""}
+      ${sndOpenReq(s).length ? `<span class="snew ai" title="Открытые просьбы к ИИ">🤖 ${sndOpenReq(s).length}</span>` : ""}${sndNeg(s) ? `<span class="snew" title="Кому-то не нравится">👎 ${sndNeg(s)}</span>` : ""}
       <button class="pill" style="background:${SND_ST[s.status][1]}" data-sst="${esc(s.id)}" title="Клик меняет статус">${SND_ST[s.status][0]}</button><span class="schev">⌄</span></div>
     ${up ? `<div class="sstate ${up.st}">${esc(up.t)}</div>` : ""}${det}</div>`;
 }
@@ -1884,10 +1931,42 @@ function sndAdd(g) {
     const el = document.querySelector(`[data-sp="${CSS.escape(id)}|where"]`); if (el) { el.focus(); el.scrollIntoView({ block: "center" }); }
   });
 }
+/* a reference from the team: any link plus a comment; a direct audio file gets a play button */
+function sndRefDialog(id) {
+  const s = sndRow(id); if (!s) return;
+  const w = document.createElement("div"); w.className = "modal";
+  w.innerHTML = `<div><h3>Референс</h3><p>Ссылка на YouTube, Freesound, любую страницу или прямо на mp3.</p><input class="ru" placeholder="https://"><input class="rc" placeholder="Комментарий, если нужен" style="margin-top:10px"><button class="btn">Добавить</button></div>`;
+  document.body.appendChild(w); setTimeout(() => w.querySelector(".ru").focus(), 20);
+  const add = () => {
+    const u = w.querySelector(".ru").value.trim(), c = w.querySelector(".rc").value.trim();
+    if (!safeURL(u)) { toast("Нужна ссылка, которая начинается с https://"); w.querySelector(".ru").focus(); return; }
+    s.references.push({ title: refTitle(u), url: u, preview_url: refKind(u) === "audio" ? u : "", licence: "", author: "", source: "user", by: me(), at: new Date().toISOString(), comment: c });
+    w.remove(); sndSave("референс к «" + s.action + "»"); render();
+  };
+  w.querySelector(".btn").onclick = add;
+  w.querySelectorAll("input").forEach(i => { i.onkeydown = e => { if (e.key === "Enter") add(); }; });
+  w.onclick = e => { if (e.target === w) w.remove(); };
+}
 document.addEventListener("click", e => {
   if (view !== "sounds") return;
-  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry]");
+  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry],[data-sfb],[data-sreq],[data-sreqx],[data-sref],[data-srefx]");
   if (!t || t.disabled) return; const d = t.dataset;
+  if (d.sfb) { const [id, file, v] = d.sfb.split("|"), s = sndRow(id), x = s && sndItem(s, file); if (!x) return;
+    x.feedback = x.feedback || []; const mine = x.feedback.find(f => f.by === me());
+    if (mine && mine.vote === +v) x.feedback = x.feedback.filter(f => f !== mine);
+    else if (mine) Object.assign(mine, { vote: +v, at: new Date().toISOString() });
+    else x.feedback.push({ by: me(), at: new Date().toISOString(), vote: +v, text: "" });
+    if (!x.feedback.length) delete x.feedback;
+    sndSave((+v > 0 ? "👍 " : "👎 ") + s.action); render();
+    const inp = document.querySelector(`[data-sfbt="${CSS.escape(id + "|" + file)}"]`); if (inp && +v < 0) inp.focus(); return; }
+  if (d.sreq) { const [id, type, target] = d.sreq.split("|"), s = sndRow(id); if (!s) return; const text = (SREQT[id] || "").trim();
+    if (type === "other" && !text) { toast("Напиши в поле, что сделать"); const i = document.querySelector(`[data-sreqt="${CSS.escape(id)}"]`); if (i) i.focus(); return; }
+    if (s.requests.some(r => r.status === "new" && r.type === type && (r.target || "") === (target || "") && (type !== "other" || r.text === text))) { toast("Такая просьба уже ждёт ИИ"); return; }
+    s.requests.push({ id: uid(), type, target: target || null, text, by: me(), at: new Date().toISOString(), status: "new", ai_note: "" });
+    delete SREQT[id]; sndSave("просьба к ИИ: " + SND_REQ[type].toLowerCase()); render(); toast("Просьба ушла ИИ"); return; }
+  if (d.sreqx) { const [id, rid] = d.sreqx.split("|"), s = sndRow(id); if (!s) return; s.requests = s.requests.filter(r => r.id !== rid); sndSave("отменена просьба к ИИ"); render(); return; }
+  if (d.sref) { sndRefDialog(d.sref); return; }
+  if (d.srefx) { const [id, at, by] = d.srefx.split("|"), s = sndRow(id); if (!s) return; s.references = s.references.filter(r => !(r.source === "user" && r.at === at && r.by === by)); sndSave("убран референс"); render(); return; }
   if (d.splay) { sndPlay(d.splay, d.stitle || ""); return; }
   if ("sstop" in d) { sndStop(); return; }
   if ("snext" in d) { sndNext(); return; }
@@ -1905,6 +1984,8 @@ document.addEventListener("click", e => {
 document.addEventListener("input", e => {
   const d = e.target.dataset || {};
   if (d.snote) { SNOTE[d.snote] = e.target.value; return; }
+  if (d.sreqt) { SREQT[d.sreqt] = e.target.value; return; }
+  if (d.sfbt) { const cut = d.sfbt.indexOf("|"), s = sndRow(d.sfbt.slice(0, cut)), x = s && sndItem(s, d.sfbt.slice(cut + 1)), mine = x && (x.feedback || []).find(f => f.by === me()); if (!mine) return; mine.text = e.target.value; sndSave("отзыв о звуке «" + s.action + "»"); return; }
   if (d.sp) { const cut = d.sp.lastIndexOf("|"), s = sndRow(d.sp.slice(0, cut)); if (!s) return; s[d.sp.slice(cut + 1)] = e.target.value; sndSave("«" + (s.action || "звук") + "»"); return; }
   if (d.supn) { const cut = d.supn.indexOf("|"), s = sndRow(d.supn.slice(0, cut)), u = s && s.uploads.find(x => x.file === d.supn.slice(cut + 1)); if (!u) return; u.note = e.target.value; sndSave("заметка к звуку «" + s.action + "»"); }
 });

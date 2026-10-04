@@ -1929,10 +1929,13 @@ async function sndUpload(id, files) {
       const row = sndRow(id) || s;
       row.uploads.push({ file, by: me(), at: new Date().toISOString(), note: (SNOTE[id] || "").trim(), status: "new", ai_note: "", size: f.size });
       row.status = "pending"; delete SNOTE[id];
-      extra.forEach(x => { const r = sndRow(x); if (!r || r.uploads.some(u => u.file === file)) return; r.uploads.push({ file, by: me(), at: new Date().toISOString(), note: (row.uploads[row.uploads.length - 1] || {}).note || "", status: "new", ai_note: "", size: f.size, shared_from: id }); r.status = "pending"; });
+      /* a fresh upload becomes the main sound (the last one when several go at once); a chosen reference's request is dropped */
+      const makeMain = r => { r.chosen = file; r.requests = r.requests.filter(q => !(q.type === "use_reference" && q.status === "new")); };
+      makeMain(row);
+      extra.forEach(x => { const r = sndRow(x); if (!r || r.uploads.some(u => u.file === file)) return; r.uploads.push({ file, by: me(), at: new Date().toISOString(), note: (row.uploads[row.uploads.length - 1] || {}).note || "", status: "new", ai_note: "", size: f.size, shared_from: id }); r.status = "pending"; makeMain(r); });
       sndSave("звук «" + row.action + "»", true);
       if (extra.length && k === list.length - 1) delete SUPMULTI[id];
-      sndState(id, "ok", extra.length ? `Загружено сюда и ещё в ${extra.length} стр.` : "Загружено. ИИ увидит файл и заметку к нему");
+      sndState(id, "ok", extra.length ? `Загружено сюда и ещё в ${extra.length} стр., везде стало основным` : "Загружено и стало основным. ИИ поставит его в игру");
     } catch (e) { sndState(id, "err", `«${f.name}» не загрузился: ${e.message}`); }
   }
 }

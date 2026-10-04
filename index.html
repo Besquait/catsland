@@ -610,6 +610,8 @@ span.sx{border-style:dashed;color:var(--ink3)}
 .srec .sit{min-height:30px}.srecm{margin:2px 0 0 28px}
 .slib{gap:8px}.slib .sn{flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .slib small{font:400 var(--fs1)/1.4 var(--mono);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40%}
+.sit .shov{order:8}.sit .schoose.on{order:9}
+.slink.sbin{color:var(--ink2);font-size:var(--fs2)}.slink.sbin:hover{color:var(--white);background:var(--redo)}
 .sgsw{margin:0 0 10px}.sgsw span{margin:0 4px 0 0}
 .ssubh{display:flex;align-items:center;gap:8px;margin:14px 0 2px;font:700 var(--fs1)/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
 .ssubh:first-child{margin-top:8px}.ssubh .cnt{margin-right:auto}.ssubh .slink{letter-spacing:0;text-transform:none}
@@ -1777,6 +1779,8 @@ function sndNorm(d) {
   d.version = d.version || 1; d.budget_mb = d.budget_mb || 500; d.sounds = Array.isArray(d.sounds) ? d.sounds : [];
   d.deleted = Array.isArray(d.deleted) ? d.deleted : [];
   const gone = new Set(d.deleted.map(x => x.id)); d.sounds = d.sounds.filter(s => !gone.has(s.id));
+  d.sounds.forEach(s => { if (!Array.isArray(s.removed) || !s.removed.length) return; const rm = new Set(s.removed.map(x => x.id));
+    s.variants = (s.variants || []).filter(v => !rm.has(v.file) || (s.current && s.current.file === v.file)); s.references = (s.references || []).filter(r => !rm.has(r.url)); });
   d.sounds.forEach(s => (s.requests || []).forEach(r => { if (r.type === "delete_variant" && r.status === "new" && !(s.variants || []).some(v => v.file === r.target)) Object.assign(r, { status: "done", ai_note: r.ai_note || "Вариант уже удалён" }); }));
   d.sounds.forEach(s => { const g = sndGuess(s); if (!SND_PL[s.place]) s.place = g.place; if (!SND_TY[s.type]) s.type = g.type; });
   d.sounds.forEach(s => { ["variants", "references", "uploads", "requests"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; }); s.chosen = s.chosen || "current"; s.status = SND_ST[s.status] ? s.status : "missing"; });
@@ -2004,11 +2008,11 @@ function sndRowHTML(s) {
   const shr = file => { const o = sndUsers(file).filter(x => x !== s); return o.length ? `<span class="sshr" title="Этот же файл в строках: ${esc(o.map(x => x.action).join(", "))}">↔ ещё в ${o.length}</span>` : ""; };
   const share = file => `<button class="slink" data-sshare="${sid}|${esc(file)}" title="Добавить этот файл вариантом в другие строки">ещё в…</button>`;
   const alts = s.variants.map(v => { const inGame = v.file === cur, rmV = inGame && rmOpen;
-      const del = inGame ? (rmOpen ? "" : `<button class="slink" data-sreq="${sid}|remove_from_game|${esc(v.file)}" title="Этот звук сейчас в игре: попросить ИИ убрать">🗑</button>`) : `<button class="slink" data-svdel="${sid}|${esc(v.file)}" title="Удалить вариант">🗑</button>`;
+      const del = inGame ? (rmOpen ? "" : `<button class="slink" data-sreq="${sid}|remove_from_game|${esc(v.file)}" title="Этот звук сейчас в игре: попросить ИИ убрать">🗑</button>`) : s.chosen === v.file ? "" : `<button class="slink sbin" data-svdel="${sid}|${esc(v.file)}" title="Удалить вариант">🗑</button>`;
       return line(pb(v.file, s.action + " · " + (v.label || fileName(v.file)), 1), v.label || fileName(v.file), v.url, meta(v), del + share(v.file) + (s.chosen === v.file ? "" : choose(v.file)),
         shr(v.file) + fb(v.file) + (s.chosen === v.file ? choose(v.file) : ""), (rmV ? `<div class="ssub">🤖 ИИ уберёт из игры</div>` : "") + fbl(v.file)); })
     .concat(s.references.map(r => { const k = "ref:" + r.url, ok = !!safeURL(r.url), mine = r.source === "user" && (r.by === me_ || isOwner());
-      return line(icon(r), r.title || r.url || "", r.url, r.source === "user" ? esc(r.by || "") : meta(r), (ok && s.chosen !== k ? choose(k) : "") + (mine ? `<button class="slink" data-srefx="${sid}|${esc(r.at)}|${esc(r.by)}">убрать</button>` : ""),
+      return line(icon(r), r.title || r.url || "", r.url, r.source === "user" ? esc(r.by || "") : meta(r), (s.chosen === k ? "" : `<button class="slink sbin" data-srefdel="${sid}|${esc(r.url || "")}|${esc(r.at || "")}" title="Убрать референс">🗑</button>`) + (ok && s.chosen !== k ? choose(k) : ""),
         (ok ? fb(k) : "") + (s.chosen === k ? choose(k) : ""), (s.chosen === k ? `<div class="ssub">🤖 ИИ скачает и поставит</div>` : "") + (r.comment ? `<div class="ssub">💬 ${esc(r.comment)}</div>` : "") + (ok ? fbl(k) : "")); }));
   const pick = SREQPICK[s.id], upOpen = SUPOPEN.has(s.id) || !!SNOTE[s.id], notesOpen = !!s.notes || SNOTES.has(s.id);
   const det = !open ? "" : `<div class="sdet">
@@ -2029,7 +2033,7 @@ function sndRowHTML(s) {
       <button class="sbtn" data-sfile="${sid}">Выбрать файл</button><span>или перетащи на строку, до 8 МБ</span>
       <span class="smulti">${(SUPMULTI[s.id] || []).length ? `<button class="slink" data-supmulti="${sid}" title="${esc((SUPMULTI[s.id] || []).map(i => (sndRow(i) || {}).action || i).join(", "))}">и ещё в ${SUPMULTI[s.id].length} стр.</button><button class="slink" data-supmultix="${sid}" title="Только в эту строку">×</button>` : `<button class="slink" data-supmulti="${sid}">загрузить в несколько строк…</button>`}</span></div>` : ""}
     <div class="sacts"><button class="slink" data-sreqm="${sid}">Попросить ИИ…</button>${upOpen ? "" : `<button class="slink" data-supo="${sid}">＋ свой файл</button>`}${notesOpen ? "" : `<button class="slink" data-snotes="${sid}">＋ заметка</button>`}
-      ${s.delete_after ? "" : `<button class="slink" data-srowdel="${sid}">удалить звук</button>`}</div></div>`;
+      ${sndCleanable(s).length ? `<button class="slink" data-sclean="${sid}">очистить варианты</button>` : ""}${s.delete_after ? "" : `<button class="slink" data-srowdel="${sid}">удалить звук</button>`}</div></div>`;
   return `<div class="srow${open ? " open" : ""}" tabindex="0" data-srow="${sid}">
     <div class="ssum" data-sexp="${sid}">${pb(cur, s.action)}${editing ? `<div class="sname sedit"><input data-sp="${sid}|action" value="${esc(s.action)}" placeholder="Что происходит"><input data-sp="${sid}|where" value="${esc(s.where)}" placeholder="Где звучит, коротко">
       <span class="ssel"><select data-spsel="${sid}|place" title="Где">${SND_PLACES.map(([k, t]) => `<option value="${k}"${s.place === k ? " selected" : ""}>${esc(t)}</option>`).join("")}</select><select data-spsel="${sid}|type" title="Тип">${SND_TYPES.map(([k, t]) => `<option value="${k}"${s.type === k ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>
@@ -2088,6 +2092,28 @@ async function sndDelUpload(id, file) {
   if (row.status === "pending" && !row.uploads.some(u => u.status === "new")) row.status = row.current ? "ok" : "missing";
   delete SUP[id]; sndSave("удалена загрузка к «" + row.action + "»", true); render();
 }
+const sndMarkRemoved = (row, key) => { row.removed = (row.removed || []).filter(x => x.id !== key).concat([{ id: key, by: me(), at: new Date().toISOString() }]); };
+/* what "очистить варианты" takes: every variant and reference except the in-game one and the chosen one (uploads stay) */
+const sndCleanable = s => s.variants.filter(v => v.file !== sndCur(s) && v.file !== s.chosen).map(v => ({ v })).concat(s.references.filter(r => "ref:" + r.url !== s.chosen).map(r => ({ r })));
+function sndDelRef(id, url, at) {
+  const s = sndRow(id), r = s && s.references.find(x => x.url === url && (x.at || "") === at); if (!r) return;
+  s.references = s.references.filter(x => x !== r); if (r.source !== "user") sndMarkRemoved(s, url);
+  if (s.chosen === "ref:" + url) s.chosen = "current";
+  sndSave("убран референс у «" + s.action + "»"); render();
+}
+async function sndClean(id) {
+  const s = sndRow(id); if (!s) return; const list = sndCleanable(s); if (!list.length) return;
+  const nv = list.filter(x => x.v).length, nr = list.length - nv;
+  if (!confirm(`Убрать из «${s.action}» ${[nv ? "вариантов: " + nv : "", nr ? "референсов: " + nr : ""].filter(Boolean).join(", ")}? Звук в игре, выбранный и загрузки останутся.`)) return;
+  sndState(id, "busy", "Убираю…");
+  try { for (const { v } of list.filter(x => x.v)) if (!sndUsers(v.file).some(x => x !== s)) await sndDelFile(v.file, "очищены варианты «" + s.action + "»"); }
+  catch (e) { sndState(id, "err", "Не всё удалилось: " + e.message); return; }
+  const row = sndRow(id) || s, gone = new Set(list.map(x => x.v ? x.v.file : "ref:" + x.r.url));
+  list.forEach(x => { if (x.v || x.r.source !== "user") sndMarkRemoved(row, x.v ? x.v.file : x.r.url); });
+  row.variants = row.variants.filter(v => !gone.has(v.file)); row.references = row.references.filter(r => !gone.has("ref:" + r.url));
+  row.requests.forEach(r => { if (r.type === "delete_variant" && r.status === "new" && gone.has(r.target)) Object.assign(r, { status: "done", ai_note: "Удалён на сайте" }); });
+  delete SUP[id]; sndSave("очищены варианты «" + row.action + "»", true); render(); toast("Убрано: " + list.length);
+}
 /* a variant that is not in the game is deleted right away; its file goes when no other row uses it */
 async function sndDelVariant(id, file) {
   const s = sndRow(id), v = s && s.variants.find(x => x.file === file); if (!v) return;
@@ -2098,7 +2124,7 @@ async function sndDelVariant(id, file) {
     try { await sndDelFile(file, "удалён вариант «" + (v.label || fileName(file)) + "»"); } catch (e) { sndState(id, "err", "Файл не удалился: " + e.message); return; }
     delete SUP[id];
   }
-  const row = sndRow(id) || s; row.variants = row.variants.filter(x => x.file !== file);
+  const row = sndRow(id) || s; row.variants = row.variants.filter(x => x.file !== file); sndMarkRemoved(row, file);
   if (row.chosen === file) row.chosen = "current";
   row.requests.forEach(r => { if (r.type === "delete_variant" && r.status === "new" && r.target === file) Object.assign(r, { status: "done", ai_note: "Удалён на сайте" }); });
   sndSave("удалён вариант у «" + row.action + "»", true); render(); toast(others ? "Убран из этой строки, файл остался в других" : "Вариант удалён");
@@ -2223,7 +2249,7 @@ function sndRefDialog(id) {
 }
 document.addEventListener("click", e => {
   if (view !== "sounds") return;
-  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry],[data-sfb],[data-sreq],[data-sreqx],[data-sref],[data-srefx],[data-sedit],[data-sreqm],[data-sreqc],[data-shist],[data-supo],[data-snotes],[data-sfbo],[data-sgrp],[data-supdel],[data-srowdel],[data-svdel],[data-sshare],[data-supmulti],[data-supmultix],[data-slib],[data-srec],[data-sopen],[data-srecall]");
+  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry],[data-sfb],[data-sreq],[data-sreqx],[data-sref],[data-srefx],[data-sedit],[data-sreqm],[data-sreqc],[data-shist],[data-supo],[data-snotes],[data-sfbo],[data-sgrp],[data-supdel],[data-srowdel],[data-svdel],[data-sshare],[data-supmulti],[data-supmultix],[data-slib],[data-srec],[data-sopen],[data-srecall],[data-srefdel],[data-sclean]");
   if (!t || t.disabled) return; const d = t.dataset;
   const focus = sel => { const el = document.querySelector(sel); if (el) el.focus(); };
   if (d.sedit) { SEDIT.has(d.sedit) ? SEDIT.delete(d.sedit) : SEDIT.add(d.sedit); render(); if (SEDIT.has(d.sedit)) focus(`[data-sp="${CSS.escape(d.sedit)}|action"]`); return; }
@@ -2242,6 +2268,8 @@ document.addEventListener("click", e => {
   if (d.supmultix) { delete SUPMULTI[d.supmultix]; render(); return; }
   if (d.slib) { sndPickLib(d.slib); return; }
   if ("srecall" in d) { SRECALL = !SRECALL; render(); return; }
+  if (d.srefdel) { const a = d.srefdel.indexOf("|"), z = d.srefdel.lastIndexOf("|"); sndDelRef(d.srefdel.slice(0, a), d.srefdel.slice(a + 1, z), d.srefdel.slice(z + 1)); return; }
+  if (d.sclean) { sndClean(d.sclean); return; }
   if ("srec" in d) { LSset("cl_srecent", LS("cl_srecent") === "0" ? "1" : "0"); render(); return; }
   if (d.sopen) { sfilt = "all"; SOPEN.add(d.sopen); render(); const el = document.querySelector(`[data-srow="${CSS.escape(d.sopen)}"]`); if (el) { el.scrollIntoView({ block: "center" }); el.focus(); } return; }
   if (d.sfbo) { FBOPEN.add(d.sfbo); render(); focus(`[data-sfbt="${CSS.escape(d.sfbo)}"]`); return; }

@@ -690,6 +690,16 @@ span.sx{border-style:dashed;color:var(--ink3)}
 .sli .sn{font-size:var(--fs3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sli small{grid-column:2;font:400 var(--fs1)/1.3 var(--mono);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sli .splay{grid-column:3;grid-row:1/3}.splay.off{visibility:hidden}
+/* sounds list: game > type, collapsible, with a short "where it plays" line under each name */
+.slst .sli{grid-template-rows:auto auto}.slst .sli .sdot{grid-row:1/3}
+.slst .sli .sw{grid-column:2/4;grid-row:2;font:400 var(--fs1)/1.3 var(--sans);font-style:normal;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sg1{position:sticky;top:-6px;z-index:2;display:flex;align-items:center;gap:8px;width:100%;margin-top:8px;padding:7px 8px;border:0;border-radius:var(--r1);background:var(--card);box-shadow:0 2px 0 var(--line);font:800 var(--fs3)/1.3 var(--sans);color:var(--ink);text-align:left;cursor:pointer}
+.sg1:hover{background:color-mix(in srgb,var(--sun) 25%,var(--card))}
+.sg1 b{margin-left:auto;font:700 var(--fs1)/1 var(--mono);color:var(--ink3)}.sgc{width:12px;color:var(--ink3)}
+.sgbody{margin:4px 0 0 12px;padding-left:8px;border-left:3px solid var(--line)}
+.sg2{display:flex;gap:6px;margin:8px 4px 2px;font:700 var(--fs2)/1.4 var(--sans);color:var(--ink2)}.sg2 b{margin-left:auto;font:700 var(--fs1)/1.4 var(--mono);color:var(--ink3)}
+.sc2path{margin:0 0 4px;font:700 var(--fs1)/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.sc2where{margin:-6px 0 12px;color:var(--ink2);font-size:var(--fs2)}
 .scardw>.card.empty{padding:40px}
 .scard{background:var(--card);border:var(--b2) solid var(--edge);border-radius:var(--r3);box-shadow:var(--shadow);padding:14px 20px 18px}
 .scard .ssum{cursor:default;padding:4px 0 10px;border-bottom:var(--b1) dashed var(--line);margin-bottom:14px}
@@ -1848,7 +1858,7 @@ function unA(o) {
    (uploads and variants by file). Private audio is fetched with the key and played from a blob URL. */
 const SND_PATH = "data/sounds.json", SND_MAX = 8 * 1024 * 1024, SND_EXT = ["wav", "mp3", "ogg", "m4a", "flac"];
 const SND_MIME = { wav: "audio/wav", mp3: "audio/mpeg", ogg: "audio/ogg", m4a: "audio/mp4", flac: "audio/flac" };
-const SND_GAMES = [["block-party", "🟨 Block Party"], ["crack-run", "🏃 Crack Run"], ["arm-wrestle", "💪 Армрестлинг"], ["combat", "🥊 Бой"], ["ui", "🖱️ Интерфейс"], ["world", "🌍 Мир"]];
+const SND_GAMES = [["block-party", "🟨 Block Party"], ["crack-run", "🏃 Crack Run"], ["arm-wrestle", "💪 Армрестлинг"], ["combat", "🥊 Бита и бой"], ["ui", "🖱️ Интерфейс"], ["world", "🌍 Мир и хаб"]];
 const SND_PLACES = [["block-party", "🟨 Block Party"], ["crack-run", "🏃 Crack Run"], ["arm-wrestle", "💪 Армрестлинг"], ["hub", "🏝️ Хаб и палуба"], ["everywhere", "🌐 Везде"]];
 const SND_TYPES = [["move", "Шаги и движение"], ["combat", "Удары и бой"], ["signal", "Сигналы игры"], ["ui", "Интерфейс"], ["items", "Предметы и стол"], ["ambience", "Фон"], ["music", "Музыка"], ["other", "Другое"]];
 const SND_PL = Object.fromEntries(SND_PLACES), SND_TY = Object.fromEntries(SND_TYPES);
@@ -1863,7 +1873,12 @@ function sndGuess(s) {
   return { place, type };
 }
 const sndGameOf = s => ["block-party", "crack-run", "arm-wrestle"].includes(s.place) ? s.place : s.type === "ui" ? "ui" : s.type === "combat" ? "combat" : "world";
-let SGROUP = LS("cl_sgroup") === "type" ? "type" : "place";
+const SND_GN = SND_GAMES.concat([["steps", "👣 Шаги"]]);   // headings of the list, the card path and the picker use these names
+let SGC = new Set(); try { SGC = new Set(JSON.parse(LS("cl_sgc") || "[]")); } catch (e) { }
+const sndGName = k => (SND_GN.find(x => x[0] === k) || ["", ""])[1].replace(/^\S+\s/, "");
+/* a short human line of where it plays: the where field, or the place when that is only code names */
+const sndHuman = r => { const w = String(r.where || "").trim(); return !w || /^[A-Za-z0-9_,.:\s]+$/.test(w) ? (SND_PL[r.place] || "").replace(/^\S+\s/, "") : w; };
+const sndKind = r => r.type === "move" ? "steps" : sndGameOf(r);
 const SND_ST = { ok: ["Есть", "var(--done)"], missing: ["Нет звука", "var(--redo)"], variant: ["Есть вариант", "var(--test)"], pending: ["Ждёт замены", "var(--sun)"] };
 const SND_UP = { new: ["новый", "var(--sun)"], imported: ["принят", "var(--done)"], rejected: ["отклонён", "var(--redo)"] };
 const SND_QUICK = ["громче", "тише", "короче", "длиннее", "мягче", "резче"];
@@ -2064,7 +2079,6 @@ function soundsHTML() {
   const all = SND.sounds, used = sndBytes(), budget = SND.budget_mb || 500, pct = Math.min(100, used / (budget * 1048576) * 100);
   const cnt = k => k === "all" ? all.length : k === "new" ? all.filter(s => s.uploads.some(u => u.status === "new")).length : k === "req" ? all.reduce((n, s) => n + sndOpenReq(s).length, 0) : all.filter(s => s.status === k).length;
   const chip = (k, t) => `<button class="${sfilt === k ? "on" : ""}" data-sf="${k}">${t}<b>${cnt(k)}</b></button>`;
-  const ko = SGROUP, ki = ko === "place" ? "type" : "place", outer = ko === "place" ? SND_PLACES : SND_TYPES, inner = ko === "place" ? SND_TYPES : SND_PLACES;
   const addKey = o => Object.entries(o).map(([k, v]) => k + "=" + v).join("&");
   const stepsLink = place => `<button class="slink" data-sadd="${addKey(Object.assign({ type: "move", surface: 1 }, place ? { place } : {}))}">＋ шаги для поверхности…</button>`;
   const notSteps = r => r.type !== "move";
@@ -2075,8 +2089,7 @@ function soundsHTML() {
     ${SSRCH || SQ ? `<input class="search sq" data-sq2 placeholder="Найти звук" value="${esc(SQ)}">` : ""}
     ${SCOG ? `<div class="scog"><div class="sbud"><div class="bar" title="Сумма размеров всех файлов"><i style="width:${pct.toFixed(1)}%"></i><b>${fmtSize(used)} из ${budget} МБ</b></div></div>
       <div class="mfilt schips">${chip("all", "Все")}${chip("missing", "Нет звука")}${chip("pending", "Ждёт замены")}${chip("variant", "Есть вариант")}${chip("new", "Новые загрузки")}${chip("req", "Просьбы к ИИ")}</div>
-      <div class="scogr"><span>Группировать</span><div class="viewsw sgsw"><button class="${ko === "place" ? "on" : ""}" data-sgrp="place">по месту</button><button class="${ko === "type" ? "on" : ""}" data-sgrp="type">по типу</button></div>
-        <button class="slink" data-sadd="">＋ добавить звук</button><button class="slink" data-sqlist>▶ всё из списка по очереди</button></div>
+      <div class="scogr"><button class="slink" data-sadd="">＋ добавить звук</button><button class="slink" data-sqlist>▶ всё из списка по очереди</button></div>
       ${sndRecentHTML()}
       <p class="shelpc">Файлы можно перетащить на звук, на ячейку шагов или куда угодно на страницу. До 8 МБ, wav, mp3, ogg, m4a, flac.<br>
         <b>↑ ↓</b> выбрать звук · <b>Пробел</b> играть или стоп · <b>1…9</b> вариант по номеру · <b>Enter</b> поставить отмеченный · <b>Del</b> удалить отмеченный · <b>A</b> сравнить с тем, что в игре · <b>/</b> поиск</p></div>` : ""}`;
@@ -2086,10 +2099,17 @@ function soundsHTML() {
   const rows = all.filter(r => tabF(r) && sndShown(r) && sndMatchQ(r) && (STAB === "all" || notSteps(r)));
   if (!sndRow(SSEL) || !SSEL) SSEL = (rows[0] || {}).id || "";      // a row that just left the tab (decided) stays open
   const sel = sndRow(SSEL);
-  const item = r => `<div class="sli${r.id === SSEL ? " on" : ""}" data-ssel="${esc(r.id)}" data-srow="${esc(r.id)}"><i class="sdot ${sndDot(r)}"></i><span class="sn">${esc(r.action) || "Без названия"}</span><small>${sndWord(r)}</small></div>`;
-  const plain = rows.filter(notSteps), steps = rows.filter(r => !notSteps(r));
-  const groups = outer.map(([ov, ot]) => { const rr = plain.filter(r => r[ko] === ov); return rr.length ? `<div class="slh">${esc(ot.replace(/^\S+\s/, ""))}</div>${rr.map(item).join("")}` : ""; }).join("")
-    + (steps.length ? `<div class="slh">Шаги</div>${steps.map(item).join("")}` : "");
+  const item = r => `<div class="sli${r.id === SSEL ? " on" : ""}" data-ssel="${esc(r.id)}" data-srow="${esc(r.id)}"><i class="sdot ${sndDot(r)}"></i><span class="sn">${esc(r.action) || "Без названия"}</span><small>${sndWord(r)}</small><em class="sw">${esc(sndHuman(r))}</em></div>`;
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const subOf = r => r.type !== "move" ? SND_TY[r.type] || "Другое" : r.surface ? cap(String(r.surface)) : "Общие звуки движения";
+  const groups = SND_GN.map(([gk, gt]) => {
+    const gr = rows.filter(r => sndKind(r) === gk); if (!gr.length) return "";
+    const ck = "g:" + gk, closed = !SQ && SGC.has(ck), subs = [];
+    gr.forEach(r => { const n = subOf(r); let u = subs.find(x => x.n === n); if (!u) subs.push(u = { n, rr: [] }); u.rr.push(r); });
+    const ord = n => gk === "steps" ? (n === "Общие звуки движения" ? 1 : 0) : SND_TYPES.findIndex(x => x[1] === n);
+    subs.sort((x, y) => ord(x.n) - ord(y.n));
+    return `<div class="sgrp"><button class="sg1" data-sgt="${ck}" title="${closed ? "Развернуть" : "Свернуть"}"><span class="sgc">${closed ? "▸" : "▾"}</span>${esc(gt)}<b>${gr.length}</b></button>${closed ? "" : `<div class="sgbody">${subs.map(u =>
+      `${subs.length > 1 ? `<div class="sg2">${esc(u.n)}<b>${u.rr.length}</b></div>` : ""}${u.rr.map(item).join("")}`).join("")}</div>`}</div>`; }).join("");
   return top + `<div class="spane${SMOB && sel ? " mob" : ""}"><div class="slst card">${groups || `<div class="empty">${SQ ? "Ничего не нашлось" : STAB === "need" ? "Решать нечего" : "Пусто"}</div>`}</div>
     <div class="scardw">${sel ? sndSimpleCard(sel) : `<div class="card empty">Выбери звук слева</div>`}</div></div>`;
 }
@@ -2117,7 +2137,9 @@ function sndSimpleCard(s) {
   const curName = cur ? s.current.label && !/дубл|^в игре/i.test(s.current.label) ? s.current.label : (s.variants.find(v => v.file === cur) || {}).label || "" : "";
   const items = sndSimpleItems(s);
   return `<div class="scard2" data-srow="${sid}"><button class="back smback" data-smback>← Список</button>
+    <div class="sc2path">${esc(sndGName(sndKind(s)))}${s.type === "move" ? "" : " › " + esc(SND_TY[s.type] || "Другое")}</div>
     <h2 class="sc2t">${esc(s.action) || "Без названия"}</h2>
+    <p class="sc2where">Играет: ${esc(sndHuman(s))}</p>
     <div class="sc2cur${cur ? "" : " no"}">${cur ? `${pb(cur, s.action)}<b>Сейчас в игре</b>${curName ? `<span>${esc(curName)}</span>` : ""}${sndChosenDiff(s) ? `<button class="sbtn sc2b" data-schoose="${sid}|current" title="Оставить то, что в игре">Вернуть</button>` : ""}` : `<span class="sc2none">Звука нет</span>`}</div>
     ${up ? `<div class="sstate ${up.st}">${esc(up.t)}</div>` : ""}
     <h4 class="sc2h">Варианты</h4>
@@ -2136,7 +2158,7 @@ const sndDot = s => sndIsWait(s) ? "wait" : sndCur(s) ? (s.status === "variant" 
 const SND_TABS = [["need", "Нужно решить", sndIsNeed], ["game", "В игре", s => !!sndCur(s) && !sndIsWait(s)], ["steps", "Шаги", s => s.type === "move"], ["all", "Все", () => true]];
 let SSRCH = false, SCOG = false; const SMORE = new Set();
 let STAB = ["need", "game", "steps", "all"].includes(LS("cl_stab")) ? LS("cl_stab") : "need", SQ = "", SSEL = LS("cl_ssel") || "", SMOB = false, SFOC = -1, SHELP = false;
-const sndMatchQ = s => !SQ || [s.action, s.id, s.where, SND_PL[s.place], SND_TY[s.type], s.surface].join(" ").toLowerCase().includes(SQ.toLowerCase());
+const sndMatchQ = s => !SQ || [s.action, s.id, s.where, SND_PL[s.place], SND_TY[s.type], sndGName(sndKind(s)), s.surface].join(" ").toLowerCase().includes(SQ.toLowerCase());
 const hhmm = t => { const d = new Date(t); return isNaN(d) ? "" : d.toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" }) + (new Date().toDateString() === d.toDateString() ? "" : ", " + d.toLocaleDateString("ru", { day: "2-digit", month: "2-digit" })); };
 function sndSyncHTML(n) {
   const L = (SND.sync_requests || []).slice(-1)[0], open = L && L.status === "new";
@@ -2152,7 +2174,7 @@ function sndBulk(files) {
   const words = t => [...new Set((String(t).toLowerCase() + " " + slug(t).replace(/-/g, " ")).split(/[^a-zа-яё0-9]+/).filter(w => w.length >= 3))];
   const idx = SND.sounds.map(r => ({ r, w: new Set(words([r.action, r.id, r.surface || "", r.where || ""].join(" "))) }));
   const guess = f => { const fw = words(f.name.replace(/\.\w+$/, "")); let best = "", sc = 0; idx.forEach(({ r, w }) => { const n = fw.filter(x => w.has(x)).length; if (n > sc) { sc = n; best = r.id; } }); return best; };
-  const opts = v => `<option value="">выбери строку…</option>` + SND_PLACES.map(([pk, pt]) => { const rr = SND.sounds.filter(r => r.place === pk); return rr.length ? `<optgroup label="${esc(pt)}">${rr.map(r => `<option value="${esc(r.id)}"${r.id === v ? " selected" : ""}>${esc(r.action)}</option>`).join("")}</optgroup>` : ""; }).join("");
+  const opts = v => `<option value="">выбери строку…</option>` + SND_GN.map(([pk, pt]) => { const rr = SND.sounds.filter(r => sndKind(r) === pk); return rr.length ? `<optgroup label="${esc(pt)}">${rr.map(r => `<option value="${esc(r.id)}"${r.id === v ? " selected" : ""}>${esc(r.action)}</option>`).join("")}</optgroup>` : ""; }).join("");
   const w = document.createElement("div"); w.className = "modal";
   w.innerHTML = `<div class="spick"><h3>Файлов: ${files.length}</h3><p>Строка подобрана по словам в имени файла. Последний файл в строке станет основным.</p>
     <label class="spki spmain"><input type="checkbox" class="sone"> в одну строку <select class="sonev">${opts("")}</select></label>
@@ -2251,8 +2273,11 @@ function sndGridHTML(rows) {
         <span class="sci">${up && up.st === "busy" ? "…" : c.st === "ok" ? "✓" : c.st === "wait" ? "⏳" : "·"}</span>${c.files.length ? `<button class="splay sm" data-splay="${esc(pick)}" data-stitle="${esc(c.main.action)}" title="Случайный дубль">▶</button>` : ""}
         <small>${c.files.length ? `<span class="sxn">${c.files.length} ${sndPlural(c.files.length)}</span>` : "пусто"}</small>${up && up.st === "err" ? `<span class="scerr" title="${esc(up.t)}">!</span>` : ""}${c.files.length ? `<button class="slink scopy" data-scopy="${esc(c.rows.map(r => r.id).join(","))}" title="Копировать дубли в другую ячейку">⧉</button>` : ""}</div>`; }).join("")}</div>
       ${open.length ? `<div class="sgopen">${open.map(sndSimpleCard).join("")}</div>` : ""}`; }).join("");
-  return `<div class="sgrid"><div class="sgline sghead" style="${cols}"><span>Материал</span>${acts.map(([, t]) => `<span>${t}</span>`).join("")}</div>${out || `<div class="empty">Материалов пока нет</div>`}</div>
-    ${loose.length ? `<div class="ssubh">Без поверхности<span class="cnt">${loose.length}</span></div>${loose.map(r => sndRowHTML(r) + `<div class="sbindl"><button class="slink" data-sbind="${esc(r.id)}">привязать к поверхности</button></div>`).join("")}` : ""}`;
+  const jump = loose.filter(r => r.id === "gen-jump"), rest = loose.filter(r => r.id !== "gen-jump");
+  const lrow = r => sndRowHTML(r) + `<div class="sbindl"><button class="slink" data-sbind="${esc(r.id)}">привязать к поверхности</button></div>`;
+  return `<div class="ssubh">Шаги по материалам<span class="cnt">${lines.size}</span></div><div class="sgrid"><div class="sgline sghead" style="${cols}"><span>Материал</span>${acts.map(([, t]) => `<span>${t}</span>`).join("")}</div>${out || `<div class="empty">Материалов пока нет</div>`}</div>
+    ${jump.length ? `<div class="ssubh">Прыжок персонажа (поверх материала)</div>${jump.map(lrow).join("")}` : ""}
+    ${rest.length ? `<div class="ssubh">Остальные звуки движения<span class="cnt">${rest.length}</span></div>${rest.map(lrow).join("")}` : ""}`;
 }
 const sndPlural = n => n % 10 === 1 && n % 100 !== 11 ? "дубль" : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? "дубля" : "дублей";
 const sndSurfaces = () => [...new Set(SND.sounds.filter(r => r.type === "move").map(sndSurfKey).filter(Boolean))].sort((a, c) => a.localeCompare(c, "ru"));
@@ -2566,7 +2591,7 @@ document.addEventListener("click", e => {
   if (view !== "sounds") return;
   const tl = e.target.closest && e.target.closest(".scard2 > .sc2i");
   if (tl) { SFOC = [...document.querySelectorAll(".scard2 > .sc2i")].indexOf(tl); sndMarkFoc(); }
-  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry],[data-sfb],[data-sreq],[data-sreqx],[data-sref],[data-srefx],[data-sedit],[data-sreqm],[data-sreqc],[data-shist],[data-supo],[data-snotes],[data-sfbo],[data-sgrp],[data-supdel],[data-srowdel],[data-svdel],[data-sshare],[data-supmulti],[data-supmultix],[data-slib],[data-srec],[data-sopen],[data-srecall],[data-srefdel],[data-sclean],[data-scell],[data-scelladd],[data-smat],[data-sbind],[data-scopy],[data-stab],[data-ssel],[data-ssync],[data-shelp],[data-sqlist],[data-smback],[data-ssrch],[data-scog],[data-smore]");
+  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry],[data-sfb],[data-sreq],[data-sreqx],[data-sref],[data-srefx],[data-sedit],[data-sreqm],[data-sreqc],[data-shist],[data-supo],[data-snotes],[data-sfbo],[data-sgt],[data-supdel],[data-srowdel],[data-svdel],[data-sshare],[data-supmulti],[data-supmultix],[data-slib],[data-srec],[data-sopen],[data-srecall],[data-srefdel],[data-sclean],[data-scell],[data-scelladd],[data-smat],[data-sbind],[data-scopy],[data-stab],[data-ssel],[data-ssync],[data-shelp],[data-sqlist],[data-smback],[data-ssrch],[data-scog],[data-smore]");
   if (!t || t.disabled) return; const d = t.dataset;
   const focus = sel => { const el = document.querySelector(sel); if (el) el.focus(); };
   if (d.sedit) { SEDIT.has(d.sedit) ? SEDIT.delete(d.sedit) : SEDIT.add(d.sedit); render(); if (SEDIT.has(d.sedit)) focus(`[data-sp="${CSS.escape(d.sedit)}|action"]`); return; }
@@ -2576,7 +2601,7 @@ document.addEventListener("click", e => {
   if (d.shist) { SHIST.has(d.shist) ? SHIST.delete(d.shist) : SHIST.add(d.shist); render(); return; }
   if (d.supo) { SUPOPEN.add(d.supo); render(); focus(`[data-snote="${CSS.escape(d.supo)}"]`); return; }
   if (d.snotes) { SNOTES.add(d.snotes); render(); focus(`[data-sp="${CSS.escape(d.snotes)}|notes"]`); return; }
-  if (d.sgrp) { SGROUP = d.sgrp; LSset("cl_sgroup", SGROUP); render(); return; }
+  if (d.sgt) { SGC.has(d.sgt) ? SGC.delete(d.sgt) : SGC.add(d.sgt); LSset("cl_sgc", JSON.stringify([...SGC])); render(); return; }
   if (d.supdel) { const cut = d.supdel.indexOf("|"); sndDelUpload(d.supdel.slice(0, cut), d.supdel.slice(cut + 1)); return; }
   if (d.srowdel) { sndDelRow(d.srowdel); return; }
   if (d.svdel) { const cut = d.svdel.indexOf("|"); sndDelVariant(d.svdel.slice(0, cut), d.svdel.slice(cut + 1)); return; }

@@ -623,6 +623,7 @@ span.sx{border-style:dashed;color:var(--ink3)}
 .scell.ok{background:color-mix(in srgb,var(--done) 14%,var(--card))}
 .scell.wait{background:color-mix(in srgb,var(--sun) 26%,var(--card))}
 .scell.empty{background:var(--card)}
+.scell.inh{background:transparent;border-style:dashed;color:var(--ink3)}.scell.inh small{color:var(--ink3)}.scell.inh .splay{opacity:.75}
 .scell.none{justify-content:center;border-style:dashed;background:transparent;color:var(--ink3);font:700 var(--fs3)/1 var(--sans)}
 .scell.none:hover{color:var(--ink);background:var(--card)}
 .scell.drop{outline:3px dashed var(--accent);outline-offset:1px}
@@ -2069,12 +2070,19 @@ function sndGridHTML(rows) {
   const acts = SND_ACT.filter(([a], i) => i < SND_ACT_BASE || rows.some(r => sndSurfKey(r) && sndAct(r) === a));
   const cols = `grid-template-columns:minmax(120px,1.3fr) repeat(${acts.length},minmax(92px,1fr))`;
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
-  const out = [...lines.values()].sort((a, c) => (a.title || a.key).localeCompare(c.title || c.key, "ru")).map(L => {
+  const isAll = L => L.rows.some(r => /^steps-all-/.test(r.id)) || L.key === "все материалы";
+  const allL = [...sndMoveLines().values()].find(isAll), common = {};
+  if (allL) acts.forEach(([a]) => { const rr = allL.rows.filter(r => sndAct(r) === a); if (rr.length) { const c = sndCell(rr); if (c.files.length) common[a] = c; } });
+  const out = [...lines.values()].sort((a, c) => (isAll(c) - isAll(a)) || (a.title || a.key).localeCompare(c.title || c.key, "ru")).map(L => {
     const cells = acts.map(([a]) => { const rr = L.rows.filter(r => sndAct(r) === a); return rr.length ? sndCell(rr) : null; });
-    const filled = cells.filter(c => c && c.st !== "empty").length, open = L.rows.filter(r => SOPEN.has(r.id));
+    const filled = cells.filter(c => c && c.st !== "empty").length, inhN = isAll(L) ? 0 : acts.filter(([a], i) => (!cells[i] || !cells[i].files.length) && common[a]).length, open = L.rows.filter(r => SOPEN.has(r.id));
     const also = SALSO[L.key] || [];
-    return `<div class="sgline" data-sline="${esc(L.key)}" style="${cols}"><div class="sgmat"><b>${esc(sndLineTitle(L))}</b><small>${filled} из ${acts.length} заполнено</small>
+    return `<div class="sgline" data-sline="${esc(L.key)}" style="${cols}"><div class="sgmat"><b>${esc(sndLineTitle(L))}</b><small>${filled} из ${acts.length} заполнено${inhN ? `, ${inhN} общих` : ""}</small>
       <span class="salso" title="Файлы, брошенные на ячейку этого материала, лягут и сюда">также в: ${acts.map(([a, t]) => `<label><input type="checkbox" data-salso="${esc(L.key)}|${a}"${also.includes(a) ? " checked" : ""}>${t.toLowerCase()}</label>`).join("")}</span></div>${cells.map((c, i) => {
+      const inh = !isAll(L) && (!c || !c.files.length) && common[acts[i][0]];
+      if (inh) { const cc = common[acts[i][0]], pk = cc.files[Math.floor(Math.random() * cc.files.length)];
+        return `<div class="scell inh${c && c.rows.some(r => SOPEN.has(r.id)) ? " on" : ""}" ${c ? `data-srow="${esc(c.main.id)}" data-scell="${esc(c.rows.map(r => r.id).join(","))}"` : `data-scelladd="${esc(L.key)}|${acts[i][0]}"`} tabindex="0" title="Своих дублей нет: играют общие из «Все материалы». Перетащи сюда свои, они заменят общие">
+          <span class="sci">↳</span><button class="splay sm" data-splay="${esc(pk)}" data-stitle="${esc(cc.main.action)}" title="Общий дубль">▶</button><small>общий</small></div>`; }
       if (!c) return `<button class="scell none" data-scelladd="${esc(L.key)}|${acts[i][0]}" title="Добавить строку: ${esc(acts[i][1].toLowerCase())}">＋</button>`;
       const id = c.main.id, up = SUP[id], pick = c.files[Math.floor(Math.random() * c.files.length)];
       return `<div class="scell ${c.st}${c.rows.some(r => SOPEN.has(r.id)) ? " on" : ""}" data-srow="${esc(id)}" data-scell="${esc(c.rows.map(r => r.id).join(","))}" tabindex="0" title="${esc(c.rows.map(r => r.action).join(", "))}. Перетащи сюда файлы">

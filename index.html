@@ -612,6 +612,28 @@ span.sx{border-style:dashed;color:var(--ink3)}
 .slib small{font:400 var(--fs1)/1.4 var(--mono);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40%}
 .sit .shov{order:8}.sit .schoose.on{order:9}
 .slink.sbin{color:var(--ink2);font-size:var(--fs2)}.slink.sbin:hover{color:var(--white);background:var(--redo)}
+.sgrid{overflow-x:auto;margin:4px -4px 6px;padding:2px 4px}
+.sgline{display:grid;gap:6px;align-items:stretch;min-width:560px;margin:0 0 6px}
+.sghead span{font:700 var(--fs1)/1.4 var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:0 4px}
+.sgmat{display:flex;flex-direction:column;justify-content:center;line-height:1.25;padding:2px 4px}
+.sgmat b{font-weight:700;font-size:var(--fs3)}.sgmat small{font:400 var(--fs1)/1.4 var(--mono);color:var(--ink3)}
+.scell{display:flex;align-items:center;gap:6px;min-height:42px;padding:5px 8px;border:var(--b1) solid var(--line);border-radius:var(--r2);background:var(--card);cursor:pointer;outline:none;position:relative}
+.scell:hover,.scell:focus-visible{border-color:var(--edge)}
+.scell.on{border-color:var(--edge);box-shadow:var(--sh1)}
+.scell.ok{background:color-mix(in srgb,var(--done) 14%,var(--card))}
+.scell.wait{background:color-mix(in srgb,var(--sun) 26%,var(--card))}
+.scell.empty{background:var(--card)}
+.scell.none{justify-content:center;border-style:dashed;background:transparent;color:var(--ink3);font:700 var(--fs3)/1 var(--sans)}
+.scell.none:hover{color:var(--ink);background:var(--card)}
+.scell.drop{outline:3px dashed var(--accent);outline-offset:1px}
+.scell .sci{font:700 var(--fs3)/1 var(--sans);width:16px;text-align:center;flex:none}
+.scell.empty .sci{color:var(--ink3)}
+.scell small{font:400 var(--fs1)/1.3 var(--mono);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.scerr{color:var(--redo);font-weight:800}
+.sgopen{margin:2px 0 10px;padding:0 0 0 8px;border-left:var(--b2) solid var(--line)}
+.sbinds{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.sbindl{margin:-6px 0 6px 36px}.sbacts{flex-wrap:wrap;margin:0 0 10px}
+.sgmat,.sghead span:first-child{position:sticky;left:0;z-index:1;background:var(--card)}
 .sgsw{margin:0 0 10px}.sgsw span{margin:0 4px 0 0}
 .ssubh{display:flex;align-items:center;gap:8px;margin:14px 0 2px;font:700 var(--fs1)/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
 .ssubh:first-child{margin-top:8px}.ssubh .cnt{margin-right:auto}.ssubh .slink{letter-spacing:0;text-transform:none}
@@ -1907,7 +1929,7 @@ function sndState(id, st, t) {
   if (view !== "sounds") return;
   if (!typing()) { render(); return; }
   const row = document.querySelector(`[data-srow="${CSS.escape(id)}"]`); if (!row) return;
-  let el = row.querySelector(".sstate"); if (!el) { el = document.createElement("div"); row.querySelector(".ssum").after(el); }
+  let el = row.querySelector(".sstate"); if (!el) { const h = row.querySelector(".ssum"); if (!h) { render(); return; } el = document.createElement("div"); h.after(el); }
   el.className = "sstate " + st; el.textContent = t;
 }
 async function sndUpload(id, files) {
@@ -1975,10 +1997,91 @@ function soundsHTML() {
     <div class="viewsw sgsw"><span>Группировать</span><button class="${ko === "place" ? "on" : ""}" data-sgrp="place">по месту</button><button class="${ko === "type" ? "on" : ""}" data-sgrp="type">по типу</button></div>
     <div class="mfilt">${chip("all", "Все")}${chip("missing", "Нет звука")}${chip("pending", "Ждёт замены")}${chip("variant", "Есть вариант")}${chip("new", "Новые загрузки")}${chip("req", "Просьбы к ИИ")}</div>` +
     outer.map(([ov, ot]) => { const rows = all.filter(s => s[ko] === ov && sndShown(s)); if (!rows.length && (sfilt !== "all" || (ko === "type" && ov !== "move"))) return "";
-      const body = inner.map(([iv, it]) => { const rr = rows.filter(s => s[ki] === iv); if (!rr.length) return "";
-        return `<div class="ssubh">${esc(it)}<span class="cnt">${rr.length}</span>${iv === "move" || ov === "move" ? stepsLink(ko === "place" ? ov : iv) : ""}</div>${rr.map(sndRowHTML).join("")}`; }).join("");
+      const body = ko === "type" && ov === "move" ? (rows.length ? `<div class="ssubh">Материалы<span class="cnt">${rows.length}</span><button class="slink" data-smat="">＋ материал</button></div>${sndGridHTML(rows)}` : "") : inner.map(([iv, it]) => { const rr = rows.filter(s => s[ki] === iv); if (!rr.length) return "";
+        if (iv === "move") return `<div class="ssubh">${esc(it)}<span class="cnt">${rr.length}</span><button class="slink" data-smat="${ov}">＋ материал</button></div>${sndGridHTML(rr)}`;
+        return `<div class="ssubh">${esc(it)}<span class="cnt">${rr.length}</span></div>${rr.map(sndRowHTML).join("")}`; }).join("");
       return `<div class="sgh"><h2>${esc(ot)}</h2><span class="cnt">${rows.length}</span>${sndQueue(ko + ":" + ov).length > 1 ? `<button class="sbtn" data-sq="${ko}:${ov}">▶ Все по очереди</button>` : ""}<button class="sbtn" data-sadd="${ko}=${ov}">＋ Добавить звук</button></div>
         <div class="card slist">${body || `<div class="empty">Пока пусто${ov === "move" ? " " + stepsLink() : ""}</div>`}</div>`; }).join("");
+}
+/* ===== steps grid: one line per surface, one column per action; a cell is a row of the sheet ===== */
+const SND_ACT = [["walk", "Ходьба"], ["run", "Бег"], ["jump", "Прыжок"], ["land", "Приземление"], ["sprint", "Спринт"], ["doublejump", "Двойной прыжок"]];
+const SND_ACT_BASE = 4;
+/* steps-<surface>-<action> says it directly; older rows by their words */
+function sndAct(s) {
+  if (s.move && SND_ACT.some(([a]) => a === s.move)) return s.move;                 // set by "привязать к поверхности"
+  const m = /^steps-.+-(walk|run|jump|land|sprint|doublejump)$/.exec(s.id || ""); if (m) return m[1];
+  const t = ((s.id || "") + " " + (s.action || "")).toLowerCase();
+  return /double|двойн/.test(t) ? "doublejump" : /sprint|спринт/.test(t) ? "sprint" : /land|призем/.test(t) ? "land" : /jump|прыж/.test(t) ? "jump" : /run|бег/.test(t) ? "run" : /walk|step|ходьб|шаг/.test(t) ? "walk" : null;
+}
+const sndSurfKey = s => String(s.surface || "").trim().toLowerCase();
+/* a cell: ✓ in the game, ⏳ something new waits for the AI, empty; takes = files that would play there */
+function sndCell(rows) {
+  const main = rows.find(r => /^steps-/.test(r.id)) || rows.find(r => r.current) || rows[0];
+  const files = [...new Set(rows.flatMap(r => [r.current && r.current.file].concat((r.current && r.current.takes) || [], r.uploads.filter(u => u.status !== "rejected").map(u => u.file))).filter(Boolean))];
+  const wait = rows.some(r => r.uploads.some(u => u.status === "new") || sndChosenDiff(r) || r.status === "pending");
+  const st = wait ? "wait" : rows.some(r => r.current) ? "ok" : "empty";
+  return { main, rows, files, st };
+}
+function sndGridHTML(rows) {
+  const lines = new Map(), loose = [];
+  /* an older row ("стекло") joins the line of the sheet surface it names ("стекло палубы") when that match is unique */
+  const sheet = [...new Set(SND.sounds.filter(r => /^steps-/.test(r.id)).map(sndSurfKey).filter(Boolean))];
+  const lineKey = r => { const k = sndSurfKey(r); if (!k || /^steps-/.test(r.id) || sheet.includes(k)) return k;
+    const m = sheet.filter(x => x.startsWith(k + " ") || k.startsWith(x + " ")); return m.length === 1 ? m[0] : k; };
+  rows.forEach(r => { const a = sndAct(r), k = lineKey(r); if (!k || !a) { loose.push(r); return; }
+    if (!lines.has(k)) lines.set(k, { key: k, title: "", rows: [] }); const L = lines.get(k); L.rows.push(r);
+    if (!L.title && /^steps-/.test(r.id) && r.action.includes(":")) L.title = r.action.split(":")[0].trim(); });
+  const acts = SND_ACT.filter(([a], i) => i < SND_ACT_BASE || rows.some(r => sndSurfKey(r) && sndAct(r) === a));
+  const cols = `grid-template-columns:minmax(120px,1.3fr) repeat(${acts.length},minmax(92px,1fr))`;
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const out = [...lines.values()].sort((a, c) => (a.title || a.key).localeCompare(c.title || c.key, "ru")).map(L => {
+    const cells = acts.map(([a]) => { const rr = L.rows.filter(r => sndAct(r) === a); return rr.length ? sndCell(rr) : null; });
+    const filled = cells.filter(c => c && c.st !== "empty").length, open = L.rows.filter(r => SOPEN.has(r.id));
+    return `<div class="sgline" style="${cols}"><div class="sgmat"><b>${esc(L.title || (L.key === "default" ? "Общие шаги" : cap(L.key)))}</b><small>${filled} из ${acts.length} заполнено</small></div>${cells.map((c, i) => {
+      if (!c) return `<button class="scell none" data-scelladd="${esc(L.key)}|${acts[i][0]}" title="Добавить строку: ${esc(acts[i][1].toLowerCase())}">＋</button>`;
+      const id = c.main.id, up = SUP[id], pick = c.files[Math.floor(Math.random() * c.files.length)];
+      return `<div class="scell ${c.st}${c.rows.some(r => SOPEN.has(r.id)) ? " on" : ""}" data-srow="${esc(id)}" data-scell="${esc(c.rows.map(r => r.id).join(","))}" tabindex="0" title="${esc(c.rows.map(r => r.action).join(", "))}. Перетащи сюда файлы">
+        <span class="sci">${up && up.st === "busy" ? "…" : c.st === "ok" ? "✓" : c.st === "wait" ? "⏳" : "·"}</span>${c.files.length ? `<button class="splay sm" data-splay="${esc(pick)}" data-stitle="${esc(c.main.action)}" title="Случайный дубль">▶</button>` : ""}
+        <small>${c.files.length ? c.files.length + " " + sndPlural(c.files.length) : "пусто"}</small>${up && up.st === "err" ? `<span class="scerr" title="${esc(up.t)}">!</span>` : ""}</div>`; }).join("")}</div>
+      ${open.length ? `<div class="sgopen">${open.map(sndRowHTML).join("")}</div>` : ""}`; }).join("");
+  return `<div class="sgrid"><div class="sgline sghead" style="${cols}"><span>Материал</span>${acts.map(([, t]) => `<span>${t}</span>`).join("")}</div>${out || `<div class="empty">Материалов пока нет</div>`}</div>
+    ${loose.length ? `<div class="ssubh">Без поверхности<span class="cnt">${loose.length}</span></div>${loose.map(r => sndRowHTML(r) + `<div class="sbindl"><button class="slink" data-sbind="${esc(r.id)}">привязать к поверхности</button></div>`).join("")}` : ""}`;
+}
+const sndPlural = n => n % 10 === 1 && n % 100 !== 11 ? "дубль" : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? "дубля" : "дублей";
+const sndSurfaces = () => [...new Set(SND.sounds.filter(r => r.type === "move").map(sndSurfKey).filter(Boolean))].sort((a, c) => a.localeCompare(c, "ru"));
+/* new material: four rows (walk, run, jump, land) with steps-<slug>-<action> ids */
+function sndNewMaterial(place) {
+  const w = document.createElement("div"); w.className = "modal";
+  w.innerHTML = `<div class="snewd"><h3>Новый материал</h3><p>Появятся четыре строки: ходьба, бег, прыжок, приземление.</p><input class="na" placeholder="Например: металл, снег, лёд">
+    <div class="ssel"><select class="np" title="Где">${SND_PLACES.map(([k, t]) => `<option value="${k}"${k === (place || "everywhere") ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div><button class="btn">Добавить</button></div>`;
+  document.body.appendChild(w); setTimeout(() => w.querySelector(".na").focus(), 20);
+  const add = () => { const name = w.querySelector(".na").value.trim(), pl = w.querySelector(".np").value; if (!name) return;
+    const base = "steps-" + (slug(name) || "surface"), cap = name.charAt(0).toUpperCase() + name.slice(1);
+    SND_ACT.slice(0, SND_ACT_BASE).forEach(([a, t]) => sndMakeRow(base + "-" + a, cap + ": " + t.toLowerCase(), pl, cap));
+    w.remove(); sndSave("новый материал «" + name + "»"); render(); };
+  w.querySelector(".btn").onclick = add; w.querySelector(".na").onkeydown = e => { if (e.key === "Enter") add(); };
+  w.onclick = e => { if (e.target === w) w.remove(); };
+}
+function sndMakeRow(id0, action, place, surface) {
+  let id = id0, n = 2; while (sndRow(id) || SND.deleted.some(x => x.id === id)) id = id0 + "-" + n++;
+  const row = { id, game: "", place, type: "move", surface, action, where: "", status: "missing", ue_asset: null, current: null, loudness: null, variants: [], references: [], uploads: [], chosen: "current", notes: "", requests: [] };
+  row.game = sndGameOf(row); SND.sounds.push(row); return row;
+}
+/* a row without a surface: pick one of the known surfaces or type a new one */
+function sndBind(id) {
+  const r = sndRow(id); if (!r) return;
+  const w = document.createElement("div"); w.className = "modal";
+  let act = sndAct(r) || "land";
+  w.innerHTML = `<div class="snewd"><h3>Привязать к поверхности</h3><p>«${esc(r.action)}»</p>
+    <div class="viewsw sbacts">${SND_ACT.map(([a, t]) => `<button class="${a === act ? "on" : ""}" data-a="${a}">${t}</button>`).join("")}</div>
+    <div class="sbinds">${sndSurfaces().map(x => `<button class="sbtn" data-v="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+    <input class="na" placeholder="Или новая поверхность"><button class="btn">Привязать</button></div>`;
+  document.body.appendChild(w);
+  const set = v => { v = (v || "").trim().toLowerCase(); if (!v) return; r.surface = v; r.type = "move"; r.move = act; w.remove(); sndSave("«" + r.action + "»: поверхность " + v); render(); };
+  w.onclick = e => { if (e.target === w) return w.remove(); const a = e.target.closest("[data-a]");
+    if (a) { act = a.dataset.a; w.querySelectorAll("[data-a]").forEach(x => x.classList.toggle("on", x === a)); return; }
+    const b = e.target.closest("[data-v]"); if (b) set(b.dataset.v); if (e.target.closest(".btn")) set(w.querySelector(".na").value); };
+  w.querySelector(".na").onkeydown = e => { if (e.key === "Enter") set(e.target.value); };
 }
 /* open row, top to bottom: what plays now, the alternatives (variants, then references) in one list, uploads,
    open requests; everything else is a small muted link at the end. Row actions show on hover or focus. */
@@ -2253,7 +2356,7 @@ function sndRefDialog(id) {
 }
 document.addEventListener("click", e => {
   if (view !== "sounds") return;
-  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry],[data-sfb],[data-sreq],[data-sreqx],[data-sref],[data-srefx],[data-sedit],[data-sreqm],[data-sreqc],[data-shist],[data-supo],[data-snotes],[data-sfbo],[data-sgrp],[data-supdel],[data-srowdel],[data-svdel],[data-sshare],[data-supmulti],[data-supmultix],[data-slib],[data-srec],[data-sopen],[data-srecall],[data-srefdel],[data-sclean]");
+  const t = e.target.closest("[data-splay],[data-sexp],[data-schoose],[data-sfile],[data-sadd],[data-sq],[data-sf],[data-sst],[data-squick],[data-sdel],[data-sstop],[data-snext],[data-sretry],[data-sfb],[data-sreq],[data-sreqx],[data-sref],[data-srefx],[data-sedit],[data-sreqm],[data-sreqc],[data-shist],[data-supo],[data-snotes],[data-sfbo],[data-sgrp],[data-supdel],[data-srowdel],[data-svdel],[data-sshare],[data-supmulti],[data-supmultix],[data-slib],[data-srec],[data-sopen],[data-srecall],[data-srefdel],[data-sclean],[data-scell],[data-scelladd],[data-smat],[data-sbind]");
   if (!t || t.disabled) return; const d = t.dataset;
   const focus = sel => { const el = document.querySelector(sel); if (el) el.focus(); };
   if (d.sedit) { SEDIT.has(d.sedit) ? SEDIT.delete(d.sedit) : SEDIT.add(d.sedit); render(); if (SEDIT.has(d.sedit)) focus(`[data-sp="${CSS.escape(d.sedit)}|action"]`); return; }
@@ -2274,6 +2377,16 @@ document.addEventListener("click", e => {
   if ("srecall" in d) { SRECALL = !SRECALL; render(); return; }
   if (d.srefdel) { const a = d.srefdel.indexOf("|"), z = d.srefdel.lastIndexOf("|"); sndDelRef(d.srefdel.slice(0, a), d.srefdel.slice(a + 1, z), d.srefdel.slice(z + 1)); return; }
   if (d.sclean) { sndClean(d.sclean); return; }
+  if (d.scell) { const ids = d.scell.split(","), on = ids.some(i => SOPEN.has(i)); ids.forEach(i => on ? SOPEN.delete(i) : SOPEN.add(i)); render(); return; }
+  if (d.scelladd) { const [surf, a] = d.scelladd.split("|"), any = SND.sounds.find(r => sndSurfKey(r) === surf && /^steps-/.test(r.id)) || SND.sounds.find(r => sndSurfKey(r) === surf) || {};
+    const surfName = any.surface || surf;
+    const title = any.action && any.action.includes(":") ? any.action.split(":")[0].trim() : surf.charAt(0).toUpperCase() + surf.slice(1);
+    const base = any.id && /^steps-.+-[a-z]+$/.test(any.id) ? any.id.replace(/-[a-z]+$/, "") : "steps-" + (slug(surf) || "surface");
+    const r = sndMakeRow(base + "-" + a, title + ": " + (SND_ACT.find(x => x[0] === a) || ["", a])[1].toLowerCase(), any.place || "everywhere", surfName);
+    if (any.slot && any.slot.metasound) r.slot = { metasound: any.slot.metasound, inputs: [], dt_rows: any.slot.dt_rows || [] };
+    SOPEN.add(r.id); sndSave("новая строка «" + r.action + "»"); render(); return; }
+  if ("smat" in d) { sndNewMaterial(d.smat); return; }
+  if (d.sbind) { sndBind(d.sbind); return; }
   if ("srec" in d) { LSset("cl_srecent", LS("cl_srecent") === "0" ? "1" : "0"); render(); return; }
   if (d.sopen) { sfilt = "all"; SOPEN.add(d.sopen); render(); const el = document.querySelector(`[data-srow="${CSS.escape(d.sopen)}"]`); if (el) { el.scrollIntoView({ block: "center" }); el.focus(); } return; }
   if (d.sfbo) { FBOPEN.add(d.sfbo); render(); focus(`[data-sfbt="${CSS.escape(d.sfbo)}"]`); return; }
@@ -2335,6 +2448,7 @@ document.addEventListener("keydown", e => {
   if (dd.sreqt && e.key === "Enter" && SREQPICK[dd.sreqt]) { e.preventDefault(); const b = document.querySelector(`[data-sreq="${CSS.escape(dd.sreqt + "|" + SREQPICK[dd.sreqt] + "|")}"]`); if (b) b.click(); return; }
   if (dd.sp && /\|(action|where)$/.test(dd.sp) && (e.key === "Enter" || e.key === "Escape")) { e.preventDefault(); SEDIT.delete(dd.sp.slice(0, dd.sp.lastIndexOf("|"))); render(); return; }
   if (e.key === "Escape" && PLAY) { sndStop(); return; }
+  if (e.target.classList && e.target.classList.contains("scell") && (e.key === " " || e.key === "Enter")) { e.preventDefault(); const b = e.target.querySelector("[data-splay]"); if (b) b.click(); return; }
   const r = e.target.classList && e.target.classList.contains("srow") ? e.target : null;
   if (r && (e.key === " " || e.key === "Enter")) { e.preventDefault(); const s = sndRow(r.dataset.srow); if (s && sndCur(s)) sndPlay(s.current.file, s.action); else toast("У этого звука пока нет файла"); }
 });

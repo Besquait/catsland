@@ -10,13 +10,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
 <style>:root{
   /* palette A of the game (Scripts/ui/theme.py), dark: deep sea surfaces, light text */
-  --bg:#0A1A24;--card:#12303F;--card2:#183B4D;--ink:#EAF2F7;--ink2:#A9BECB;--ink3:#6F8899;--line:#21465A;--line2:#2E5970;
-  --edge:transparent;--sh:transparent;--white:#FFFFFF;--on:#0A1A24;
-  --accent:#FF5C8A;--accent2:color-mix(in srgb,#FF5C8A 20%,#12303F);--teal:#12B5A6;--sun:#FFC83D;--marker:rgba(255,200,61,.32);
+  --bg:#0E171D;--card:#15222A;--card2:#1B2B35;--ink:#DCE6EC;--ink2:#9DB0BC;--ink3:#6A7D89;--line:#22343F;--line2:#2D4350;
+  --edge:transparent;--sh:transparent;--white:#FFFFFF;--on:#0E171D;
+  --accent:#FF5C8A;--accent2:color-mix(in srgb,#FF5C8A 20%,#15222A);--teal:#12B5A6;--sun:#FFC83D;--marker:rgba(255,200,61,.32);
   --idea:#B38BFF;--work:#FFC83D;--test:#5EC8F2;--done:#12B5A6;--redo:#FF3B47;--okt:#3ED6C4;
-  --ai:#9B82FF;--ai-soft:color-mix(in srgb,#9B82FF 24%,#12303F);
-  --soft1:color-mix(in srgb,#FF5C8A 22%,#12303F);--soft2:color-mix(in srgb,#FFC83D 18%,#12303F);--soft3:color-mix(in srgb,#FF3B47 20%,#12303F);
-  --soft4:color-mix(in srgb,#12B5A6 24%,#12303F);--soft-blue:color-mix(in srgb,#3D8BFF 22%,#12303F);--soft-violet:color-mix(in srgb,#9B82FF 22%,#12303F);
+  --ai:#9B82FF;--ai-soft:color-mix(in srgb,#9B82FF 24%,#15222A);
+  --soft1:color-mix(in srgb,#FF5C8A 12%,#15222A);--soft2:color-mix(in srgb,#FFC83D 12%,#15222A);--soft3:color-mix(in srgb,#FF3B47 12%,#15222A);
+  --soft4:color-mix(in srgb,#12B5A6 12%,#15222A);--soft-blue:color-mix(in srgb,#3D8BFF 12%,#15222A);--soft-violet:color-mix(in srgb,#9B82FF 12%,#15222A);
   /* no outlines: blocks separate by fill (DESIGN_SYSTEM: outlines removed 12.10) */
   --b1:1px;--b2:1px;
   /* smooth corners */
@@ -843,6 +843,25 @@ cite[data-ai]{color:var(--ink)}
 .btn:active,.mgo:active,.sbtn:active,.splay:active{transform:translateY(1px);box-shadow:none}
 /* scrollbars */
 *{scrollbar-color:var(--line2) transparent;scrollbar-width:thin}
+
+/* 24.11 second pass (owner: «всё ещё больно»): calmer weights, quiet column heads, boards use the full width */
+body{font-weight:400}
+.nl{font-weight:500}.nl.on{font-weight:600}
+.bt,.card h3{font-weight:600}
+.kc textarea,.kc .itx,.kc{font-weight:400;font-size:14px;line-height:1.45;color:var(--ink)}
+.kc{padding:10px 12px;background:var(--card2)}
+.kc:hover{background:#22343F}
+.bcol{background:transparent;padding:6px 4px;gap:8px}
+.bch{background:transparent!important;padding:4px 6px 8px 12px;border-radius:0;box-shadow:inset 3px 0 0 var(--hc,var(--ink3))}
+.bcol:nth-child(1){--hc:#FF5C8A}.bcol:nth-child(2){--hc:#FFC83D}.bcol:nth-child(3){--hc:#FF7A59}.bcol:nth-child(4){--hc:#12B5A6}.bcol:nth-child(5){--hc:#3D8BFF}.bcol:nth-child(6){--hc:#9B82FF}
+.bch input{font:600 14px/1.3 var(--sans);color:var(--ink)}
+.bch .cnt{color:var(--ink3);opacity:1}
+.card.k-board{background:transparent;padding-left:0;padding-right:0}
+.page:has(.k-board):not(:has(.card:not(.k-board))){max-width:1400px}
+.page:has(.k-board):not(:has(.card:not(.k-board))) .card.k-board.wide{margin-inline:0}
+.board{gap:14px}
+.bcol .add{font-weight:500;color:var(--ink3);opacity:1}
+.kc .klink,.kc small{font-weight:500;color:var(--ink3)}
 </style>
 </head>
 <body>

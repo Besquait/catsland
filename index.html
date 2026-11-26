@@ -862,6 +862,127 @@ body{font-weight:400}
 .board{gap:14px}
 .bcol .add{font-weight:500;color:var(--ink3);opacity:1}
 .kc .klink,.kc small{font-weight:500;color:var(--ink3)}
+
+/* ===== 26.11 redesign: menu groups, game page tabs, tasks, board folding, floating format bar, lock ===== */
+.navgrow{flex:1 1 auto;min-height:12px}
+nav .lbl{margin-top:14px}
+.nl.sm .t{font-size:13px;color:var(--ink2)}
+.nl.sm.on .t{color:var(--white)}
+/* game page */
+.page.gpage{max-width:1180px}
+.gtop{display:flex;align-items:center;gap:8px;margin:0 0 18px;font-size:13px;color:var(--ink3)}
+.gtop{flex-wrap:wrap}.gtop a{cursor:pointer;color:var(--ink3);white-space:nowrap}.gtop a:hover{color:var(--ink)}
+.gtop .cur{color:var(--ink2)}.gtop .sp{flex:1}
+.gtop .hbtn,.gtop .hdel{margin:0}
+.ghead{display:flex;gap:20px;align-items:flex-start;margin:0 0 20px}
+.ghead .emoji{width:64px;height:64px;flex:none;display:grid;place-items:center;background:var(--card);border-radius:16px;font-size:34px;cursor:pointer}
+.gtb{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.gtr{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.gtr .title{flex:0 1 auto;width:auto;min-width:4ch;field-sizing:content;font-size:32px}
+.gstatus{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font:600 13px/1.2 var(--sans);color:var(--sc);background:color-mix(in srgb,var(--sc) 16%,transparent)}
+.gstatus i{width:8px;height:8px;border-radius:50%;background:var(--sc)}
+.gstatus span{font-size:10px;opacity:.8}
+.gstatus:hover{background:color-mix(in srgb,var(--sc) 26%,transparent)}
+.ghead .sub{margin:0;font-size:16px;color:var(--ink2);padding:0}
+.gtags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gtags span{font-size:12px;color:var(--ink2);background:var(--card);border-radius:6px;padding:3px 8px}
+.gtags button{font-size:12px;color:var(--ink3);padding:3px 8px;border-radius:6px}
+.gtags button:hover{color:var(--ink);background:var(--card)}
+.mdot{display:inline-block;width:9px;height:9px;border-radius:50%}
+.gstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 16px}
+.gst{background:var(--card);border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.gst[data-gtab]{cursor:pointer}.gst[data-gtab]:hover{background:var(--card2)}
+.gst span{font-size:12px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gst b{font:700 22px/1.15 var(--disp);color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gst b.long{font-size:15px;line-height:1.75}
+.gst b i{font:400 13px/1 var(--sans);color:var(--ink3);margin-left:6px;font-style:normal}
+.gst .c-sun{color:var(--sun)}.gst .c-accent{color:var(--accent)}.gst .c-redo{color:var(--redo)}
+.qtask{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:12px;padding:0 16px;margin:0 0 22px;cursor:text}
+.qtask span{color:var(--accent);font-size:18px;font-weight:600}
+.qtask input{flex:1;min-width:0;border:0;outline:0;background:none;padding:12px 0;font-size:14px;color:var(--ink)}
+.qtask input::placeholder{color:var(--ink3)}
+.qtask kbd{font:400 12px/1 var(--sans);color:var(--ink3);opacity:0;transition:opacity .12s}
+.qtask:focus-within{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 55%,transparent)}
+.qtask:focus-within kbd{opacity:1}
+.gtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 26px;overflow-x:auto;position:sticky;top:0;z-index:5;background:var(--bg)}
+.gtabs button{padding:11px 14px 10px;font:400 14px/1.2 var(--sans);color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .12s,border-color .12s}
+.gtabs button:hover{color:var(--ink)}
+.gtabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+.gtabs b{font-weight:400;font-size:12px;color:var(--ink3);margin-left:6px}
+.gbody{display:block}
+.gbody.withtoc{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:48px;align-items:start}
+.gmain{min-width:0}
+.toc{position:sticky;top:64px;display:flex;flex-direction:column;padding:4px 0}
+.toc .tl{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin:0 0 10px}
+.toc a{padding:5px 12px;font-size:13px;color:var(--ink3);border-left:2px solid var(--line);cursor:pointer;transition:color .12s,border-color .12s}
+.toc a:hover{color:var(--ink)}
+.toc a.on{color:var(--ink);border-left-color:var(--accent)}
+.addline{display:flex;align-items:center;gap:10px;margin:22px 0 0}
+.addline::before,.addline::after{content:"";flex:1;height:1px;background:var(--line)}
+.addline button{background:var(--card);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--ink2)}
+.addline button:hover{color:var(--ink);background:var(--card2)}
+/* overview reads like a document: one column, flat text sections */
+.gpage .grid{grid-template-columns:minmax(0,1fr)!important;gap:30px}
+.gpage .grid>.card{grid-column:auto!important}
+.gpage.tab-mechs .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px}
+.gpage.tab-mechs .grid>.card.wide,.gpage.tab-mechs .grid>.hblock,.gpage.tab-mechs .newmech{grid-column:1/-1!important}
+.gpage.tab-overview .card.k-text{background:transparent;padding:6px 0 0;border-radius:0;transition:background-color .15s,padding .15s}
+.gpage.tab-overview .card.k-text:hover,.gpage.tab-overview .card.k-text:focus-within{background:color-mix(in srgb,var(--card) 55%,transparent);padding:12px 16px 14px;margin:-6px -16px -8px;border-radius:12px}
+.gpage .card .bt{font:700 18px/1.3 var(--disp)}
+.gpage.tab-overview .card.k-text .rich{font-size:15px;line-height:1.65;max-width:72ch}
+/* tasks of a game */
+.gtasks{display:flex;flex-direction:column;gap:18px;margin:0 0 28px}
+.gtgh{display:flex;align-items:center;gap:10px;padding:0 0 6px;cursor:pointer;user-select:none}
+.gtgh .chev{width:12px;color:var(--ink3);font-size:12px}
+.gtgh i{width:3px;height:14px;border-radius:2px}
+.gtgh b{font-weight:600;font-size:14px}
+.gtgh .n{font-size:13px;color:var(--ink3);margin-right:auto}
+.gtgh button{color:var(--ink3);font-size:16px;padding:0 6px;border-radius:6px;opacity:0;transition:opacity .12s}
+.gtgh:hover button{opacity:1}.gtgh button:hover{color:var(--ink);background:var(--card)}
+.gtk{display:flex;align-items:flex-start;gap:12px;padding:8px 12px;border-radius:10px;transition:background-color .12s}
+.gtk:hover{background:color-mix(in srgb,var(--card) 60%,transparent)}
+.gtk:focus-within{background:var(--card)}
+.gtc{flex:none;width:16px;height:16px;margin-top:3px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--hc);transition:background-color .12s,transform .12s}
+.gtc:hover{background:color-mix(in srgb,var(--hc) 45%,transparent);transform:scale(1.12)}
+.gtc:active{transform:scale(.9)}
+.gtw{flex:1;min-width:0}
+.gtw textarea{width:100%;border:0;outline:0;background:none;resize:none;padding:0;font:400 14px/1.45 var(--sans);color:var(--ink);display:block;overflow:hidden}
+.gtk:not(:focus-within) .gtw textarea{max-height:calc(1.45em + 1px);white-space:nowrap;text-overflow:ellipsis}
+.gtmv{display:none;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.gtk:focus-within .gtmv{display:flex}
+.gtmv button{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--ink2)}
+.gtmv button:hover{color:var(--ink);background:#22343F}
+.gtmv button i{width:7px;height:7px;border-radius:50%;background:var(--hc)}
+.gtmv .gdel{margin-left:auto;background:none;color:var(--ink3)}.gtmv .gdel:hover{color:var(--redo);background:none}
+.gsrc{flex:none;font-size:12px;color:var(--ink2);background:var(--card2);border-radius:6px;padding:2px 8px;cursor:pointer;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsrc:hover{color:var(--ink)}
+/* shared board */
+.whead{display:flex;align-items:center;gap:12px;margin:0 0 16px;flex-wrap:wrap}
+.whead .titleS{margin:0}.whead .sp{flex:1}
+.whead input{background:var(--card);border:0;outline:0;border-radius:10px;padding:9px 14px;width:240px;max-width:100%;font-size:13px;color:var(--ink)}
+.whead input:focus{box-shadow:inset 0 0 0 1px var(--line2)}
+.whead .btn{margin:0}
+.kc textarea:not(:focus){max-height:calc(14px * 1.45 * 3 + 1px)}
+.kmore{align-self:stretch;padding:7px 0;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);font-size:12px;color:var(--ink2)}
+.kmore:hover{color:var(--ink);background:var(--card)}
+/* format bar floats above the focused block and hides otherwise */
+.fbar{bottom:auto;top:auto;transform:none;transition:opacity .12s}
+.fbar.off{opacity:0!important;pointer-events:none}
+.gpage>.back,.wpage>.back{display:none}
+.page.wpage{max-width:none}
+.wpage .card.k-board{padding:0}
+/* lock */
+.lock{min-height:100vh;display:grid;place-items:center;background:var(--bg);padding:16px}
+.lockb{width:360px;max-width:100%;background:var(--card);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px}
+.lki{width:44px;height:44px;border-radius:12px;background:var(--card2);display:grid;place-items:center;font-size:20px}
+.lkt{font:800 22px/1.2 var(--disp);color:var(--ink)}
+.lockb input{background:var(--bg);border:0;outline:0;border-radius:10px;padding:12px 14px;font-size:14px;color:var(--ink)}
+.lockb input:focus{box-shadow:inset 0 0 0 1px var(--line2)}
+.lockb input.bad{box-shadow:inset 0 0 0 1px var(--redo)}
+.lke{font-size:13px;color:var(--redo);margin-top:-6px}
+.lockb .btn{margin:0;width:100%;justify-content:center}
+@media (max-width:980px){.gbody.withtoc{grid-template-columns:1fr}.toc{display:none}.gpage.tab-mechs .grid{grid-template-columns:1fr!important}}
+@media (max-width:600px){.ghead{gap:12px}.ghead .emoji{width:48px;height:48px;font-size:26px}.gtr .title{font-size:24px}.gstats{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -1047,7 +1168,7 @@ const gameOfPage = pg => !pg ? "none" : where(pg.id) === "games" ? pg.id : where
   ? ((doc.games.find(g => g.blocks.some(b => b.kind === "mech" && b.link === pg.id)) || {}).id || (pg.scope === "common" ? "common" : "none")) : "common";
 const cardGame = k => gameOfPage(k.link && where(k.link) ? get(where(k.link) + "." + k.link) : k.ref ? pageOfItem(k.ref) : null);
 const wfOk = gid => wf === "all" || wf === gid;
-const bcards = (p, c) => p === "work" ? c.cards.filter(k => wfOk(cardGame(k))) : c.cards;
+const bcards = (p, c) => p === "work" ? c.cards.filter(k => wfOk(cardGame(k)) && (!wq || String(k.t || "").toLowerCase().includes(wq))) : c.cards;
 const wfOpen = gid => workCols().slice(0, -1).reduce((n, c) => n + c.cards.filter(k => cardGame(k) === gid).length, 0) + doc.mechs.filter(m => m.status !== "done" && m.status !== "idea" && gameOfPage(m) === gid).length;
 const wfBar = () => `<div class="viewsw wfbar">${[["all", "🗂️", "Все"]].concat(doc.games.map(g => [g.id, g.emoji, g.title]), [["common", "🌐", "Общее"], ["none", "·", "Без игры"]])
   .filter(([id]) => id === "all" || id === wf || wfOpen(id)).map(([id, e, t]) => `<button class="${wf === id ? "on" : ""}" data-wf="${id}">${esc(e)} ${esc(t)}${id === "all" ? "" : ` <b>${wfOpen(id)}</b>`}</button>`).join("")}</div>`;
@@ -1337,9 +1458,9 @@ function bodyHTML(p, b) {
       <input data-p="${p}.links.${l.id}.t" value="${esc(l.t)}" placeholder="Название"><input class="u" data-p="${p}.links.${l.id}.u" value="${esc(l.u)}" placeholder="https://…">
       <button class="x" data-del="${p}.links|${l.id}">×</button></div>`).join("")}</div><button class="add" data-push="${p}.links|link">+ ссылка</button>`;
     case "board": return `<div class="board">${b.cols.map((c, ci) => `<div class="bcol" data-kcol="${p}.cols.${c.id}.cards"><div class="bch"><input data-p="${p}.cols.${c.id}.t" value="${esc(c.t)}" placeholder="Колонка"><span class="cnt">${bcards(p, c).length + (p === "work" && COL_STATUS[ci] !== "done" ? doc.mechs.filter(m => m.status === COL_STATUS[ci] && wfOk(gameOfPage(m))).length : 0)}</span>
-      <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${bcards(p, c).map(k => { const x = k.ref && itemById(k.ref); return `<div class="kc${unA(k)[0]}${x && x.pr ? " pr-" + x.pr : ""}"${unA(k)[1]} draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(x ? itemText(x) : k.t)}</textarea>${k.link && where(k.link) ? `<a class="klink" data-go="${k.link}">→ ${esc(get(where(k.link) + "." + k.link).title)}</a>` : ""}
+      <button class="x" data-del="${p}.cols|${c.id}" title="Удалить колонку">×</button></div>${blim(p, c).map(k => { const x = k.ref && itemById(k.ref); return `<div class="kc${unA(k)[0]}${x && x.pr ? " pr-" + x.pr : ""}"${unA(k)[1]} draggable="true" data-kdrag="${p}.cols.${c.id}.cards|${k.id}"><textarea rows="1" data-p="${p}.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(x ? itemText(x) : k.t)}</textarea>${k.link && where(k.link) ? `<a class="klink" data-go="${k.link}">→ ${esc(get(where(k.link) + "." + k.link).title)}</a>` : ""}
       <div class="kctl"><button data-kmove="${p}|${c.id}|${k.id}|-1" ${ci ? "" : "disabled"}>←</button><button data-kmove="${p}|${c.id}|${k.id}|1" ${ci < b.cols.length - 1 ? "" : "disabled"}>→</button><button data-del="${p}.cols.${c.id}.cards|${k.id}" title="${x ? "Убрать с доски (пункт в чек-листе останется)" : "Удалить"}">×</button></div></div>`; }).join("")}
-      ${p === "work" ? mechCards(ci) : ""}<button class="add" data-push="${p}.cols.${c.id}.cards|card">+ карточка</button></div>`).join("")}<button class="addcol" data-push="${p}.cols|kcol" title="Добавить колонку">+</button></div>`;
+      ${bmore(p, c)}${p === "work" ? mechCards(ci) : ""}<button class="add" data-push="${p}.cols.${c.id}.cards|card">+ карточка</button></div>`).join("")}<button class="addcol" data-push="${p}.cols|kcol" title="Добавить колонку">+</button></div>`;
   }
   return "";
 }
@@ -1377,7 +1498,7 @@ function balCount(pg) {
 function blockHTML(bp, b, i, n, next) {
   const p = bp + "." + b.id;
   const ctl = `<div class="bc"><span class="drag" draggable="true" data-bdrag="${b.id}" title="Перетащить">⠿</span><button data-mv="${b.id}|-1" title="Выше" ${i ? "" : "disabled"}>↑</button><button data-mv="${b.id}|1" title="Ниже" ${i < n - 1 ? "" : "disabled"}>↓</button>
-    ${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}${isOwner() ? `<button data-aib="${p}" class="${b.ai ? "aion" : ""}" title="${b.ai ? "Снять пометку для ИИ" : "Пометить весь блок для ИИ"}">🤖</button>` : ""}<button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
+    ${isGamePage() ? `<button data-btab="${b.id}" title="На другую вкладку">⇄</button>` : ""}${b.kind === "heading" ? "" : `<button data-wide="${b.id}" title="${b.wide ? "В половину ширины" : "На всю ширину"}">${b.wide ? "⇥" : "⇔"}</button>`}${isOwner() ? `<button data-aib="${p}" class="${b.ai ? "aion" : ""}" title="${b.ai ? "Снять пометку для ИИ" : "Пометить весь блок для ИИ"}">🤖</button>` : ""}<button data-dupb="${b.id}" title="Копия блока">⧉</button><button data-rmb="${b.id}" title="Удалить блок">×</button></div>`;
   const [uc, ua] = unA(b);
   const mb = b.kind === "heading" && next && next.kind === "mech" ? `<button class="mboard" data-mboard title="Все механики этой игры по статусам">⚙️ Доска механик →</button>` : "";
   if (b.kind === "heading") return `<div class="hblock${uc}"${ua} data-block="${b.id}"><input class="ht" data-p="${p}.title" value="${esc(b.title)}" placeholder="Заголовок раздела">${mb}${ctl}</div>`;
@@ -1407,17 +1528,20 @@ function renderNav() {
   document.body.classList.toggle("owner", isOwner());
   $("#nav").innerHTML = `<div class="logo">Cats <span>Land</span></div>
     <input id="search" class="search" placeholder="Поиск по диз-доку" value="${esc(q)}">
-    <div class="nl ${view === "work" ? "on" : ""}" data-go="work" style="margin-top:12px">🔥 <span class="t">В работе</span><span class="c">${workNow().length + doc.mechs.filter(m => m.status === "work").length || ""}</span></div>
+    <div class="lbl"><input class="lbli" data-p="pagesLabel" value="${esc(doc.pagesLabel)}"><button data-newpage="pages" title="Новая страница">+</button></div>
+    ${doc.pages.filter(hit).map(x => navItem(x)).join("") || (q ? `<div class="none">ничего</div>` : "")}
+    <div class="lbl"><input class="lbli" data-p="gamesLabel" value="${esc(doc.gamesLabel)}"><button data-newpage="games" title="Новая мини-игра">+</button></div>
+    ${doc.games.filter(hit).map(x => navItem(x, true)).join("")}
+    ${q ? "" : `<div class="nl sm ${view === "games" ? "on" : ""}" data-go="games">🗂️ <span class="t">Все ${esc(doc.gamesLabel.toLowerCase())}</span><span class="c">${doc.games.length}</span></div>`}
+    <div class="lbl"><input class="lbli" data-p="mechsLabel" value="${esc(doc.mechsLabel)}"><button data-newpage="mechs" title="Новая механика">+</button></div>
+    ${q ? doc.mechs.filter(hit).map(x => navItem(x, true)).join("") : doc.mechs.filter(m => scopeOf(m) !== "game").map(x => navItem(x)).join("") +
+      `<div class="nl sm ${view === "mechs" ? "on" : ""}" data-go="mechs">⚙️ <span class="t">Все механики</span><span class="c">${doc.mechs.length}</span></div>`}
+    <div class="navgrow"></div>
+    <div class="lbl"><span class="lbli">Работа</span></div>
+    <div class="nl ${view === "work" ? "on" : ""}" data-go="work">🔥 <span class="t">Задачи</span><span class="c">${workNow().length + doc.mechs.filter(m => m.status === "work").length || ""}</span></div>
     <div class="nl ${view === "balance" ? "on" : ""}" data-go="balance">📊 <span class="t">Баланс</span></div>
     <div class="nl ${view === "sounds" ? "on" : ""}" data-go="sounds">🔊 <span class="t">Звуки</span><span class="c" title="Новых загрузок">${sndNewCount() || ""}</span></div>
     ${isOwner() ? `<div class="nl ${view === "ai" ? "on" : ""}" data-go="ai">🤖 <span class="t">Для ИИ</span><span class="c">${aiOpen() || ""}</span></div>` : ""}
-    <div class="lbl"><input class="lbli" data-p="pagesLabel" value="${esc(doc.pagesLabel)}"><button data-newpage="pages" title="Новая страница">+</button></div>
-    ${doc.pages.filter(hit).map(x => navItem(x)).join("") || (q ? `<div class="none">ничего</div>` : "")}
-    <div class="lbl"><input class="lbli" data-p="mechsLabel" value="${esc(doc.mechsLabel)}"><button data-newpage="mechs" title="Новая механика">+</button></div>
-    ${q ? doc.mechs.filter(hit).map(x => navItem(x, true)).join("") : `<div class="nl ${view === "mechs" || where(view) === "mechs" ? "on" : ""}" data-go="mechs">⚙️ <span class="t">Все: механики</span><span class="c">${doc.mechs.length}</span></div>`}
-    <div class="lbl"><input class="lbli" data-p="gamesLabel" value="${esc(doc.gamesLabel)}"><button data-newpage="games" title="Новая мини-игра">+</button></div>
-    ${q ? "" : `<div class="nl ${view === "games" ? "on" : ""}" data-go="games">🗂️ <span class="t">Все: ${esc(doc.gamesLabel.toLowerCase())}</span><span class="c">${doc.games.length}</span></div>`}
-    ${doc.games.filter(hit).map(x => navItem(x, true)).join("")}
     <div class="foot"><div class="sync"><i id="syncI"></i><span id="syncT">${REMOTE ? "Сохранено" : "Только этот браузер"}</span></div>
       <div>Вы: <a onclick="askName(true)">${esc(me())}</a></div>
       ${anyUnseen() ? `<a onclick="markAllSeen()">Отметить всё прочитанным</a>` : ""}
@@ -1443,6 +1567,7 @@ function render() {
   LSset("cl_view", view); enterView();
   renderNav();
   const P = $("#page");
+  P.className = "page" + (isGamePage() ? " gpage tab-" + curTab() : view === "work" ? " wpage" : "");
   const banner = (REMOTE ? "" : `<div class="banner">Сейчас правки сохраняются только в этом браузере. <a onclick="askKey()">Подключить общий диз-док</a></div>`) + backBtn();
   if (view === "mechs") {
     const card = m => { const sum = (m.blocks.find(b => b.kind === "text") || {}).text || "";
@@ -1478,7 +1603,7 @@ function render() {
   } else if (view === "work") {
     const hot = [];
     ALL().forEach(pg => pg.blocks.forEach(b => b.kind === "list" && b.items.forEach(x => { if (!x.done && x.pr === "r" && itemText(x).trim() && !cardOf(x.id)) hot.push([pg, x]); })));
-    P.innerHTML = banner + `<div class="head"><span class="emoji">🔥</span><h1 class="titleS">В работе</h1></div>
+    P.innerHTML = banner + `<div class="whead"><h1 class="titleS">Задачи</h1><span class="sp"></span><input id="wq" placeholder="Найти задачу" value="${esc(wq)}" autocomplete="off"><button class="btn" data-wnew>＋ Задача</button></div>
       ${wfBar()}<div class="card wide k-board" data-block="work">${bodyHTML("work", doc.work)}</div>
       ${hot.length ? `<div class="wsec"><h3>Срочное из чек-листов · ${hot.length}</h3>${hot.map(([pg, x]) => `<div class="wrow" data-go="${pg.id}"><span class="pd" style="background:var(--redo)"></span>${esc(itemText(x))}<span class="from">${esc(pg.emoji)} ${esc(pg.title)}</span></div>`).join("")}</div>` : ""}`;
   } else if (view === "games") {
@@ -1488,6 +1613,8 @@ function render() {
       (gview === "gallery" ? `<div class="games">${gs.map(gameCard).join("")}<button class="gc newg" data-newpage="games">+ ${esc(doc.gamesLabel)}: новая</button></div>`
         : `<div class="sboard">${Object.entries(STATUS).map(([k, [t, c]]) => `<div class="scol" data-scol="${k}"><div class="sch"><span class="dot" style="background:${c}"></span>${t}<span class="cnt">${gs.filter(g => g.status === k).length}</span></div>
           ${gs.filter(g => g.status === k).map(gameCard).join("")}</div>`).join("")}</div>`);
+  } else if (isGamePage()) {
+    P.innerHTML = gameHTML(curPage(), pagePath(), banner);
   } else {
     const pg = curPage(), sec = where(view), isGame = sec === "games", isMech = sec === "mechs", path = pagePath();
     const refs = isMech ? ALL().filter(x => x.blocks.some(b => b.kind === "mech" && b.link === pg.id)) : [];
@@ -1504,7 +1631,7 @@ function render() {
   sndPlayerDraw(); sndMarkFoc();
   P.querySelectorAll("textarea").forEach(grow);
   showImages(P);
-  RT.rendered();
+  RT.rendered(); afterRender();
 }
 function grow(t) { if (document.hidden) return; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
 /* a tab in the background can be re-rendered by live changes: fit the text fields once it is visible again */
@@ -1583,6 +1710,7 @@ function focusItem(p, id) {
   else el.setSelectionRange(el.value.length, el.value.length);
 }
 function insertBlock(b, afterId) {
+  if (isGamePage() && kindTab(b) !== curTab()) b.tab = curTab();
   const bl = get(blocksPath()); const i = afterId ? bl.findIndex(x => x.id === afterId) + 1 : bl.length;
   bl.splice(i, 0, norm(b)); save(label() + ": новый блок"); render();
   const el = document.querySelector(`[data-block="${b.id}"] .rich, [data-block="${b.id}"] .bt, [data-block="${b.id}"] .ht`);
@@ -1670,7 +1798,7 @@ document.addEventListener("click", e => {
     bl.splice(i, 1); save(label() + ": блок удалён"); render(); return;
   }
   if (d.dupb) { const b = clone(bl.find(x => x.id === d.dupb)); b.id = uid(); b.title = (b.title || "") + " (копия)"; insertBlock(b, d.dupb); return; }
-  if (d.mv) { const [id, dir] = d.mv.split("|"); const i = bl.findIndex(x => x.id === id), j = i + +dir; if (j < 0 || j >= bl.length) return; bl.splice(j, 0, bl.splice(i, 1)[0]); save(label()); render(); return; }
+  if (d.mv) { const [id, dir] = d.mv.split("|"); const i = bl.findIndex(x => x.id === id); let j = i + +dir; if (isGamePage()) { const tb = tabOf(bl, i); while (j >= 0 && j < bl.length && tabOf(bl, j) !== tb) j += +dir; } if (j < 0 || j >= bl.length) return; bl.splice(j, 0, bl.splice(i, 1)[0]); save(label()); render(); return; }
   if (d.wide) { const b = bl.find(x => x.id === d.wide); b.wide = !b.wide; save(label()); render(); return; }
 });
 
@@ -1679,7 +1807,7 @@ const FSTATE = { bold: "bold", italic: "italic", underline: "underline", strikeT
 function fstate() {
   const bar = $("#fbar"); if (!bar) return;
   const on = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("rich");
-  bar.classList.toggle("off", !on);
+  bar.classList.toggle("off", !on); fpos(on);
   bar.querySelectorAll("[data-fmt]").forEach(b => {
     const c = b.dataset.fmt, at = (getSelection().anchorNode || {}).parentElement;
     let a = false;
@@ -3074,8 +3202,190 @@ const RT = (() => {
   };
 })();
 
+/* ===== 26.11 redesign: game page = header + numbers + quick task + tabs; tasks per game; board limits; lock ===== */
+const GTABS = [["overview", "Обзор"], ["rules", "Правила"], ["numbers", "Числа"], ["mechs", "Механики"], ["tasks", "Задачи"], ["log", "Журнал"]];
+const COL_HC = ["#FF5C8A", "#FFC83D", "#FF7A59", "#12B5A6", "#3D8BFF", "#9B82FF"];
+const isNumT = b => /баланс|параметр|числа|управлен|ключев/i.test(b.title || "");
+const isLogT = b => /журнал|история правок/i.test(b.title || "");
+function kindTab(b) {
+  switch (b.kind) {
+    case "rules": return "rules";
+    case "mech": return "mechs";
+    case "board": case "list": return "tasks";
+    case "table": return isLogT(b) ? "log" : isNumT(b) ? "numbers" : "overview";
+    default: return "overview";
+  }
+}
+/* a block can be moved to another tab by hand (b.tab); a heading goes with the block under it */
+function tabOf(bl, i) {
+  const b = bl[i]; if (b.tab && GTABS.some(x => x[0] === b.tab)) return b.tab;
+  if (b.kind === "heading") { for (let j = i + 1; j < bl.length; j++) if (bl[j].kind !== "heading") return tabOf(bl, j); return "overview"; }
+  return kindTab(b);
+}
+const GTAB = {};
+const gtabGet = pg => { const t = GTAB[pg.id] || LS("cl_gtab_" + pg.id) || "overview"; return GTABS.some(x => x[0] === t) ? t : "overview"; };
+const isGamePage = () => !!doc && where(view) === "games";
+const curTab = () => isGamePage() ? gtabGet(curPage()) : null;
+const gameCards = gid => workCols().flatMap((c, ci) => c.cards.filter(k => cardGame(k) === gid).map(k => ({ k, c, ci })));
+const isOpenCol = c => !/сделано|готово|провер/i.test(c.t);
+const isClosedCol = c => /сделано|готово/i.test(c.t);
+/* cards of the page's own boards count as the game's tasks too */
+const pageCards = pg => pg.blocks.filter(b => b.kind === "board").flatMap(b => b.cols.flatMap(c => c.cards.filter(k => String(k.t || "").trim()).map(k => ({ k, c }))));
+
+function gstats(pg) {
+  const out = [], tbs = pg.blocks.filter(b => b.kind === "table");
+  const cell = re => { for (const b of tbs) for (const r of b.rows) { const v = b.cols.map(c => String((r.c || {})[c.id] || "").trim());
+    if (re.test(v[0]) && v[1]) return [v[1], v[2] && v[2].length < 6 ? v[2] : ""]; } return null; };
+  const pl = cell(/^игрок/i); if (pl) out.push(["Игроков", pl[0].replace(/\.\./g, "–"), ""]);
+  const ml = cell(/^(длина|длительность) матча/i); if (ml) out.push(["Матч", ml[0], ml[1]]);
+  const rl = pg.blocks.filter(b => b.kind === "rules").flatMap(b => b.items);
+  if (rl.length) { const ok = rl.filter(x => x.st === "ok").length, bug = rl.filter(x => x.st === "bug").length;
+    out.push(["Правила проверены", String(ok), "из " + rl.length, "", "rules"]); if (bug) out.push(["Ошибки в правилах", String(bug), "", "redo", "rules"]); }
+  const qn = pg.blocks.filter(b => b.kind === "note" && b.tone === "question").reduce((n, b) => { const li = (String(b.text || "").match(/<li/gi) || []).length; return n + (li || (plain(b).match(/\?/g) || []).length); }, 0);
+  out.push(["Открытые вопросы", String(qn), "", qn ? "sun" : ""]);
+  const op = gameCards(pg.id).concat(pageCards(pg)).filter(x => isOpenCol(x.c)).length;
+  out.push(["Задачи", String(op), "открыто", op ? "accent" : "", "tasks"]);
+  return out;
+}
+
+function gameHTML(pg, path, banner) {
+  const bl = pg.blocks, tab = gtabGet(pg), [hc, ha] = unA(pg), st = STATUS[pg.status] || STATUS.idea;
+  const cnt = {}; bl.forEach((b, i) => { if (b.kind !== "heading") { const t = tabOf(bl, i); cnt[t] = (cnt[t] || 0) + 1; } });
+  const taskN = gameCards(pg.id).concat(pageCards(pg)).filter(x => !isClosedCol(x.c)).length;
+  const tabs = GTABS.filter(([k]) => k === "overview" || k === "tasks" || cnt[k] || k === tab).map(([k, t]) => {
+    const n = k === "tasks" ? taskN : k === "overview" ? 0 : cnt[k];
+    return `<button class="${k === tab ? "on" : ""}" data-gtab="${k}">${t}${n ? `<b>${n}</b>` : ""}</button>`; }).join("");
+  const stats = gstats(pg).map(([l, v, u, c, go]) => `<div class="gst"${go ? ` data-gtab="${go}"` : ""}><span>${esc(l)}</span><b class="${c ? "c-" + c : ""}${v.length > 7 ? " long" : ""}">${esc(v)}${u ? `<i>${esc(u)}</i>` : ""}</b></div>`).join("");
+  return banner + `<div class="gtop"><a data-go="games">${esc(doc.gamesLabel)}</a><span class="sl">›</span><span class="cur">${esc(pg.title)}</span><span class="sp"></span>
+    <button class="hbtn${HOPEN ? " on" : ""}" data-hist title="Что менялось на странице">🕘 История${(pg.hist || []).length ? " · " + pg.hist.length : ""}</button>
+    <button class="hbtn" onclick="exportMD(true)" title="Скачать страницу">⬇ .md</button><button class="hdel" data-delpage title="Удалить">🗑</button></div>
+  <div class="ghead${hc}"${ha}><span class="emoji" data-emoji="${path}" title="Сменить значок">${esc(pg.emoji)}</span><div class="gtb">
+    <div class="gtr"><input class="title" data-p="${path}.title" value="${esc(pg.title)}" placeholder="Название"><button class="gstatus" data-statusmenu style="--sc:${st[1]}"><i></i>${st[0]}<span>▾</span></button></div>
+    <textarea class="sub" rows="1" data-p="${path}.sub" placeholder="Игра в одну фразу">${esc(pg.sub)}</textarea>
+    <div class="gtags">${pg.tags.map(t => `<span>${esc(t)}</span>`).join("")}<button data-tagmenu>＋ тег</button></div></div></div>
+  <div class="gstats">${stats}</div>
+  <label class="qtask"><span>＋</span><input id="qtask" data-qtask="${pg.id}" placeholder="Задача для ${esc(pg.title)}" autocomplete="off"><kbd>Enter</kbd></label>
+  ${HOPEN ? histHTML(pg, path) : ""}
+  <div class="gtabs">${tabs}</div>
+  ${tab === "tasks" ? gtasksHTML(pg) : ""}${gblocks(pg, tab)}
+  <div class="pageact"><button data-pmv="-1">↑ Выше в меню</button><button data-pmv="1">↓ Ниже в меню</button><button data-duppage>⧉ Дублировать страницу</button></div>`;
+}
+
+function gblocks(pg, tab) {
+  const bp = blocksPath(), bl = pg.blocks;
+  const idx = bl.map((b, i) => i).filter(i => tabOf(bl, i) === tab && !(bl[i].kind === "heading" && tab !== "overview" && !bl[i].tab));
+  const html = idx.map((i, n) => blockHTML(bp, bl[i], n, idx.length, bl[idx[n + 1]])).join("");
+  const nm = tab === "mechs" ? `<button class="newmech" data-newmechb>＋ Механика</button>` : "";
+  const named = idx.map(i => bl[i]).filter(b => b.kind !== "heading" && b.title);
+  const toc = named.length >= 3 && tab !== "tasks" && tab !== "mechs";
+  const tocH = toc ? `<aside class="toc"><div class="tl">На странице</div>${named.map(b => `<a data-toc="${b.id}">${esc(b.title)}</a>`).join("")}</aside>` : "";
+  return `<div class="gbody${toc ? " withtoc" : ""}"><div class="gmain">${html || nm ? `<div class="grid">${html}${nm}</div>` : ""}
+    <div class="addline"><button data-addline>＋ Блок</button></div></div>${tocH}</div>`;
+}
+
+/* tasks of one game = cards of the shared work board that belong to it (cardGame) */
+const GTFLIP = new Set();
+function gtasksHTML(pg) {
+  const cols = workCols(), all = gameCards(pg.id);
+  if (!all.length) return "";
+  return `<div class="gtasks">${cols.map((c, ci) => {
+    const ks = c.cards.filter(k => cardGame(k) === pg.id); if (!ks.length) return "";
+    const open = isClosedCol(c) ? GTFLIP.has(c.id) : !GTFLIP.has(c.id), hcol = COL_HC[ci % COL_HC.length];
+    const row = k => { const src = k.link && k.link !== pg.id && where(k.link) ? get(where(k.link) + "." + k.link) : null;
+      return `<div class="gtk" style="--hc:${hcol}"><button class="gtc" data-gtnext="${c.id}|${k.id}" title="Дальше: ${esc((cols[ci + 1] || c).t)}"></button>
+        <div class="gtw"><textarea rows="1" data-p="work.cols.${c.id}.cards.${k.id}.t" placeholder="Задача">${esc(k.t)}</textarea>
+        <div class="gtmv">${cols.map((c2, j) => c2.id === c.id ? "" : `<button data-gtmove="${c.id}|${k.id}|${c2.id}" style="--hc:${COL_HC[j % COL_HC.length]}"><i></i>${esc(c2.t)}</button>`).join("")}
+          <button class="gdel" data-del="work.cols.${c.id}.cards|${k.id}">Удалить</button></div></div>
+        ${src ? `<a class="gsrc" data-go="${src.id}">${esc(src.title)}</a>` : ""}</div>`; };
+    return `<div class="gtg${open ? "" : " shut"}"><div class="gtgh" data-gtgrp="${c.id}"><span class="chev">${open ? "▾" : "▸"}</span><i style="background:${hcol}"></i><b>${esc(c.t)}</b><span class="n">${ks.length}</span>
+      <button data-gtadd="${c.id}" title="Добавить сюда">＋</button></div>${open ? ks.map(row).join("") : ""}</div>`; }).join("")}</div>`;
+}
+
+/* shared board: long columns fold, search, new task button */
+let wq = "";
+const KALL = new Set();
+const klimit = c => isClosedCol(c) ? 5 : 15;
+const blim = (p, c) => { const a = bcards(p, c); return p === "work" && !KALL.has(c.id) && !wq ? a.slice(0, klimit(c)) : a; };
+const bmore = (p, c) => { if (p !== "work" || wq) return ""; const n = bcards(p, c).length - klimit(c);
+  return n > 0 ? `<button class="kmore" data-kall="${c.id}">${KALL.has(c.id) ? "Свернуть" : "ещё " + n}</button>` : ""; };
+
+let refocus = null;
+function focusAfter(sel) { refocus = sel; }
+function afterRender() {
+  if (refocus) { const el = document.querySelector(refocus); refocus = null; if (el) { el.focus(); if (el.tagName === "TEXTAREA") grow(el); } }
+  tocSpy();
+}
+function tocSpy() {
+  const links = [...document.querySelectorAll(".toc a")]; if (!links.length) return;
+  let cur = links[0];
+  for (const a of links) { const el = document.querySelector(`[data-block="${a.dataset.toc}"]`); if (el && el.getBoundingClientRect().top < 160) cur = a; }
+  links.forEach(a => a.classList.toggle("on", a === cur));
+}
+addEventListener("scroll", () => { tocSpy(); const r = document.activeElement; if (r && r.classList && r.classList.contains("rich")) fpos(true); }, { passive: true });
+
+/* format bar sits above the focused block instead of the bottom of the screen */
+function fpos(on) {
+  const bar = $("#fbar"); if (!bar) return;
+  if (!on) return;
+  const a = document.activeElement, card = (a.closest && a.closest(".card")) || a, r = card.getBoundingClientRect();
+  bar.style.top = Math.max(8, Math.min(r.top - 52, innerHeight - 60)) + "px";
+  bar.style.left = Math.max(8, Math.min(r.left, innerWidth - bar.offsetWidth - 8)) + "px";
+}
+
+function newCard(colId, t, link) {
+  const c = workCols().find(x => x.id === colId) || workCols()[0], k = { id: uid(), t: t || "" };
+  if (link) k.link = link;
+  c.cards.unshift(k); return k;
+}
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-gtab],[data-statusmenu],[data-tagmenu],[data-gtgrp],[data-gtadd],[data-gtnext],[data-gtmove],[data-toc],[data-addline],[data-btab],[data-kall],[data-wnew]");
+  if (!t) return; const d = t.dataset;
+  if (d.gtadd) { e.stopPropagation(); const k = newCard(d.gtadd, "", view); GTFLIP.delete(d.gtadd); if (isClosedCol(workCols().find(c => c.id === d.gtadd))) GTFLIP.add(d.gtadd);
+    save(label() + ": задача"); focusAfter(`[data-p="work.cols.${d.gtadd}.cards.${k.id}.t"]`); render(); return; }
+  if (d.gtab) { const pg = curPage(); GTAB[pg.id] = d.gtab; LSset("cl_gtab_" + pg.id, d.gtab); render(); const tb = $(".gtabs"); if (tb && tb.getBoundingClientRect().top < 0) tb.scrollIntoView({ block: "start" }); return; }
+  if ("statusmenu" in d) { openMenu(t, Object.entries(STATUS).map(([k, [n, c]]) => ({ e: `<span class="mdot" style="background:${c}"></span>`, n, run: () => { curPage().status = k; save(label() + ": статус"); render(); } }))); return; }
+  if ("tagmenu" in d) { const g = curPage();
+    openMenu(t, TAGS.concat(g.tags.filter(x => !TAGS.includes(x))).map(x => ({ e: g.tags.includes(x) ? "✓" : "", n: x, run: () => { const i = g.tags.indexOf(x); i < 0 ? g.tags.push(x) : g.tags.splice(i, 1); save(label() + ": теги"); render(); } }))
+      .concat([{ e: "＋", n: "Новый тег", run: () => modal(`<h3>Новый тег</h3><input placeholder="Например: Зимний ивент"><button class="btn">Добавить</button>`, v => { if (!v) return false; if (!g.tags.includes(v)) g.tags.push(v); save(label() + ": теги"); render(); }) }])); return; }
+  if (d.gtgrp) { GTFLIP.has(d.gtgrp) ? GTFLIP.delete(d.gtgrp) : GTFLIP.add(d.gtgrp); render(); return; }
+  if (d.gtnext || d.gtmove) {
+    const [cid, kid, to] = (d.gtnext || d.gtmove).split("|"), cs = workCols(), ci = cs.findIndex(c => c.id === cid), from = cs[ci];
+    const dest = d.gtmove ? cs.find(c => c.id === to) : cs[Math.min(ci + 1, cs.length - 1)]; if (!from || !dest || dest === from) return;
+    const k = from.cards.splice(from.cards.findIndex(x => x.id === kid), 1)[0]; dest.cards.unshift(k); syncFromBoard();
+    save(label() + ": задача → " + dest.t); render(); toast(dest.t); return; }
+  if (d.toc) { const el = document.querySelector(`[data-block="${d.toc}"]`); if (el) scrollTo({ top: scrollY + el.getBoundingClientRect().top - 24, behavior: "smooth" }); return; }
+  if ("addline" in d) { const bl = get(blocksPath()), tab = curTab(); const inTab = tab ? bl.filter((b, i) => tabOf(bl, i) === tab) : bl; const after = (inTab[inTab.length - 1] || {}).id || null;
+    openMenu(t, Object.values(KINDS).map(([e, n, f]) => ({ e, n, run: () => insertBlock(f(), after) })).concat(READY.map(([e, n, f]) => ({ e, n: "★ " + n, run: () => insertBlock(f(), after) })))); return; }
+  if (d.btab) { const bl = get(blocksPath()), b = bl.find(x => x.id === d.btab);
+    openMenu(t, GTABS.map(([k, n]) => ({ e: tabOf(bl, bl.indexOf(b)) === k ? "✓" : "", n, run: () => { if (kindTab(b) === k) delete b.tab; else b.tab = k; save(label() + ": блок на вкладку " + n); render(); toast("Блок на вкладке «" + n + "»"); } }))); return; }
+  if (d.kall) { KALL.has(d.kall) ? KALL.delete(d.kall) : KALL.add(d.kall); render(); return; }
+  if ("wnew" in d) { const gid = doc.games.some(g => g.id === wf) ? wf : null, c = workCols()[0], k = newCard(c.id, "", gid);
+    save("задача"); focusAfter(`[data-kdrag="work.cols.${c.id}.cards|${k.id}"] textarea`); render(); return; }
+});
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if (t.id === "qtask" && e.key === "Enter" && !e.isComposing) { e.preventDefault(); const v = t.value.trim(); if (!v) return;
+    const k = newCard(workCols()[0].id, v, t.dataset.qtask); save(label() + ": задача"); focusAfter("#qtask"); render(); toast("Задача в «" + workCols()[0].t + "»"); }
+});
+document.addEventListener("input", e => { if (e.target.id === "wq") { wq = e.target.value.trim().toLowerCase(); focusAfter("#wq"); render(); const w = $("#wq"); if (w) w.setSelectionRange(w.value.length, w.value.length); } });
+
+/* no key = no site: only the key field is shown (localhost keeps the browser-only mode for previews) */
+const LOCALDEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+function lockScreen(err) {
+  document.title = "Cats Land";
+  document.body.innerHTML = `<div class="lock"><form class="lockb"><div class="lki">🔒</div><div class="lkt">Cats Land</div>
+    <input name="k" placeholder="Ключ" autocomplete="off" spellcheck="false"${err ? ' class="bad"' : ""}>${err ? `<div class="lke">${esc(err)}</div>` : ""}<button class="btn">Войти</button></form></div>`;
+  const f = document.querySelector(".lockb"); f.k.focus();
+  f.onsubmit = ev => { ev.preventDefault(); const v = f.k.value.trim(); if (v) LSset("cl_key", v); if (v || LS("cl_key")) location.reload(); };
+}
+
 (async () => {
-  try { await load(); } catch (e) { doc = seed(); base = clone(doc); setTimeout(() => sync("err", "Нет доступа: " + e.message), 0); }
+  if (!REMOTE && !LOCALDEV) { lockScreen(); return; }
+  try { await load(); } catch (e) {
+    if (REMOTE) { const bad = /ключ/.test(e.message); if (bad) { try { localStorage.removeItem("cl_key"); } catch (x) {} }
+      lockScreen(bad ? "Ключ не подходит" : "Нет связи с GitHub: " + e.message); return; }
+    doc = seed(); base = clone(doc); }
   const before = JSON.stringify(doc);
   doc = migrate(doc);
   sigSync();
